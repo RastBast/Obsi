@@ -1,40 +1,61 @@
-# 200 карточек для собеседования Go Middle
+# 220 многосторонних карточек Go Middle для Mochi
 
-Коллекция состоит из **9 колод** и совместима с плагином Obsidian **Spaced Repetition** (`st3v3nmw/obsidian-spaced-repetition`) с настройками разделителей по умолчанию.
+Все карточки оформлены в нативном многостороннем Markdown-формате Mochi: вопрос, поле самостоятельного ввода, краткий ответ, уровень middle, senior-тонкости и объяснение простыми словами.
 
-## Формат Spaced Repetition
+- [Как пользоваться карточками и экспортировать их в Mochi](Mochi-использование.md)
+- [Единый список ссылок на все заметки](Все-заметки.md)
 
-В каждой заметке есть:
+## Как выглядит карточка
 
-- YAML-тег колоды вида `#flashcards/Название`;
-- отдельная однострочная карточка `Вопрос::Краткий ответ`;
-- ниже — полный конспект с ответом middle, senior-тонкостями и объяснениями простыми и техническими словами.
+```markdown
+# Название
 
-Дополнительная настройка разделителей не нужна: `::` — стандартный разделитель однострочной карточки. После первого повторения плагин самостоятельно добавит scheduling-комментарий к строке карточки.
+Вопрос
+
+===
+
+@input
+
+---
+
+## Краткий ответ
+
+---
+
+## Развёрнутый ответ мидла
+
+---
+
+## Развёрнутый ответ сеньора: все тонкости
+
+---
+
+## Если забыл / Простыми словами
+```
+
+В Mochi сначала заполни `@input`. Если ответа нет, оставь поле пустым и нажми встроенную кнопку **Далее**: стороны будут открываться последовательно от краткого ответа до аналогии.
 
 ## Колоды
 
-- [`#flashcards/Go`](#go) — 41 карточка
-- [`#flashcards/Docker`](#docker) — 15 карточек
-- [`#flashcards/Kubernetes`](#kubernetes) — 15 карточек
-- [`#flashcards/Сети`](#сети) — 24 карточки
-- [`#flashcards/Алгоритмы`](#алгоритмы) — 18 карточек
-- [`#flashcards/БД`](#бд) — 20 карточек
-- [`#flashcards/Рантайм`](#рантайм) — 36 карточек
-- [`#flashcards/Redis`](#redis) — 15 карточек
-- [`#flashcards/Kafka`](#kafka) — 16 карточек
+- [Go](#go) — 43 карточки
+- [Docker](#docker) — 17 карточек
+- [Kubernetes](#kubernetes) — 18 карточек
+- [Сети](#сети) — 26 карточек
+- [Алгоритмы](#алгоритмы) — 21 карточка
+- [БД](#бд) — 23 карточки
+- [Рантайм](#рантайм) — 37 карточек
+- [Redis](#redis) — 17 карточек
+- [Kafka](#kafka) — 18 карточек
 
 ## Как учить
 
-1. Установи и включи плагин **Spaced Repetition**.
-2. Выполни команду **Review flashcards from all notes** или выбери конкретную колоду.
-3. Сначала ответь вслух, затем нажми показ ответа.
-4. Краткий ответ оценивай в плагине; полный разбор открывай в исходной заметке.
-5. Не редактируй служебные scheduling-комментарии, которые добавит плагин.
+1. Прочитай вопрос и напиши ответ в поле `@input` до открытия следующей стороны.
+2. Нажми **Далее** и сравни свой ответ с кратким.
+3. Следующей стороной проверь полноту ответа уровня middle.
+4. Senior-сторону используй для уточняющих вопросов интервьюера.
+5. Если тема не вспомнилась, дойди до блока «Простыми словами», закрой карточку и сформулируй ответ заново.
 
 ## Go
-
-Тег колоды: `#flashcards/Go`
 
 - [ ] [001. Чем массив отличается от среза?](Cards/01-array-vs-slice.md)
 - [ ] [002. Как работает append и когда меняется исходный срез?](Cards/02-append-capacity-aliasing.md)
@@ -77,10 +98,10 @@
 - [ ] [181. Чем type alias отличается от нового defined type?](Cards/181-type-alias-defined-type.md)
 - [ ] [182. Как работает go:embed?](Cards/182-go-embed.md)
 - [ ] [183. Как построить lifecycle Go-сервиса через signal.NotifyContext?](Cards/183-signal-notify-context.md)
+- [ ] [201. Какие тонкости есть у range в Go?](Cards/201-range-semantics.md)
+- [ ] [202. Как использовать структурное логирование slog в Go?](Cards/202-structured-logging-slog.md)
 
 ## Docker
-
-Тег колоды: `#flashcards/Docker`
 
 - [ ] [151. Чем Docker image отличается от container?](Cards/151-docker-image-container.md)
 - [ ] [152. Как Dockerfile формирует слои и build cache?](Cards/152-dockerfile-layers-cache.md)
@@ -97,10 +118,10 @@
 - [ ] [163. Гарантирует ли depends_on готовность сервиса?](Cards/163-docker-compose-readiness.md)
 - [ ] [164. Чем Docker tag отличается от digest?](Cards/164-registry-tags-digests.md)
 - [ ] [165. Как ограничивать ресурсы и собирать логи container?](Cards/165-docker-resource-limits-logs.md)
+- [ ] [203. Что такое rootless Docker?](Cards/203-docker-rootless.md)
+- [ ] [204. Что такое OCI image и container runtime?](Cards/204-oci-runtime.md)
 
 ## Kubernetes
-
-Тег колоды: `#flashcards/Kubernetes`
 
 - [ ] [166. Что такое Pod в Kubernetes?](Cards/166-kubernetes-pod.md)
 - [ ] [167. Как Deployment обновляет Pods?](Cards/167-deployment-rollout.md)
@@ -117,10 +138,11 @@
 - [ ] [178. Как ограничить права workload в Kubernetes?](Cards/178-rbac-security-context.md)
 - [ ] [179. Что ограничивает Kubernetes NetworkPolicy?](Cards/179-network-policy.md)
 - [ ] [180. Чем StatefulSet и DaemonSet отличаются от Deployment?](Cards/180-statefulset-daemonset.md)
+- [ ] [205. Из каких компонентов состоит control plane Kubernetes?](Cards/205-kubernetes-control-plane.md)
+- [ ] [206. Что гарантирует PodDisruptionBudget?](Cards/206-pod-disruption-budget.md)
+- [ ] [207. Что такое CRD и Kubernetes Operator?](Cards/207-kubernetes-operator-crd.md)
 
 ## Сети
-
-Тег колоды: `#flashcards/Сети`
 
 - [ ] [041. Как настроить production HTTP server и graceful shutdown?](Cards/41-http-server-timeouts-shutdown.md)
 - [ ] [042. Как правильно использовать http.Client?](Cards/42-http-client-transport-reuse.md)
@@ -146,10 +168,10 @@
 - [ ] [187. Почему большой connection pool может ухудшить latency?](Cards/187-connection-pool-queueing.md)
 - [ ] [188. Как работает circuit breaker?](Cards/188-circuit-breaker.md)
 - [ ] [189. Как DNS-based service discovery переживает смену endpoints?](Cards/189-service-discovery-dns.md)
+- [ ] [208. Чем TCP keepalive отличается от application heartbeat?](Cards/208-tcp-keepalive-heartbeat.md)
+- [ ] [209. Как надёжно доставлять webhooks?](Cards/209-webhook-delivery.md)
 
 ## Алгоритмы
-
-Тег колоды: `#flashcards/Алгоритмы`
 
 - [ ] [096. Что означают O, Ω и Θ?](Cards/96-big-o.md)
 - [ ] [097. Когда массив лучше связного списка?](Cards/97-array-linked-list.md)
@@ -169,10 +191,11 @@
 - [ ] [190. Как работает Union-Find?](Cards/190-union-find.md)
 - [ ] [191. Что такое trie и когда оно лучше hash map?](Cards/191-trie.md)
 - [ ] [192. Зачем нужен consistent hashing?](Cards/192-consistent-hashing.md)
+- [ ] [210. Что такое prefix sum?](Cards/210-prefix-sum.md)
+- [ ] [211. Что такое monotonic stack?](Cards/211-monotonic-stack.md)
+- [ ] [212. Как выбрать случайные k элементов из потока неизвестной длины?](Cards/212-reservoir-sampling.md)
 
 ## БД
-
-Тег колоды: `#flashcards/БД`
 
 - [ ] [044. Как работает пул соединений database/sql?](Cards/44-database-sql-pool.md)
 - [ ] [045. Как правильно работать с SQL-транзакциями?](Cards/45-sql-transactions-isolation.md)
@@ -194,10 +217,11 @@
 - [ ] [193. Когда использовать JSONB и GIN индекс в PostgreSQL?](Cards/193-postgresql-jsonb-gin.md)
 - [ ] [194. Чем window function отличается от GROUP BY?](Cards/194-cte-window-functions.md)
 - [ ] [195. Как transactional outbox решает dual write БД и брокера?](Cards/195-transactional-outbox.md)
+- [ ] [213. Как работает UPSERT в PostgreSQL?](Cards/213-postgresql-upsert.md)
+- [ ] [214. Что такое проблема N+1 запросов?](Cards/214-n-plus-one.md)
+- [ ] [215. Чем optimistic locking отличается от pessimistic locking?](Cards/215-optimistic-pessimistic-locking.md)
 
 ## Рантайм
-
-Тег колоды: `#flashcards/Рантайм`
 
 - [ ] [017. Чем goroutine отличается от системного потока?](Cards/17-goroutines-and-scheduler-basics.md)
 - [ ] [018. Чем буферизированный канал отличается от небуферизированного?](Cards/18-buffered-and-unbuffered-channels.md)
@@ -235,10 +259,9 @@
 - [ ] [184. Что такое GC assist?](Cards/184-gc-assist.md)
 - [ ] [185. Как CPU quota container влияет на GOMAXPROCS?](Cards/185-container-cpu-gomaxprocs.md)
 - [ ] [186. Почему RSS процесса может быть больше Go heap?](Cards/186-heap-rss-fragmentation.md)
+- [ ] [216. Что делает sysmon в Go runtime?](Cards/216-runtime-sysmon.md)
 
 ## Redis
-
-Тег колоды: `#flashcards/Redis`
 
 - [ ] [049. Как спроектировать cache и защититься от stampede?](Cards/49-cache-ttl-stampede.md)
 - [ ] [126. Какие структуры данных есть в Redis?](Cards/126-redis-data-types.md)
@@ -255,10 +278,10 @@
 - [ ] [137. Как Redis replication и Sentinel обеспечивают failover?](Cards/137-redis-sentinel-replication.md)
 - [ ] [196. Как реализовать rate limiter в Redis?](Cards/196-redis-rate-limiter.md)
 - [ ] [197. Как Bloom filter защищает БД от запросов несуществующих ключей?](Cards/197-bloom-filter-cache-penetration.md)
+- [ ] [217. Как диагностировать высокую latency Redis?](Cards/217-redis-slowlog-latency.md)
+- [ ] [218. Как реализовать идемпотентную операцию через Redis Lua?](Cards/218-redis-idempotency-script.md)
 
 ## Kafka
-
-Тег колоды: `#flashcards/Kafka`
 
 - [ ] [138. Что такое topic, partition, broker и record в Kafka?](Cards/138-kafka-broker-partition.md)
 - [ ] [139. Как acks и idempotent producer влияют на надёжность?](Cards/139-kafka-producer-acks-idempotence.md)
@@ -276,10 +299,5 @@
 - [ ] [198. Чем CDC-публикация outbox отличается от polling?](Cards/198-kafka-outbox-cdc.md)
 - [ ] [199. Как безопасно переносить Kafka partitions между brokers?](Cards/199-kafka-partition-reassignment.md)
 - [ ] [200. Как распараллелить Kafka consumer в Go и корректно commit-ить offsets?](Cards/200-kafka-go-consumer-parallelism.md)
-
-## Режим повторения
-
-- Добавляй по 5–10 новых карточек в день.
-- Оценивай воспоминание честно, до чтения полного конспекта.
-- Сложные карточки пересказывай сначала простыми словами, затем техническими терминами.
-- Раз в неделю проходи cram-режим по одной выбранной колоде.
+- [ ] [219. Что такое KRaft в Kafka?](Cards/219-kafka-kraft.md)
+- [ ] [220. Как спланировать восстановление большого Kafka consumer lag?](Cards/220-kafka-lag-recovery.md)

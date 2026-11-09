@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, algorithms, graph, flashcards/Алгоритмы]
-topic: Dijkstra
----
-
-Для каких весов он корректен, зачем priority queue и какова сложность?::Дейкстра находит кратчайшие пути от источника при неотрицательных весах. Он извлекает вершину с минимальной известной дистанцией из min-heap и relax-ит исходящие рёбра. С adjacency list и heap сложность O((V+E) log V).
-
 # Как работает алгоритм Дейкстры?
 
-## Вопрос
-
 Для каких весов он корректен, зачем priority queue и какова сложность?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 Дейкстра находит кратчайшие пути от источника при неотрицательных весах. Он извлекает вершину с минимальной известной дистанцией из min-heap и relax-ит исходящие рёбра. С adjacency list и heap сложность O((V+E) log V).
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ topic: Dijkstra
 - Без decrease-key можно хранить дубликаты и пропускать stale entry при извлечении.
 - Для одинаковых рёбер веса 1 проще BFS.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Negative edge ломает финальность извлечённой вершины; нужен Bellman-Ford/другая модель.
@@ -29,14 +30,16 @@ topic: Dijkstra
 - A* добавляет допустимую heuristic для одной цели.
 - Реальные routing systems учитывают динамические веса и incremental recomputation.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Greedy invariant: при nonnegative weights minimum tentative-distance vertex has finalized shortest distance. Edge relaxation updates upper bounds; min-priority queue yields logarithmic frontier operations.
+
+---
+
+## Если забыл / Простыми словами
 
 Всегда выбирай ближайшую ещё не обработанную вершину и улучшай соседей; отрицательные веса запрещены.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Распространяем волну от старта, всегда продолжая из места с самым маленьким уже найденным временем. Если дорога может дать отрицательное время, ранее окончательный ответ вдруг улучшится и правило сломается.
-
-## Подробное объяснение техническими терминами
-
-Greedy invariant: при nonnegative weights minimum tentative-distance vertex has finalized shortest distance. Edge relaxation updates upper bounds; min-priority queue yields logarithmic frontier operations.

@@ -4,4 +4,4 @@
 
 ## Наборы карточек
 
-- [200 вопросов для собеседования Go Middle](Golang-Middle-Interview/README.md)
+- [220 многосторонних карточек для собеседования Go Middle в формате Mochi](Golang-Middle-Interview/README.md)

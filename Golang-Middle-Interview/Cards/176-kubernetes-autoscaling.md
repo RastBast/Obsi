@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, kubernetes, autoscaling, flashcards/Kubernetes]
-topic: HPA, VPA и Cluster Autoscaler
----
-
-Чем HPA, VPA и Cluster Autoscaler отличаются?::HPA меняет число Pods по метрикам, VPA рекомендует или меняет requests одного Pod, Cluster Autoscaler меняет число nodes при unschedulable/excess capacity. Они действуют на разных уровнях и могут конфликтовать без координации.
-
 # Чем HPA, VPA и Cluster Autoscaler отличаются?
 
-## Вопрос
-
 Почему HPA по CPU зависит от requests и не решает мгновенный burst?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 HPA меняет число Pods по метрикам, VPA рекомендует или меняет requests одного Pod, Cluster Autoscaler меняет число nodes при unschedulable/excess capacity. Они действуют на разных уровнях и могут конфликтовать без координации.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ HPA меняет число Pods по метрикам, VPA рекомендуе
 - Custom/external metrics могут отражать queue length или RPS.
 - Stabilization/window policy предотвращает частое дрожание replicas.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - HPA не создаст capacity, если nodes заполнены; Cluster Autoscaler медленнее добавляет node.
@@ -29,14 +30,16 @@ HPA меняет число Pods по метрикам, VPA рекомендуе
 - Метрика должна коррелировать с нагрузкой до saturation.
 - Масштабирование downstream и quota также ограничивают throughput.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Autoscaling controllers reconcile replicas, resource recommendations и node groups from delayed metrics. Control-loop stability, provisioning latency и resource requests determine effective response.
+
+---
+
+## Если забыл / Простыми словами
 
 HPA добавляет Pods, VPA меняет их размер, Cluster Autoscaler добавляет машины.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Можно нанять больше кассиров, дать каждому больший стол или построить новый зал. Новый зал строится долго, поэтому очередь и запас мощности всё равно нужны.
-
-## Подробное объяснение техническими терминами
-
-Autoscaling controllers reconcile replicas, resource recommendations и node groups from delayed metrics. Control-loop stability, provisioning latency и resource requests determine effective response.

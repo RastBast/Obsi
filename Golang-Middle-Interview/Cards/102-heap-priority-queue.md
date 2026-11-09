@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, algorithms, heap, flashcards/Алгоритмы]
-topic: Heap и priority queue
----
-
-Как представить heap в массиве, каковы сложности Push/Pop/Peek и где она применяется?::Binary min-heap хранит минимум в корне и поддерживает parent≤children. В массиве дети i находятся около `2i+1` и `2i+2`. Peek O(1), Push и Pop O(log n), построение heap из n элементов bottom-up O(n).
-
 # Как работает бинарная куча?
 
-## Вопрос
-
 Как представить heap в массиве, каковы сложности Push/Pop/Peek и где она применяется?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 Binary min-heap хранит минимум в корне и поддерживает parent≤children. В массиве дети i находятся около `2i+1` и `2i+2`. Peek O(1), Push и Pop O(log n), построение heap из n элементов bottom-up O(n).
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ Binary min-heap хранит минимум в корне и поддержив�
 - Heap не хранит все элементы полностью отсортированными.
 - Priority queue используется в Dijkstra, scheduler, merge k streams и top-K.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Обновление приоритета требует знать index элемента и поддерживать его при swap.
@@ -29,14 +30,16 @@ Binary min-heap хранит минимум в корне и поддержив�
 - Equal priorities требуют sequence number, если нужна стабильность.
 - Go `container/heap` вызывает методы `sort.Interface`; typed wrapper скрывает assertions.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Array-backed binary heap поддерживает partial order invariant. Sift-up/down имеют высоту O(log n), Floyd heapify O(n). Indexed heap добавляет position map для decrease-key.
+
+---
+
+## Если забыл / Простыми словами
 
 Куча быстро отдаёт самый приоритетный элемент, но не является отсортированным массивом.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 На вершине всегда самая срочная задача. При добавлении она поднимается до правильного уровня, при удалении новая вершина опускается. Остальные задачи упорядочены только настолько, чтобы вершина была правильной.
-
-## Подробное объяснение техническими терминами
-
-Array-backed binary heap поддерживает partial order invariant. Sift-up/down имеют высоту O(log n), Floyd heapify O(n). Indexed heap добавляет position map для decrease-key.

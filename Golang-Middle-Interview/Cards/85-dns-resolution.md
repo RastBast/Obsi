@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, network, dns, flashcards/Сети]
-topic: DNS
----
-
-Что происходит при разрешении имени, что означает TTL и почему DNS может быть причиной редких timeout?::Resolver ищет записи через cache и DNS servers, следуя delegation/recursive resolution. TTL задаёт срок кеширования ответа, включая иногда отрицательный. DNS использует UDP и TCP, а modern environments могут добавлять DoH/DoT и service discovery.
-
 # Как работает DNS resolution и caching?
 
-## Вопрос
-
 Что происходит при разрешении имени, что означает TTL и почему DNS может быть причиной редких timeout?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 Resolver ищет записи через cache и DNS servers, следуя delegation/recursive resolution. TTL задаёт срок кеширования ответа, включая иногда отрицательный. DNS использует UDP и TCP, а modern environments могут добавлять DoH/DoT и service discovery.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ Resolver ищет записи через cache и DNS servers, следуя del
 - TTL не гарантирует мгновенную смену: caches обновятся постепенно.
 - NXDOMAIN отличается от временного сбоя resolver.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Go resolver может использовать pure Go или системный resolver/cgo в зависимости от платформы и конфигурации.
@@ -29,14 +30,16 @@ Resolver ищет записи через cache и DNS servers, следуя del
 - Успешный DNS не означает здоровый endpoint; stale addresses живут до TTL.
 - Happy Eyeballs балансирует IPv6/IPv4 попытки, не дожидаясь долгого провала одного семейства.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Recursive resolver кеширует RRsets по authoritative TTL и выполняет delegation chain. Client latency включает search expansion, negative caching, transport fallback и address selection; observability отделяет DNS phase от connect phase.
+
+---
+
+## Если забыл / Простыми словами
 
 DNS переводит имя в данные маршрутизации, а TTL делает изменения постепенно согласованными.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 DNS похож на телефонную книгу с копиями у многих помощников. После смены номера старые копии ещё действуют до срока хранения, поэтому часть звонков некоторое время идёт по старому адресу.
-
-## Подробное объяснение техническими терминами
-
-Recursive resolver кеширует RRsets по authoritative TTL и выполняет delegation chain. Client latency включает search expansion, negative caching, transport fallback и address selection; observability отделяет DNS phase от connect phase.

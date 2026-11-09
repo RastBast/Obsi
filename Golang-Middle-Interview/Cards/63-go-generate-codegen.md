@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, tooling, flashcards/Go]
-topic: go generate и code generation
----
-
-Когда генерация кода лучше reflection или ручного boilerplate, что гарантирует `go generate` и нужно ли коммитить результат?::`go generate` запускает команды из директив `//go:generate`; он не выполняется автоматически при `go build` или `go test`. Генерация переносит часть работы в build-time и сохраняет статическую типизацию. Политика репозитория должна фиксировать версии инструмента и судьбу generated files.
-
 # Для чего нужен go generate?
 
-## Вопрос
-
 Когда генерация кода лучше reflection или ручного boilerplate, что гарантирует `go generate` и нужно ли коммитить результат?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 `go generate` запускает команды из директив `//go:generate`; он не выполняется автоматически при `go build` или `go test`. Генерация переносит часть работы в build-time и сохраняет статическую типизацию. Политика репозитория должна фиксировать версии инструмента и судьбу generated files.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -24,6 +23,8 @@ topic: go generate и code generation
 
 Обычно результат коммитят, если потребителю не должен быть нужен generator; иногда генерируют в build pipeline. Главное — воспроизводимость.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Версию binary/tool фиксируют в module/tooling policy, иначе разные разработчики получают разный output.
@@ -31,14 +32,16 @@ topic: go generate и code generation
 - Генерация не должна зависеть от случайного порядка map, локального пути, timezone или сети без фиксации.
 - Слишком большой generated diff усложняет review; источник истины и команда обновления должны быть очевидны.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Code generation выполняет source-to-source transformation до compilation и сохраняет compile-time type checking результата. Reproducibility требует pinned generator toolchain, deterministic ordering, declared inputs и CI-проверки generated artifacts.
+
+---
+
+## Если забыл / Простыми словами
 
 `go generate` — явная команда подготовки исходников, не часть обычной сборки. Генератор и результат должны быть воспроизводимыми.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Вместо того чтобы сто раз писать одинаковый код, программа-шаблонизатор делает это сама. Но команда не запускается магически: команда должна знать, когда и какой версией инструмента её выполнять.
-
-## Подробное объяснение техническими терминами
-
-Code generation выполняет source-to-source transformation до compilation и сохраняет compile-time type checking результата. Reproducibility требует pinned generator toolchain, deterministic ordering, declared inputs и CI-проверки generated artifacts.

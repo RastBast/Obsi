@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, network, rest, flashcards/Сети]
-topic: REST API
----
-
-Чем PUT отличается от PATCH и POST, какие status codes возвращать и как версионировать контракт?::POST обычно создаёт подчинённый ресурс/команду, PUT полностью заменяет ресурс по известному URI и идемпотентен, PATCH частично изменяет по определённому patch format. Status отражает результат: 200/201/204, 400, 401, 403, 404, 409, 422, 429, 5xx.
-
 # Как проектировать ресурсы и коды ответа REST API?
 
-## Вопрос
-
 Чем PUT отличается от PATCH и POST, какие status codes возвращать и как версионировать контракт?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 POST обычно создаёт подчинённый ресурс/команду, PUT полностью заменяет ресурс по известному URI и идемпотентен, PATCH частично изменяет по определённому patch format. Status отражает результат: 200/201/204, 400, 401, 403, 404, 409, 422, 429, 5xx.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ POST обычно создаёт подчинённый ресурс/коман�
 - 409 подходит конфликту текущего состояния, 422 — семантически неверным данным по контракту.
 - Ошибка имеет стабильный machine-readable code и безопасное message/details.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - PATCH обязан различать absent/null/zero и определять atomicity.
@@ -29,14 +30,16 @@ POST обычно создаёт подчинённый ресурс/коман�
 - Cursor pagination стабильнее offset при изменяющемся наборе.
 - Versioning нужен для breaking contract, но additive evolution и tolerant readers уменьшают число версий.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+REST contract использует HTTP method semantics, cache/idempotency properties и standardized status classes. Conditional requests предотвращают lost update, а schema evolution сохраняет backward compatibility representation.
+
+---
+
+## Если забыл / Простыми словами
 
 Метод, URI, status и body вместе образуют контракт, а не просто форму JSON.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Адрес указывает объект, метод говорит, что с ним сделать, а код ответа коротко сообщает итог. Частичное изменение должно точно отличать «не трогать поле» от «очистить поле».
-
-## Подробное объяснение техническими терминами
-
-REST contract использует HTTP method semantics, cache/idempotency properties и standardized status classes. Conditional requests предотвращают lost update, а schema evolution сохраняет backward compatibility representation.

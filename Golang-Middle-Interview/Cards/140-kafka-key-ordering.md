@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, kafka, partitioning, flashcards/Kafka]
-topic: Ключи и порядок Kafka
----
-
-Как сохранить порядок событий одной сущности и что случится при добавлении partitions?::Producer partitioner обычно хеширует key, поэтому одинаковый key попадает в одну partition и сохраняет её order. Records без key распределяются для balance. При увеличении числа partitions mapping hash modulo меняется, и будущие события key могут перейти в другую partition.
-
 # Как key влияет на partition и порядок сообщений?
 
-## Вопрос
-
 Как сохранить порядок событий одной сущности и что случится при добавлении partitions?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 Producer partitioner обычно хеширует key, поэтому одинаковый key попадает в одну partition и сохраняет её order. Records без key распределяются для balance. При увеличении числа partitions mapping hash modulo меняется, и будущие события key могут перейти в другую partition.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ Producer partitioner обычно хеширует key, поэтому один�
 - Consumer должен обрабатывать partition последовательно, если side effects требуют order.
 - Timestamp не заменяет partition order при clock skew/retries.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Repartition migration требует переходного протокола, если строгий per-key order нельзя нарушить.
@@ -29,14 +30,16 @@ Producer partitioner обычно хеширует key, поэтому один�
 - Async processing внутри consumer может переупорядочить completion даже при ordered fetch.
 - Poison event блокирует строгую последовательность; политика skip/DLQ меняет semantics.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Partitioner deterministically maps record key to partition, making partition log order the per-key sequencing mechanism. Topology change or consumer-side concurrency can violate end-to-end processing order beyond append order.
+
+---
+
+## Если забыл / Простыми словами
 
 Одинаковый key связывает события с одной partition, но ограничивает параллелизм и усложняет repartition.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Все письма одного клиента отправляют в одну сортировочную линию, и их порядок сохраняется. Если линию разделили на большее число дорожек, правило выбора может перенаправить новые письма.
-
-## Подробное объяснение техническими терминами
-
-Partitioner deterministically maps record key to partition, making partition log order the per-key sequencing mechanism. Topology change or consumer-side concurrency can violate end-to-end processing order beyond append order.

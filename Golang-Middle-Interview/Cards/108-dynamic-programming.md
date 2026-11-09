@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, algorithms, dp, flashcards/Алгоритмы]
-topic: Динамическое программирование
----
-
-Что такое state, transition, base case и чем memoization отличается от tabulation?::DP подходит, когда задача имеет перекрывающиеся подзадачи и оптимальную подструктуру. State хранит достаточную информацию о подзадаче, transition выражает ответ через меньшие states. Memoization считает сверху по запросу, tabulation — снизу в порядке зависимостей.
-
 # Как распознать задачу на динамическое программирование?
 
-## Вопрос
-
 Что такое state, transition, base case и чем memoization отличается от tabulation?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 DP подходит, когда задача имеет перекрывающиеся подзадачи и оптимальную подструктуру. State хранит достаточную информацию о подзадаче, transition выражает ответ через меньшие states. Memoization считает сверху по запросу, tabulation — снизу в порядке зависимостей.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ DP подходит, когда задача имеет перекрывающи
 - Оценка complexity = число states × стоимость transition.
 - Memory часто сжимается, если новый слой зависит только от предыдущего.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Слишком богатый state вызывает экспоненциальную/псевдополиномиальную стоимость.
@@ -29,14 +30,16 @@ DP подходит, когда задача имеет перекрывающи
 - Memoization рискует recursion depth и overhead map; table требует вычислить недостижимые states.
 - Greedy может заменить DP только после доказательства выбора.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+DP evaluates recurrence over state DAG. Memoization performs demand-driven traversal with cache; tabulation chooses topological iteration. Complexity derives from state-space cardinality and transition fanout.
+
+---
+
+## Если забыл / Простыми словами
 
 Запиши, что означает одна ячейка, от каких меньших ячеек она зависит и в каком порядке их считать.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Вместо повторного решения одних и тех же маленьких задач записываем ответы в таблицу. Главное — выбрать, какая информация в записи достаточна, чтобы продолжить решение.
-
-## Подробное объяснение техническими терминами
-
-DP evaluates recurrence over state DAG. Memoization performs demand-driven traversal with cache; tabulation chooses topological iteration. Complexity derives from state-space cardinality and transition fanout.

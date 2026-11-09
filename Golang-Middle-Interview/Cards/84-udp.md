@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, network, udp, flashcards/Сети]
-topic: UDP
----
-
-Какие гарантии даёт UDP, когда он подходит и что приложение должно реализовать само?::UDP отправляет отдельные datagrams без установления соединения и не гарантирует доставку, порядок, уникальность или congestion control приложения. Он подходит для DNS, telemetry, real-time и как основа QUIC, когда задержка и контроль протокола важнее встроенной надёжности TCP.
-
 # Чем UDP отличается от TCP?
 
-## Вопрос
-
 Какие гарантии даёт UDP, когда он подходит и что приложение должно реализовать само?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 UDP отправляет отдельные datagrams без установления соединения и не гарантирует доставку, порядок, уникальность или congestion control приложения. Он подходит для DNS, telemetry, real-time и как основа QUIC, когда задержка и контроль протокола важнее встроенной надёжности TCP.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ UDP отправляет отдельные datagrams без установле�
 - UDP «connection» в API обычно лишь фиксирует peer и фильтрует packets, handshake не появляется.
 - Retry, sequence, dedupe и auth проектирует прикладной протокол.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - UDP легко spoof-ить и использовать для amplification; сервер ограничивает response/request ratio и валидирует client.
@@ -29,14 +30,16 @@ UDP отправляет отдельные datagrams без установле�
 - Отсутствие встроенного congestion control не разрешает агрессивную отправку; ответственный протокол его добавляет.
 - Packet truncation и receive buffer overflow нужно наблюдать.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+UDP предоставляет connectionless best-effort datagram transport с checksum и ports. Reliability, ordering, retransmission, pacing, congestion control и session security являются responsibility application protocol.
+
+---
+
+## Если забыл / Простыми словами
 
 UDP сохраняет границы сообщений, но почти ничего не обещает о доставке.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Это отправка открытки без уведомления: она может прийти, потеряться или прийти позже другой. Зато не нужно заранее созваниваться и можно самому выбрать, что делать при пропаже.
-
-## Подробное объяснение техническими терминами
-
-UDP предоставляет connectionless best-effort datagram transport с checksum и ports. Reliability, ordering, retransmission, pacing, congestion control и session security являются responsibility application protocol.

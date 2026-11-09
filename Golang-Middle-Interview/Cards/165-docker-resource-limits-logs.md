@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, docker, operations, flashcards/Docker]
-topic: Ресурсы и логи Docker
----
-
-Как ограничивать ресурсы и собирать логи container?::CPU quota/weight, memory и PIDs limits задают через cgroups. Приложение пишет структурированные логи в stdout/stderr, runtime logging driver их собирает. Неограниченный log и отсутствие memory headroom могут заполнить disk или вызвать OOM.
-
 # Как ограничивать ресурсы и собирать логи container?
 
-## Вопрос
-
 Что происходит при превышении CPU/memory и почему файлы логов внутри container — плохой default?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 CPU quota/weight, memory и PIDs limits задают через cgroups. Приложение пишет структурированные логи в stdout/stderr, runtime logging driver их собирает. Неограниченный log и отсутствие memory headroom могут заполнить disk или вызвать OOM.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ CPU quota/weight, memory и PIDs limits задают через cgroups. При�
 - Log rotation/size policy обязательна на host.
 - Метрики включают throttling, RSS, OOM, restart и disk usage.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Memory включает heap, stacks, mmap, cgo и page cache по правилам cgroup.
@@ -29,14 +30,16 @@ CPU quota/weight, memory и PIDs limits задают через cgroups. При�
 - Blocking log driver способен замедлить application; nonblocking может терять logs.
 - Core dump/profile тоже расходуют ephemeral disk и содержат sensitive data.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Cgroup controllers enforce quota/limit and expose pressure/throttling counters. Container logging captures stdio through configured driver with backpressure/drop and rotation semantics.
+
+---
+
+## Если забыл / Простыми словами
 
 Limits защищают host, а stdout/stderr отдаёт ротацию и доставку инфраструктуре.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Контейнеру задают бюджет процессора, памяти и числа работников. Отчёты он сдаёт наружу, где их вращают и хранят; иначе собственный временный шкаф переполнится.
-
-## Подробное объяснение техническими терминами
-
-Cgroup controllers enforce quota/limit and expose pressure/throttling counters. Container logging captures stdio through configured driver with backpressure/drop and rotation semantics.

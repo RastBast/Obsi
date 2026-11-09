@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, kubernetes, network, flashcards/Kubernetes]
-topic: NetworkPolicy
----
-
-Что ограничивает Kubernetes NetworkPolicy?::NetworkPolicy выбирает Pods и разрешает ingress/egress peers, ports и направления. После выбора Pod по направлению неразрешённый трафик блокируется, если CNI реализует policy. Это L3/L4 контроль, не полноценная HTTP authorization.
-
 # Что ограничивает Kubernetes NetworkPolicy?
 
-## Вопрос
-
 Как построить default deny и разрешить только нужные соединения?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 NetworkPolicy выбирает Pods и разрешает ingress/egress peers, ports и направления. После выбора Pod по направлению неразрешённый трафик блокируется, если CNI реализует policy. Это L3/L4 контроль, не полноценная HTTP authorization.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ NetworkPolicy выбирает Pods и разрешает ingress/egress peers, 
 - Policies additive: разрешение любой подходящей policy допускает трафик.
 - Проверяют поддержку CNI и тестируют фактический путь.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - DNS names обычно не являются portable primitive стандартной NetworkPolicy.
@@ -29,14 +30,16 @@ NetworkPolicy выбирает Pods и разрешает ingress/egress peers, 
 - HostNetwork и node-local traffic имеют особенности CNI.
 - Policy не заменяет TLS, identity и application authorization.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+CNI dataplane enforces additive ingress/egress allowlists for selected Pod endpoints at IP/port layer. Zero-trust design дополняет policy workload identity, mTLS и L7 authorization.
+
+---
+
+## Если забыл / Простыми словами
 
 Сначала запрети всё, затем разреши необходимые направления между labeled workloads.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Это межкомнатные двери: по умолчанию закрыты, а правила открывают только нужные пары комнат и порты. Но открытая дверь ещё не доказывает личность посетителя.
-
-## Подробное объяснение техническими терминами
-
-CNI dataplane enforces additive ingress/egress allowlists for selected Pod endpoints at IP/port layer. Zero-trust design дополняет policy workload identity, mTLS и L7 authorization.

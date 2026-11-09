@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, postgresql, partitioning, flashcards/БД]
-topic: Partitioning
----
-
-Чем range/list/hash partitioning помогают и почему partitioning не является автоматическим ускорителем?::Partitioning делит logical table на physical partitions по ключу. Оно упрощает удаление/архивирование диапазонов, pruning и обслуживание очень больших таблиц. Плохой ключ или слишком много partitions увеличивают planning, indexes и operational complexity.
-
 # Когда таблицу стоит партиционировать?
 
-## Вопрос
-
 Чем range/list/hash partitioning помогают и почему partitioning не является автоматическим ускорителем?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 Partitioning делит logical table на physical partitions по ключу. Оно упрощает удаление/архивирование диапазонов, pruning и обслуживание очень больших таблиц. Плохой ключ или слишком много partitions увеличивают planning, indexes и operational complexity.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ Partitioning делит logical table на physical partitions по ключу. 
 - Query должен содержать условие по partition key для pruning.
 - Indexes обычно создаются/поддерживаются на partitions через partitioned index model.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Global uniqueness ограничена: unique/PK обычно должен включать partition key.
@@ -29,14 +30,16 @@ Partitioning делит logical table на physical partitions по ключу. 
 - Создание будущих partitions и routing ошибок автоматизируют.
 - Partitionwise join/aggregate и pruning зависят от версии/плана; измеряют EXPLAIN.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Declarative partitioning routes tuples by partition bound. Planner/executor pruning исключает irrelevant relations; DDL retention становится metadata operation. Constraint/plan overhead растёт с partition count.
+
+---
+
+## Если забыл / Простыми словами
 
 Партиция — физический кусок одной логической таблицы, полезный для pruning и lifecycle данных.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Архив делят по месяцам. Чтобы удалить старый год, выбрасывают коробки целиком, а запрос за сегодня открывает одну коробку. Но поиск без даты вынужден смотреть многие коробки.
-
-## Подробное объяснение техническими терминами
-
-Declarative partitioning routes tuples by partition bound. Planner/executor pruning исключает irrelevant relations; DDL retention становится metadata operation. Constraint/plan overhead растёт с partition count.

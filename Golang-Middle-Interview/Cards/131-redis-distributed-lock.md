@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, redis, distributed-lock, flashcards/Redis]
-topic: Distributed lock Redis
----
-
-Почему `SET key token NX PX ttl` и проверяемое удаление лучше SETNX+DEL, и какие проблемы остаются?::Lock создают атомарным SET с уникальным owner token и TTL. Освобождают Lua-операцией «удали, только если token мой», чтобы старый owner не удалил новый lock. Но истёкший owner может продолжать работу; fencing token на защищаемом ресурсе отвергает устаревшие операции.
-
 # Как реализовать lock в Redis и зачем fencing token?
 
-## Вопрос
-
 Почему `SET key token NX PX ttl` и проверяемое удаление лучше SETNX+DEL, и какие проблемы остаются?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 Lock создают атомарным SET с уникальным owner token и TTL. Освобождают Lua-операцией «удали, только если token мой», чтобы старый owner не удалил новый lock. Но истёкший owner может продолжать работу; fencing token на защищаемом ресурсе отвергает устаревшие операции.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ Lock создают атомарным SET с уникальным owner token �
 - Retry acquisition использует jitter/deadline.
 - Lock не заменяет unique constraint/transaction, если ресурс умеет атомарность сам.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - GC pause/network partition может пережить TTL, создавая двух «владельцев» во времени.
@@ -29,14 +30,16 @@ Lock создают атомарным SET с уникальным owner token �
 - Failover/replication semantics влияют на гарантию lock; Redlock имеет спорные assumptions.
 - Для correctness-critical coordination используют систему с формализованным consensus/lease contract.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Redis lease uses conditional write, owner identity и expiration. Mutual exclusion under pauses/partitions недостаточно для linearizable resource access; monotonically increasing fencing tokens enforce stale-writer rejection downstream.
+
+---
+
+## Если забыл / Простыми словами
 
 Уникальный token защищает release, TTL — crash, fencing — ресурс от запоздавшего старого владельца.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Аренда ключа истекла, но старый работник мог проснуться и продолжить. Новый номер талона позволяет складу отвергнуть команду со старым номером, даже если работник считает себя владельцем.
-
-## Подробное объяснение техническими терминами
-
-Redis lease uses conditional write, owner identity и expiration. Mutual exclusion under pauses/partitions недостаточно для linearizable resource access; monotonically increasing fencing tokens enforce stale-writer rejection downstream.

@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, kafka, storage, flashcards/Kafka]
-topic: Retention и compaction
----
-
-Когда записи удаляются и как tombstone влияет на compacted topic?::Delete retention удаляет старые log segments по времени/размеру независимо от keys. Compaction старается сохранить последнее значение каждого key, позволяя восстановить current state, но не обещает немедленно удалить предыдущие версии. Null value с key — tombstone для удаления состояния.
-
 # Чем time/size retention отличается от log compaction?
 
-## Вопрос
-
 Когда записи удаляются и как tombstone влияет на compacted topic?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 Delete retention удаляет старые log segments по времени/размеру независимо от keys. Compaction старается сохранить последнее значение каждого key, позволяя восстановить current state, но не обещает немедленно удалить предыдущие версии. Null value с key — tombstone для удаления состояния.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ Delete retention удаляет старые log segments по времени/р
 - Consumer нельзя считать, что в compacted log всегда ровно одна запись на key прямо сейчас.
 - Tombstone хранится delete-retention период, чтобы consumers увидели удаление.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Segment-level cleanup асинхронен и зависит от dirty ratio/config.
@@ -29,14 +30,16 @@ Delete retention удаляет старые log segments по времени/р
 - Compaction не заменяет event history, если нужны все переходы.
 - Retention capacity рассчитывают по ingress bytes, replication factor и headroom.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Log cleaner rewrites eligible segments retaining latest offset per key plus tombstones within delete retention. Time/size segment deletion is orthogonal; cleanup is eventual and constrained by segment lifecycle.
+
+---
+
+## Если забыл / Простыми словами
 
 Retention хранит окно истории, compaction хранит последнее состояние ключей, tombstone сообщает удаление.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Обычный архив выбрасывает старые страницы по дате. Сжатый справочник оставляет последнюю карточку каждого клиента. Карточка с пометкой «удалён» тоже должна пожить, чтобы опоздавшие читатели её увидели.
-
-## Подробное объяснение техническими терминами
-
-Log cleaner rewrites eligible segments retaining latest offset per key plus tombstones within delete retention. Time/size segment deletion is orthogonal; cleanup is eventual and constrained by segment lifecycle.

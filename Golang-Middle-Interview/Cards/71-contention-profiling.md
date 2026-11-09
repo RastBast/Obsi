@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, runtime, profiling, flashcards/Рантайм]
-topic: Профилирование contention
----
-
-Чем mutex profile отличается от block profile и как интерпретировать высокое время ожидания?::Mutex profile показывает время ожидания contended locks, обычно при освобождении владельцем. Block profile шире и включает ожидание каналов, select, mutex и других примитивов. Профиль показывает место симптома; исправление требует понять защищаемый инвариант и нагрузку.
-
 # Как найти lock contention и блокировки goroutine?
 
-## Вопрос
-
 Чем mutex profile отличается от block profile и как интерпретировать высокое время ожидания?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 Mutex profile показывает время ожидания contended locks, обычно при освобождении владельцем. Block profile шире и включает ожидание каналов, select, mutex и других примитивов. Профиль показывает место симптома; исправление требует понять защищаемый инвариант и нагрузку.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ Mutex profile показывает время ожидания contended locks, 
 - Высокий cumulative stack может означать один глобальный lock или долгую секцию ниже.
 - Перед шардированием сокращают работу под lock и убирают I/O/callback.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Sampling и attribution не дают точного wall-clock каждого ожидания.
@@ -29,14 +30,16 @@ Mutex profile показывает время ожидания contended locks, 
 - Lock convoy, cache-line bouncing и scheduler latency могут выглядеть похоже; сравнивают CPU/trace/metrics.
 - Уменьшение lock wait ценой неограниченных queues или гонок не является оптимизацией.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Contention profiles семплируют blocked duration и call stacks synchronization points. Анализ связывает wait time с critical-section length, arrival rate, lock granularity и cache coherence; оптимизация проверяется повторным профилем.
+
+---
+
+## Если забыл / Простыми словами
 
 Mutex profile — где спорят за lock; block profile — где ждут вообще. Сначала измерь, потом меняй протокол.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Если много людей ждут одну дверь, нужно узнать не только номер двери, но и почему человек внутри так долго. Иногда достаточно вынести долгую работу наружу, а иногда нужны несколько независимых дверей.
-
-## Подробное объяснение техническими терминами
-
-Contention profiles семплируют blocked duration и call stacks synchronization points. Анализ связывает wait time с critical-section length, arrival rate, lock granularity и cache coherence; оптимизация проверяется повторным профилем.

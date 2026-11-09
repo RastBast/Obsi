@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, kubernetes, probes, flashcards/Kubernetes]
-topic: Startup, readiness и liveness probes
----
-
-Чем startup, readiness и liveness probes отличаются?::Startup даёт приложению время запуститься и до успеха блокирует другие probes. Readiness решает, включать ли Pod в трафик. Liveness выявляет зависший процесс и вызывает restart. Неверная liveness может усилить аварию restart storm.
-
 # Чем startup, readiness и liveness probes отличаются?
 
-## Вопрос
-
 Что должна проверять каждая probe и почему readiness не должна быть копией liveness?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 Startup даёт приложению время запуститься и до успеха блокирует другие probes. Readiness решает, включать ли Pod в трафик. Liveness выявляет зависший процесс и вызывает restart. Неверная liveness может усилить аварию restart storm.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ Startup даёт приложению время запуститься и до 
 - Liveness проверяет восстановимость restart, а не краткий downstream outage.
 - Timeout/period/failureThreshold согласуют с latency и SLA.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Probe endpoint обходит обычный auth только на безопасном внутреннем пути и не раскрывает данные.
@@ -29,14 +30,16 @@ Startup даёт приложению время запуститься и до 
 - Readiness flapping вызывает endpoint churn; используют устойчивые thresholds.
 - Terminating Pod должен стать not-ready до завершения текущих запросов.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Kubelet probe state gates container restart and Pod Ready condition. Endpoint controllers consume readiness; liveness failure invokes restart policy, startup probe suppresses premature health decisions.
+
+---
+
+## Если забыл / Простыми словами
 
 Startup — «запустился?», readiness — «давать трафик?», liveness — «перезапустить?».
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Сначала сотруднику дают время одеться. Затем табличка показывает, принимает ли он клиентов. Отдельная проверка решает, не завис ли он настолько, что поможет только перезапуск.
-
-## Подробное объяснение техническими терминами
-
-Kubelet probe state gates container restart and Pod Ready condition. Endpoint controllers consume readiness; liveness failure invokes restart policy, startup probe suppresses premature health decisions.

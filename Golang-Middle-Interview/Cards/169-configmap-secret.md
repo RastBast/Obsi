@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, kubernetes, config, flashcards/Kubernetes]
-topic: ConfigMap и Secret
----
-
-Чем ConfigMap отличается от Secret?::ConfigMap хранит несекретную конфигурацию, Secret — чувствительные bytes, но base64 не является шифрованием. Оба можно передать через env или volume. Нужны RBAC, encryption at rest, внешний secret manager и ротация по риску.
-
 # Чем ConfigMap отличается от Secret?
 
-## Вопрос
-
 Как обновления попадают в Pod и почему переменные окружения не обновляются автоматически?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 ConfigMap хранит несекретную конфигурацию, Secret — чувствительные bytes, но base64 не является шифрованием. Оба можно передать через env или volume. Нужны RBAC, encryption at rest, внешний secret manager и ротация по риску.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ ConfigMap хранит несекретную конфигурацию, Secret �
 - Immutable config уменьшает случайные изменения.
 - Deployment annotation/checksum часто запускает rollout при новой config.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Secret может утечь через manifest, logs, process env, debug endpoint и backup etcd.
@@ -29,14 +30,16 @@ ConfigMap хранит несекретную конфигурацию, Secret �
 - Ротация требует периода одновременной поддержки старого/нового credential.
 - RBAC ограничивает чтение по namespace/service account и least privilege.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Kubernetes API objects persist configuration in etcd and project data via env or volumes. Confidentiality depends on API authorization, at-rest encryption, transport, node exposure и rotation workflow.
+
+---
+
+## Если забыл / Простыми словами
 
 Secret — не просто base64 ConfigMap: для него нужен полный безопасный lifecycle.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 ConfigMap — инструкция на стене, Secret — ключ от сейфа. Записать ключ другими буквами не значит спрятать его; нужно ограничить, кто видит и как его заменяют.
-
-## Подробное объяснение техническими терминами
-
-Kubernetes API objects persist configuration in etcd and project data via env or volumes. Confidentiality depends on API authorization, at-rest encryption, transport, node exposure и rotation workflow.

@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, kafka, architecture, flashcards/Kafka]
-topic: Выбор брокера
----
-
-Как log, queue routing и in-memory stream модели отличаются по replay, throughput и operations?::Kafka — распределённый durable log с retention/replay и partition scalability. RabbitMQ — message broker с гибкой routing, per-message queue/ack и удобной task distribution. Redis Streams — более простой persistent stream рядом с Redis. Выбор делают по гарантиям и эксплуатации, не по популярности.
-
 # Когда выбирать Kafka, RabbitMQ или Redis Streams?
 
-## Вопрос
-
 Как log, queue routing и in-memory stream модели отличаются по replay, throughput и operations?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 Kafka — распределённый durable log с retention/replay и partition scalability. RabbitMQ — message broker с гибкой routing, per-message queue/ack и удобной task distribution. Redis Streams — более простой persistent stream рядом с Redis. Выбор делают по гарантиям и эксплуатации, не по популярности.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -22,6 +21,8 @@ Kafka — распределённый durable log с retention/replay и partit
 - Redis Streams хранит IDs/consumer groups, но scale/retention ecosystem отличается.
 - Все требуют idempotency для redelivery.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Kafka порядок/parallelism привязаны к partitions; Rabbit queue может гибче раздавать отдельные tasks.
@@ -29,14 +30,16 @@ Kafka — распределённый durable log с retention/replay и partit
 - Low-volume command queue с per-message priority/routing может быть проще в Rabbit.
 - Команда должна учитывать managed offering, skills, failure recovery и capacity cost.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+Systems differ in storage model, consumer cursor/ack semantics, routing topology, partitioning, retention и operational envelope. Architecture выбирает required replay, ordering, fanout, throughput и failure semantics.
+
+---
+
+## Если забыл / Простыми словами
 
 Kafka — журнал истории, RabbitMQ — маршрутизируемые очереди задач, Streams — журнал внутри Redis-экосистемы.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Kafka хранит книгу, которую разные читатели читают со своей закладки. RabbitMQ раздаёт конверты исполнителям и убирает после подтверждения. Redis Streams даёт похожий журнал в уже знакомом быстром хранилище.
-
-## Подробное объяснение техническими терминами
-
-Systems differ in storage model, consumer cursor/ack semantics, routing topology, partitioning, retention и operational envelope. Architecture выбирает required replay, ordering, fanout, throughput и failure semantics.

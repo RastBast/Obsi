@@ -1,19 +1,18 @@
----
-tags: [go, interview, middle, runtime, atomic, flashcards/Рантайм]
-topic: atomic.Value и snapshots
----
-
-Как реализовать lock-free reads конфигурации и какие требования `atomic.Value` предъявляет к типам и мутации?::Writer строит новый независимый immutable объект и атомарно публикует его через `Store`; readers получают целый snapshot через `Load`. Все Store должны использовать один concrete type, а опубликованный объект нельзя менять без отдельной синхронизации.
-
 # Как публиковать immutable snapshot через atomic.Value?
 
-## Вопрос
-
 Как реализовать lock-free reads конфигурации и какие требования `atomic.Value` предъявляет к типам и мутации?
+
+===
+
+@input
+
+---
 
 ## Краткий ответ
 
 Writer строит новый независимый immutable объект и атомарно публикует его через `Store`; readers получают целый snapshot через `Load`. Все Store должны использовать один concrete type, а опубликованный объект нельзя менять без отдельной синхронизации.
+
+---
 
 ## Развёрнутый ответ мидла
 
@@ -28,6 +27,8 @@ cfg := current.Load().(*Config)
 - Вложенные map/slice также должны быть скопированы или считаться immutable.
 - Ошибочный тип Store приводит к panic.
 
+---
+
 ## Развёрнутый ответ сеньора: все тонкости
 
 - Atomic защищает publication pointer, а не внутренние поля snapshot.
@@ -35,14 +36,16 @@ cfg := current.Load().(*Config)
 - Старые snapshots живут, пока readers удерживают ссылки, что удобно для safety, но влияет на память.
 - CAS нужен, если update зависит от текущей версии и конкурируют несколько writers.
 
-## Если забыл: что это, зачем и где нужно
+### Дополнительное техническое объяснение
+
+`atomic.Value` обеспечивает atomic publication и synchronizes-before между Store и наблюдающим Load. Copy-on-write snapshot требует transitive immutability; update cost O(snapshot), read cost O(1) без mutex contention.
+
+---
+
+## Если забыл / Простыми словами
 
 Собери новую неизменяемую конфигурацию целиком и одной операцией замени указатель.
 
-## Подробное объяснение простыми словами
+### Аналогия и объяснение
 
 Читатели получают готовое издание справочника. Редактор не исправляет страницы у них в руках, а печатает новое издание и меняет табличку на входе. Старое исчезнет, когда его перестанут читать.
-
-## Подробное объяснение техническими терминами
-
-`atomic.Value` обеспечивает atomic publication и synchronizes-before между Store и наблюдающим Load. Copy-on-write snapshot требует transitive immutability; update cost O(snapshot), read cost O(1) без mutex contention.
