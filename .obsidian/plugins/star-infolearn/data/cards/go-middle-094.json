@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-094",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/94-websocket-sse.md",
+  "front": "Как выбрать транспорт для server push и какие lifecycle-проблемы появляются у долгих соединений?",
+  "back": "WebSocket даёт двунаправленные message frames после HTTP upgrade. SSE — однонаправленный текстовый stream server→browser с автоматическим reconnect. Long polling использует обычные запросы, которые сервер держит до события. Выбор зависит от направления, частоты и инфраструктуры.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- WebSocket требует ping/pong, read/write deadlines и одного протокола сообщений поверх frames.\n- SSE проще проходит proxy, но только текст/одно направление.\n- Long polling дороже handshakes/headers, зато совместим почти везде.\n- На каждое соединение ставят limits очереди; медленный клиент не должен съесть память.\n\nSENIOR — ТОНКОСТИ\n\n- Load balancer idle timeout должен быть больше heartbeat interval.\n- Горизонтальный scale требует broker/fanout и иногда session routing.\n- Reconnect создаёт thundering herd; нужен jitter и resume cursor/event ID.\n- Authentication истекает во время долгой сессии и требует политики reauth/close.\n\n### Дополнительное техническое объяснение\n\nPersistent transports требуют connection lifecycle, heartbeat, backpressure, replay cursor и distributed fanout. WebSocket сохраняет message framing over upgraded connection; SSE использует HTTP event stream semantics и `Last-Event-ID`.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nWebSocket — двусторонний канал, SSE — поток от сервера, long polling — серия долгих HTTP-запросов.\n\n### Аналогия и объяснение\n\nWebSocket — постоянный телефон, SSE — радио от сервера, long polling — повторные звонки с вопросом «есть новости?». У каждого слушателя должна быть ограниченная очередь, иначе медленный слушатель затормозит систему.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "websocket",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

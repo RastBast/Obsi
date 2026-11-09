@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-086",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/86-http1-keepalive-chunked.md",
+  "front": "Для чего нужны Content-Length, chunked encoding и keep-alive, и почему непрочитанный body мешает connection reuse?",
+  "back": "HTTP/1.1 держит TCP-соединение открытым по умолчанию. Граница body задаётся Content-Length, chunked transfer coding, правилами метода/status или закрытием соединения. Клиент должен корректно дочитать/закрыть body, чтобы parser мог начать следующий response на том же stream.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Один TCP stream требует однозначного framing каждого сообщения.\n- Chunked позволяет передавать body, не зная длину заранее.\n- Keep-alive экономит TCP/TLS handshakes.\n- Pipelining редко используется из-за ordering и head-of-line; клиенты чаще держат pool соединений.\n\nSENIOR — ТОНКОСТИ\n\n- Несогласие proxy и backend о Content-Length/Transfer-Encoding ведёт к request smuggling.\n- Limits на headers/body и read deadlines защищают parser.\n- Trailers доступны только по правилам framing и должны быть объявлены/обработаны корректно.\n- Закрытие соединения иногда безопаснее дренирования огромного нежелательного body.\n\n### Дополнительное техническое объяснение\n\nHTTP/1.1 message framing определяется RFC precedence rules для status/method, Transfer-Encoding, Content-Length и connection close. Persistent connection reuse требует полного parser synchronization на response boundary.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nНа одном TCP-соединении сообщения идут подряд, поэтому длина каждого должна быть недвусмысленной.\n\n### Аналогия и объяснение\n\nВ одной длинной трубе идут несколько посылок. На каждой нужен размер или отметки частей, иначе получатель не поймёт, где заканчивается одна и начинается следующая.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "http",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-059",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/59-time-duration-monotonic.md",
+  "front": "Чем wall clock отличается от monotonic clock, как сравнивать `time.Time` и почему нельзя хранить Duration в неоднозначном int?",
+  "back": "Wall clock показывает календарное время и может прыгать из-за синхронизации; monotonic clock измеряет прошедший интервал. `time.Now` обычно несёт monotonic-компонент внутри процесса, а `Sub`/`Since` используют её. `time.Duration` хранит наносекунды и требует явных единиц.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\nstart := time.Now()\n// work\nelapsed := time.Since(start)\ntimeout := 250 * time.Millisecond\n```\n\n- Для дедлайнов и интервалов используют Duration, а не `int timeout`.\n- Для календарных операций важны location и DST; 24 часа не всегда равны следующему календарному дню локального времени.\n- `Equal` сравнивает моменты времени; `==` дополнительно затрагивает внутреннее представление/location и редко нужен для доменной проверки.\n- Сериализация обычно теряет monotonic-компонент.\n\nSENIOR — ТОНКОСТИ\n\n- Нельзя сравнивать часы разных машин для точной latency без синхронизации и оговорок.\n- Deadline должен передаваться через context, чтобы все слои делили один budget.\n- `time.After` в hot loop создаёт timers; управляемый Timer переиспользуют по правилам версии Go.\n- В тестах часы внедряют зависимостью, а не используют sleep как ожидание события.\n\n### Дополнительное техническое объяснение\n\n`time.Time` может содержать wall и monotonic readings; interval operations предпочитают monotonic component, пока она не потеряна преобразованием/serialization. `time.Duration` — signed nanosecond count, а calendar arithmetic выполняется `AddDate` с правилами location/DST.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nКалендарное время отвечает «когда», monotonic — «сколько прошло». Всегда указывай единицы Duration.\n\n### Аналогия и объяснение\n\nНастенные часы могут перевести вперёд или назад, но секундомер должен продолжить считать ровно. Для timeout нужен секундомер, для расписания — календарь и часовой пояс. Смешивание этих задач создаёт редкие ошибки.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "time",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

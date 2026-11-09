@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-102",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/102-heap-priority-queue.md",
+  "front": "Как представить heap в массиве, каковы сложности Push/Pop/Peek и где она применяется?",
+  "back": "Binary min-heap хранит минимум в корне и поддерживает parent≤children. В массиве дети i находятся около `2i+1` и `2i+2`. Peek O(1), Push и Pop O(log n), построение heap из n элементов bottom-up O(n).",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Push добавляет в конец и поднимает элемент.\n- Pop меняет корень с последним, удаляет и опускает новый корень.\n- Heap не хранит все элементы полностью отсортированными.\n- Priority queue используется в Dijkstra, scheduler, merge k streams и top-K.\n\nSENIOR — ТОНКОСТИ\n\n- Обновление приоритета требует знать index элемента и поддерживать его при swap.\n- Для bounded top-K выбирают min/max heap противоположного смысла в зависимости от задачи.\n- Equal priorities требуют sequence number, если нужна стабильность.\n- Go `container/heap` вызывает методы `sort.Interface`; typed wrapper скрывает assertions.\n\n### Дополнительное техническое объяснение\n\nArray-backed binary heap поддерживает partial order invariant. Sift-up/down имеют высоту O(log n), Floyd heapify O(n). Indexed heap добавляет position map для decrease-key.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nКуча быстро отдаёт самый приоритетный элемент, но не является отсортированным массивом.\n\n### Аналогия и объяснение\n\nНа вершине всегда самая срочная задача. При добавлении она поднимается до правильного уровня, при удалении новая вершина опускается. Остальные задачи упорядочены только настолько, чтобы вершина была правильной.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "heap",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

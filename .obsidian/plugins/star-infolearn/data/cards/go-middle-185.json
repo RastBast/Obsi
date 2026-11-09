@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-185",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/185-container-cpu-gomaxprocs.md",
+  "front": "Почему видимые host CPUs и реально доступные cores могут различаться?",
+  "back": "GOMAXPROCS задаёт число P для одновременного Go-кода. Если оно сильно выше доступной CPU quota, runtime создаёт лишнюю конкуренцию и попадает в throttling, повышая tail latency. Современный Go учитывает container limits, но версию и метрики нужно проверять.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nCPU request/weight и hard quota — разные настройки. Наблюдают cgroup throttled time, utilization относительно quota, runnable goroutines и latency, а не только host CPU percent.\n\nSENIOR — ТОНКОСТИ\n\n- Fractional quota приводит к периодическому throttling, не к «половине постоянного ядра».\n- CPU-bound и I/O-bound workloads реагируют по-разному.\n- Автонастройка менялась между версиями Go/Kubernetes environment.\n- Пулы workers согласуют с downstream, а не равняют механически GOMAXPROCS.\n\n### Дополнительное техническое объяснение\n\nGOMAXPROCS controls P count; cgroup CPU quota/period enforces runtime budget. Oversubscription increases runnable queues, context switching and quota throttling; tuning is version- and workload-dependent.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nПараллелизм runtime должен соответствовать CPU-бюджету container, а не размеру host.\n\n### Аналогия и объяснение\n\nВ здании видно 64 стола, но арендовано только два. Если посадить 64 работников, они будут постоянно делить два места и терять время на пересадки.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "containers",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

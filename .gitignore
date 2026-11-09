@@ -1,0 +1,15 @@
+# Obsidian workspace state and downloaded community-plugin binaries
+.obsidian/*
+!.obsidian/plugins/
+!.obsidian/snippets/
+
+.obsidian/plugins/*
+!.obsidian/plugins/star-infolearn/
+.obsidian/plugins/star-infolearn/*
+!.obsidian/plugins/star-infolearn/data/
+.obsidian/plugins/star-infolearn/data/*
+!.obsidian/plugins/star-infolearn/data/cards/
+!.obsidian/plugins/star-infolearn/data/cards/*.json
+
+.obsidian/snippets/*
+!.obsidian/snippets/star-infolearn-go-middle.css

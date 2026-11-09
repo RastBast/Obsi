@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-073",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/73-livelock-starvation.md",
+  "front": "Как программа может активно работать, но не продвигаться, и как отсутствие fairness создаёт starvation?",
+  "back": "При deadlock участники заблокированы. При livelock они меняют состояние и повторяют действия, но взаимно мешают прогрессу. Starvation означает, что конкретный участник долго не получает ресурс, хотя система в целом работает.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Одинаковый retry без jitter может синхронно сталкивать workers снова и снова.\n- Цикл с `default` в select способен съедать CPU и вытеснять полезную работу.\n- Приоритетная очередь без aging может никогда не обслужить низкий приоритет.\n- Метрики throughput и per-request latency помогают отличить активность от прогресса.\n\nSENIOR — ТОНКОСТИ\n\n- Scheduler и sync primitives не дают бизнес-гарантии строгой fairness.\n- Randomized backoff/jitter разрывает симметрию, но требует bounded deadline.\n- Lock-free algorithm может быть lock-free для системы, но не wait-free для каждой goroutine.\n- Решение проверяют adversarial load test, а не только average latency.\n\n### Дополнительное техническое объяснение\n\nLiveness properties включают global progress и per-operation progress. Livelock сохраняет state transitions без completion; starvation нарушает bounded waiting. Backoff, jitter, fair queuing и admission control улучшают progress guarantees.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nDeadlock стоит, livelock суетится без результата, starvation оставляет кого-то без очереди.\n\n### Аналогия и объяснение\n\nДва человека в коридоре могут одновременно шагать в одну сторону, затем одновременно в другую и так не разойтись — это livelock. Если все постоянно проходят перед одним человеком, он голодает, хотя дверь работает.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "concurrency",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

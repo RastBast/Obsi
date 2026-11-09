@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-145",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/145-kafka-isr-leader.md",
+  "front": "Как replication factor, ISR и min.insync.replicas влияют на durability и availability?",
+  "back": "Leader partition принимает produce/fetch, followers копируют log. ISR — replicas, достаточно синхронные с leader. При `acks=all` запись подтверждается по правилам ISR; `min.insync.replicas` запрещает запись, если надёжных копий слишком мало, жертвуя availability ради durability.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Replication factor 3 переживает не любые три сбоя, а ограниченное число при корректном размещении.\n- Out-of-sync replica исключается из ISR и догоняет позже.\n- Leader election выбирает replica; unclean election может потерять acknowledged data.\n- Rack awareness разводит replicas по failure domains.\n\nSENIOR — ТОНКОСТИ\n\n- `acks=all` без достаточного min ISR может дать слабее ожидаемую гарантию.\n- Disk/network lag сжимает ISR и вызывает produce errors до полного падения broker.\n- Preferred leader imbalance создаёт hotspot.\n- Recovery time зависит от размера log и bandwidth replication.\n\n### Дополнительное техническое объяснение\n\nPartition replication tracks follower offsets/liveness and ISR membership. Produce acknowledgment plus min ISR establishes required replica set; leader election/fencing controls continuity under broker failure.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nISR — копии, которые можно считать актуальными; минимальное число определяет, писать дальше или остановиться.\n\n### Аналогия и объяснение\n\nГлавный журнал принимают один писарь, несколько помощников копируют. Если рядом остался только один актуальный экземпляр, можно продолжить быстро, но риск потери выше; строгая настройка остановит приём.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "replication",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

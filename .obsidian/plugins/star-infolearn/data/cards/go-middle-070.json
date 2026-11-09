@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-070",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/70-gc-write-barrier.md",
+  "front": "Что может пойти не так, если программа меняет указатели во время concurrent mark, и как write barrier сохраняет корректность?",
+  "back": "Пока GC маркирует граф, приложение продолжает менять ссылки. Write barrier сообщает runtime о релевантных pointer writes и поддерживает инвариант маркировки, чтобы достижимый объект не оказался ошибочно белым и не был освобождён.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Concurrent GC должен видеть согласованную картину не останавливая программу на весь mark.\n- Compiler вставляет barrier вокруг нужных pointer stores.\n- Барьер имеет CPU cost, но позволяет короткие stop-the-world фазы.\n- Программист не вызывает barrier вручную в безопасном Go.\n\nSENIOR — ТОНКОСТИ\n\n- Конкретный hybrid barrier и его инварианты меняются вместе с runtime; это не контракт языка.\n- Bulk writes, zeroing и compiler optimizations имеют специализированные пути.\n- `unsafe`-код, скрывающий указатели или записывающий их обходным путём, способен нарушить ожидания GC.\n- Pointer-free данные дешевле для scanning и не требуют того же объёма barrier work.\n\n### Дополнительное техническое объяснение\n\nWrite barrier поддерживает tri-color marking invariant при concurrent mutation heap graph. Instrumented pointer stores shade необходимые objects/edges, предотвращая потерю reachability между already-scanned и unscanned portions.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nБарьер — уведомление сборщику: граф ссылок изменился во время обхода.\n\n### Аналогия и объяснение\n\nПока инспектор отмечает нужные комнаты, жильцы продолжают переносить вещи. Запись о каждом важном переносе не даёт инспектору выбросить вещь, которую только что спрятали в уже проверенной комнате.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "gc",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

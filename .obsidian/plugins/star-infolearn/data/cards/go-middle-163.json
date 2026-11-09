@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-163",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/163-docker-compose-readiness.md",
+  "front": "Как корректно запускать Go-сервис рядом с PostgreSQL или Kafka в Compose?",
+  "back": "Простой `depends_on` задаёт порядок запуска, но запущенный container ещё не готов принимать запросы. В поддерживаемых вариантах Compose используют healthcheck condition, а приложение всё равно должно иметь retry с backoff и deadline.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Service обращается к dependency по Compose service name, не localhost.\n- Healthcheck проверяет реальную готовность нужного протокола.\n- Startup retry ограничен общим timeout и логирует причину.\n- Persistent data подключают named volumes.\n\nSENIOR — ТОНКОСТИ\n\n- Ready dependency может упасть после старта, поэтому устойчивость нужна постоянно.\n- Compose не заменяет production orchestration, secrets и HA.\n- Миграции должны иметь одного владельца/lock и отдельную failure policy.\n- Restart зависимого сервиса не обязан автоматически рестартовать consumers.\n\n### Дополнительное техническое объяснение\n\nCompose dependency graph controls creation/start ordering. Readiness requires health state or application-level connection retry; runtime availability remains governed by timeout, reconnect and idempotency protocols.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nПорядок старта не равен готовности; проверяй health и повторяй подключения безопасно.\n\n### Аналогия и объяснение\n\nТо, что магазин открыл дверь, не означает, что касса уже работает. Соседний сервис должен дождаться готовности, но и уметь пережить последующее временное закрытие.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "docker",
+    "compose",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

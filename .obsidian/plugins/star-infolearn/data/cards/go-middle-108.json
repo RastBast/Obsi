@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-108",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/108-dynamic-programming.md",
+  "front": "Что такое state, transition, base case и чем memoization отличается от tabulation?",
+  "back": "DP подходит, когда задача имеет перекрывающиеся подзадачи и оптимальную подструктуру. State хранит достаточную информацию о подзадаче, transition выражает ответ через меньшие states. Memoization считает сверху по запросу, tabulation — снизу в порядке зависимостей.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Сначала определить смысл `dp[state]` одним предложением.\n- Затем base cases, transition и порядок вычисления.\n- Оценка complexity = число states × стоимость transition.\n- Memory часто сжимается, если новый слой зависит только от предыдущего.\n\nSENIOR — ТОНКОСТИ\n\n- Слишком богатый state вызывает экспоненциальную/псевдополиномиальную стоимость.\n- Reconstruction решения требует parent/choice или повторного прохода.\n- Memoization рискует recursion depth и overhead map; table требует вычислить недостижимые states.\n- Greedy может заменить DP только после доказательства выбора.\n\n### Дополнительное техническое объяснение\n\nDP evaluates recurrence over state DAG. Memoization performs demand-driven traversal with cache; tabulation chooses topological iteration. Complexity derives from state-space cardinality and transition fanout.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nЗапиши, что означает одна ячейка, от каких меньших ячеек она зависит и в каком порядке их считать.\n\n### Аналогия и объяснение\n\nВместо повторного решения одних и тех же маленьких задач записываем ответы в таблицу. Главное — выбрать, какая информация в записи достаточна, чтобы продолжить решение.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "dp",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

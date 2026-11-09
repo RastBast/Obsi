@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-202",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/202-structured-logging-slog.md",
+  "front": "Чем структурный лог отличается от форматированной строки, как передавать logger и какие поля нельзя использовать без ограничения cardinality и безопасности?",
+  "back": "`slog` записывает message вместе с типизированными key-value attributes. Logger обычно внедряют зависимостью или добавляют request-scoped attrs через `With`; context используют для correlation/handler integration, а не для скрытия обязательной зависимости. Секреты и персональные данные не логируют.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\nlogger.InfoContext(ctx, \"request completed\",\n    \"method\", r.Method,\n    \"status\", status,\n    \"duration\", elapsed,\n)\n```\n\nСтабильные keys облегчают поиск и dashboards. Ошибку логируют один раз на границе, где известен итог операции; нижние слои возвращают обёрнутую error. Уровни Debug/Info/Warn/Error имеют операционную семантику, а не заменяют метрики.\n\nHandler определяет JSON/text output, filtering и destination. `LogAttrs` и заранее созданные `slog.Attr` могут уменьшить allocation на горячем пути, но сначала измеряют.\n\nSENIOR — ТОНКОСТИ\n\nDynamic error text, user ID и trace ID не подходят как labels метрик, но могут быть полями логов с privacy/retention policy. Logger должен быть concurrency-safe по контракту handler. Синхронная запись способна увеличить latency, а асинхронная очередь требует bounded buffer и drop/backpressure policy.\n\nContext-aware handler может извлекать trace correlation, но бизнес-поля лучше передавать явно. Замена глобального default logger в тестах создаёт process-wide состояние; dependency injection надёжнее.\n\n### Дополнительное техническое объяснение\n\n`slog.Record` содержит timestamp, level, message, program counter и attributes, обрабатываемые `slog.Handler`. `WithAttrs` создаёт производный handler/logger; группировка формирует namespace. Производительность зависит от enabled-level check, attribute construction, encoding и output I/O.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nСтруктурный лог похож на заполненную анкету: отдельные поля «status=500» и «duration=2s» легче искать, чем предложение свободным текстом. Но анкета не должна содержать пароль, а одна и та же авария не должна печататься на каждом этаже системы.\n\n### Аналогия и объяснение\n\nСначала реши, кто владеет окончательным отчётом о запросе. Он записывает одно событие с понятными полями; внутренние функции только передают ошибку с контекстом. Так логи остаются пригодными для поиска, а не превращаются в повторяющийся шум.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

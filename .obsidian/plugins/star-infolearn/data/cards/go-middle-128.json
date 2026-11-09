@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-128",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Redis/128-redis-ttl-eviction.md",
+  "front": "Как Redis удаляет просроченные keys и что происходит при достижении maxmemory?",
+  "back": "Expiration удаляет key после заданного TTL логически через lazy check и active sampling. Eviction срабатывает при maxmemory и выбирает key по политике: noeviction, LRU/LFU/random/TTL среди всех или volatile keys. Это разные механизмы.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- TTL проверяют командами `TTL/PTTL`; `-1` означает без срока, `-2` — key отсутствует.\n- Обновление key не всегда сохраняет TTL; семантика зависит от команды/options.\n- `noeviction` возвращает ошибку на новые writes, а не освобождает произвольное.\n- Approximate LRU/LFU не является идеальным глобальным алгоритмом.\n\nSENIOR — ТОНКОСТИ\n\n- Одинаковые TTL создают expiry storm; добавляют jitter.\n- `volatile-*` не помогает, если мало keys с TTL.\n- Memory accounting включает allocator fragmentation/replication buffers не одинаково для политики.\n- Evicted cache miss может вызвать stampede на БД.\n\n### Дополнительное техническое объяснение\n\nRedis expiration combines passive lookup deletion and active sampling. Maxmemory eviction applies approximate policy during allocation pressure. Operational design связывает TTL distribution, memory headroom, miss amplification и backpressure.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nTTL говорит, когда запись устарела; eviction решает, что выбросить при нехватке памяти.\n\n### Аналогия и объяснение\n\nНа продукте есть срок годности — это TTL. Когда холодильник переполнен, приходится выбрать, что выбросить раньше срока — это eviction. Правила выбора и защита источника данных нужны заранее.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "redis",
+    "cache",
+    "flashcards/Redis"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

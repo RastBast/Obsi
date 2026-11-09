@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-134",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Redis/134-redis-pubsub-vs-streams.md",
+  "front": "Какие гарантии хранения, replay и consumer state дают эти механизмы?",
+  "back": "Pub/Sub доставляет сообщение только текущим подписчикам и не хранит backlog; отключённый consumer пропускает события. Streams хранят ordered entries, позволяют читать с ID, replay и consumer groups с pending state. Для надёжной обработки Streams подходят лучше.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Pub/Sub хорош для ephemeral notifications, invalidation и live signal.\n- Streams ограничивают длину retention/trimming policy.\n- Consumer подтверждает entry через ACK; неподтверждённые остаются pending.\n- И там, и там payload/schema/versioning проектирует приложение.\n\nSENIOR — ТОНКОСТИ\n\n- Pub/Sub slow subscriber и output buffer требуют политики disconnect.\n- Streams дают at-least-once при reclaim, поэтому handler идемпотентен.\n- Pending list нужно мониторить и обрабатывать abandoned consumers.\n- Redis Streams не автоматически заменяют Kafka для большого долговременного distributed log.\n\n### Дополнительное техническое объяснение\n\nPub/Sub is ephemeral fanout without persistence/offset. Streams maintain append-only IDs, retention, consumer-group delivery state и pending entries, enabling replay and at-least-once workflows.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nPub/Sub — эфир только сейчас, Stream — журнал, который можно дочитать и подтвердить.\n\n### Аналогия и объяснение\n\nРадио не повторяет передачу тому, кто был выключен. Журнал хранит записи: читатель отмечает прочитанное и может вернуться после перерыва.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "redis",
+    "messaging",
+    "flashcards/Redis"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

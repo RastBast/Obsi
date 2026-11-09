@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-116",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/116-postgresql-isolation.md",
+  "front": "Чем Read Committed, Repeatable Read и Serializable отличаются по snapshot и аномалиям?",
+  "back": "В PostgreSQL Read Committed берёт новый snapshot на каждый statement. Repeatable Read использует snapshot транзакции и предотвращает non-repeatable reads, но бизнес-конфликты всё ещё возможны. Serializable применяет SSI и может отменить transaction с serialization failure, которую нужно повторить.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Read Uncommitted фактически ведёт себя как Read Committed.\n- Repeatable Read не видит commits после своего snapshot.\n- `SELECT ... FOR UPDATE` блокирует/проверяет строки для update protocol.\n- Isolation не заменяет constraints и atomic SQL updates.\n\nSENIOR — ТОНКОСТИ\n\n- PostgreSQL Repeatable Read предотвращает часть phantom через snapshot, но write skew возможен.\n- Serializable не означает глобальный mutex; SSI отслеживает опасные dependencies.\n- Retry повторяет всю transaction с новым snapshot и без необратимых side effects.\n- Read-only deferrable transaction может ждать безопасный snapshot для отчёта.\n\n### Дополнительное техническое объяснение\n\nMVCC snapshot scope differs by level; SSI detects rw-dependency structures that threaten serializability. Serialization failure is expected control flow requiring bounded whole-transaction retry.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nЧем выше isolation, тем сильнее иллюзия последовательности, но тем больше конфликтов/повторов.\n\n### Аналогия и объяснение\n\nНа Read Committed каждое обращение получает свежую фотографию. Repeatable Read держит одну фотографию весь разговор. Serializable следит, чтобы несколько разговоров можно было объяснить как очередь, и отменяет опасный.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "transactions",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

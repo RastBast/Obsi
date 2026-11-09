@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-176",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/176-kubernetes-autoscaling.md",
+  "front": "Почему HPA по CPU зависит от requests и не решает мгновенный burst?",
+  "back": "HPA меняет число Pods по метрикам, VPA рекомендует или меняет requests одного Pod, Cluster Autoscaler меняет число nodes при unschedulable/excess capacity. Они действуют на разных уровнях и могут конфликтовать без координации.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- CPU utilization HPA рассчитывается относительно request.\n- Новому Pod нужны scheduling, image pull и startup time.\n- Custom/external metrics могут отражать queue length или RPS.\n- Stabilization/window policy предотвращает частое дрожание replicas.\n\nSENIOR — ТОНКОСТИ\n\n- HPA не создаст capacity, если nodes заполнены; Cluster Autoscaler медленнее добавляет node.\n- VPA restart/in-place semantics зависят от режима/version и могут конфликтовать с HPA по CPU/memory.\n- Метрика должна коррелировать с нагрузкой до saturation.\n- Масштабирование downstream и quota также ограничивают throughput.\n\n### Дополнительное техническое объяснение\n\nAutoscaling controllers reconcile replicas, resource recommendations и node groups from delayed metrics. Control-loop stability, provisioning latency и resource requests determine effective response.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nHPA добавляет Pods, VPA меняет их размер, Cluster Autoscaler добавляет машины.\n\n### Аналогия и объяснение\n\nМожно нанять больше кассиров, дать каждому больший стол или построить новый зал. Новый зал строится долго, поэтому очередь и запас мощности всё равно нужны.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "autoscaling",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

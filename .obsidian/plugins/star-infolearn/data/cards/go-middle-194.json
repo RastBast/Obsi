@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-194",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/194-cte-window-functions.md",
+  "front": "Когда применять `row_number`, `lag` и CTE и как они влияют на план?",
+  "back": "GROUP BY сворачивает группу в одну строку. Window function вычисляет значение по partition/order, сохраняя каждую исходную строку: rank, running sum, lag/lead. CTE именует подзапрос; materialization/inlining зависит от запроса и версии PostgreSQL.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```sql\nrow_number() over (partition by user_id order by created_at desc)\n```\n\nДаёт нумерацию событий каждого user. Frame (`ROWS/RANGE`) важен для running aggregates, особенно при равных order values.\n\nSENIOR — ТОНКОСТИ\n\n- Window обычно требует sort и может spill по `work_mem`.\n- Default frame с `last_value` часто удивляет; задают явно.\n- CTE `MATERIALIZED` может быть optimization fence, `NOT MATERIALIZED` разрешает folding по условиям.\n- Recursive CTE требует termination и контроля роста.\n\n### Дополнительное техническое объяснение\n\nWindowAgg evaluates functions over partitioned ordered frames after relational input. CTE defines query subexpression whose materialization/folding affects pushdown, reuse and execution cost.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nWindow добавляет групповой расчёт каждой строке, не уничтожая строки; CTE даёт имя этапу запроса.\n\n### Аналогия и объяснение\n\nGROUP BY оставляет один итог на класс. Оконная функция подписывает каждому ученику его место и среднее класса, сохраняя список учеников.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "sql",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

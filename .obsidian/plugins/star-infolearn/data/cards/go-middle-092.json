@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-092",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/92-rest-resource-design.md",
+  "front": "Чем PUT отличается от PATCH и POST, какие status codes возвращать и как версионировать контракт?",
+  "back": "POST обычно создаёт подчинённый ресурс/команду, PUT полностью заменяет ресурс по известному URI и идемпотентен, PATCH частично изменяет по определённому patch format. Status отражает результат: 200/201/204, 400, 401, 403, 404, 409, 422, 429, 5xx.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- URI называют ресурсы существительными, а не копируют внутренние методы без причины.\n- 401 означает отсутствие/невалидную аутентификацию, 403 — недостаток прав.\n- 409 подходит конфликту текущего состояния, 422 — семантически неверным данным по контракту.\n- Ошибка имеет стабильный machine-readable code и безопасное message/details.\n\nSENIOR — ТОНКОСТИ\n\n- PATCH обязан различать absent/null/zero и определять atomicity.\n- Optimistic concurrency использует ETag/If-Match или version field.\n- Cursor pagination стабильнее offset при изменяющемся наборе.\n- Versioning нужен для breaking contract, но additive evolution и tolerant readers уменьшают число версий.\n\n### Дополнительное техническое объяснение\n\nREST contract использует HTTP method semantics, cache/idempotency properties и standardized status classes. Conditional requests предотвращают lost update, а schema evolution сохраняет backward compatibility representation.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nМетод, URI, status и body вместе образуют контракт, а не просто форму JSON.\n\n### Аналогия и объяснение\n\nАдрес указывает объект, метод говорит, что с ним сделать, а код ответа коротко сообщает итог. Частичное изменение должно точно отличать «не трогать поле» от «очистить поле».",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "rest",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

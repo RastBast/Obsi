@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-044",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/44-database-sql-pool.md",
+  "front": "Что представляет собой `sql.DB`, как настраивать pool и какие правила нужны для `Rows`, `Row`, prepared statements и context?",
+  "back": "`sql.DB` — конкурентно-безопасный handle и пул соединений, а не одно соединение. Его создают один раз и переиспользуют. Настраивают max open/idle и lifetime по БД/нагрузке. `Rows` закрывают, ошибки итерации проверяют, запросы выполняют с context.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\ndb, err := sql.Open(driver, dsn)\nif err != nil { return err }\nif err := db.PingContext(ctx); err != nil { return err }\n\ndb.SetMaxOpenConns(20)\ndb.SetMaxIdleConns(10)\ndb.SetConnMaxLifetime(30 * time.Minute)\n```\n\n`Open` может не устанавливать соединение сразу, поэтому readiness/startup проверяет `PingContext` по политике.\n\n```go\nrows, err := db.QueryContext(ctx, q, arg)\nif err != nil { return err }\ndefer rows.Close()\nfor rows.Next() { /* Scan */ }\nif err := rows.Err(); err != nil { return err }\n```\n\nПараметры передают placeholders драйвера, не собирают SQL конкатенацией.\n\nSENIOR — ТОНКОСТИ\n\nPool — очередь за ограниченным ресурсом. Слишком высокий `MaxOpenConns` перегружает БД, слишком низкий повышает latency ожидания. Смотрят `db.Stats`: InUse, Idle, WaitCount, WaitDuration, MaxIdleClosed/MaxLifetimeClosed. Лимит согласуют между всеми instance и server-side connection budget.\n\nНе закрытые `Rows`/транзакции удерживают connection и могут исчерпать pool. `QueryRowContext` откладывает ошибку до `Scan`. Отмена context зависит от поддержки драйвера; соединение после отмены может быть закрыто/переиспользовано по его правилам.\n\nPrepared `Stmt`, созданный на `DB`, абстрагирует подготовку на разных connections и безопасен для concurrent use, но не всегда даёт выигрыш: протокол/драйвер/БД могут кешировать иначе. Statement внутри Tx привязан к её connection.\n\n`ConnMaxLifetime` и `ConnMaxIdleTime` помогают ротировать соединения и согласоваться с proxy/server timeout, но слишком синхронная ротация вызывает churn; полезен естественный разброс жизненных циклов на уровне флота.\n\n`sql.DB.Close` обычно вызывают при shutdown приложения, не после каждого запроса. Readiness не должна создавать дорогой query storm; различают способность процесса работать и краткий сбой downstream.\n\n### Дополнительное техническое объяснение\n\n`sql.DB` — конкурентно-безопасный handle и пул соединений, а не одно соединение. Его создают один раз и переиспользуют. Настраивают max open/idle и lifetime по БД/нагрузке. `Rows` закрывают, ошибки итерации проверяют, запросы выполняют с context.\n\nPool — очередь за ограниченным ресурсом. Слишком высокий `MaxOpenConns` перегружает БД, слишком низкий повышает latency ожидания. Смотрят `db.Stats`: InUse, Idle, WaitCount, WaitDuration, MaxIdleClosed/MaxLifetimeClosed. Лимит согласуют между всеми instance и server-side connection budget.\n\nНе закрытые `Rows`/транзакции удерживают connection и могут исчерпать pool. `QueryRowContext` откладывает ошибку до `Scan`. Отмена context зависит от поддержки драйвера; соединение после отмены может быть закрыто/переиспользовано по его правилам.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nГлавная фраза: **`sql.DB` — это pool, его переиспользуют**. Закрывай Rows, проверяй `rows.Err`, передавай context, ставь лимиты из общего connection budget и наблюдай `db.Stats`.\n\n### Аналогия и объяснение\n\nГлавная фраза: **`sql.DB` — это pool, его переиспользуют**. Закрывай Rows, проверяй `rows.Err`, передавай context, ставь лимиты из общего connection budget и наблюдай `db.Stats`.\n\nПредставь базу как общий архив, которым одновременно пользуются многие сотрудники. Соединения, блокировки и транзакции определяют, кто и когда может читать или менять записи. Правильный протокол защищает данные от противоречий и не даёт одному запросу остановить остальных.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "sql",
+    "database",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

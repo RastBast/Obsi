@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-123",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/123-pgbouncer-pooling.md",
+  "front": "Что даёт PgBouncer и какие session features ломаются в transaction pooling?",
+  "back": "PgBouncer мультиплексирует client connections на меньшее число PostgreSQL backends. Session pooling закрепляет backend на всю сессию; transaction pooling — только на transaction; statement — на statement и сильно ограничивает семантику. Transaction mode повышает reuse, но session state не гарантирован.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Temporary tables, session advisory locks, LISTEN и некоторые prepared statement сценарии требуют осторожности.\n- `SET LOCAL` внутри transaction безопаснее session `SET`.\n- Go `sql.DB` pool и PgBouncer образуют два уровня; лимиты согласуют.\n- Pool не ускоряет медленный query, а ограничивает дорогие backend connections.\n\nSENIOR — ТОНКОСТИ\n\n- Слишком большая client queue повышает latency вместо отказа/backpressure.\n- Prepared statement support зависит от protocol/PgBouncer version/config.\n- Reserve pool и timeouts влияют на overload behavior.\n- Failover сбрасывает backend connections; clients должны корректно повторять только безопасные операции.\n\n### Дополнительное техническое объяснение\n\nTransaction pooling reassigns server connection at transaction boundary, decoupling client and backend sessions. Session-scoped state and protocol objects требуют совместимой конфигурации; capacity planning учитывает оба pool layers.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nPooler делит небольшое число дорогих соединений БД между большим числом клиентов.\n\n### Аналогия и объяснение\n\nВместо личного кабинета каждому посетителю кабинет выдаётся только на время сделки. Личные вещи между сделками оставлять нельзя, потому что следующий раз попадётся другой кабинет.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "pooling",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

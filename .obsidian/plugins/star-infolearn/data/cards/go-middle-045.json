@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-045",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/45-sql-transactions-isolation.md",
+  "front": "Как организовать `Begin/Commit/Rollback`, что даёт isolation level и как обрабатывать deadlock/serialization failure?",
+  "back": "Транзакцию начинают с context, сразу откладывают `Rollback`, все операции выполняют через `Tx`, затем вызывают `Commit`. Уровень изоляции определяет видимые конкурентные эффекты, но фактическая поддержка зависит от БД/драйвера. Retry допустим для определённых ошибок и только для повторяемой логики.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\ntx, err := db.BeginTx(ctx, &sql.TxOptions{})\nif err != nil { return err }\ndefer tx.Rollback() // после Commit обычно безопасно вернёт sql.ErrTxDone\n\nif _, err := tx.ExecContext(ctx, q1, a); err != nil { return err }\nif _, err := tx.ExecContext(ctx, q2, b); err != nil { return err }\nreturn tx.Commit()\n```\n\nНельзя внутри логической транзакции случайно вызвать `db.Exec`: запрос уйдёт через другое соединение и вне Tx. Транзакцию держат короткой, не делают в ней долгий HTTP-вызов.\n\n`Commit` сам может вернуть ошибку; успех нельзя объявлять до успешного Commit.\n\nSENIOR — ТОНКОСТИ\n\nACID и названия isolation levels не гарантируют идентичное поведение всех СУБД. Нужно знать MVCC/locking конкретной БД и аномалии: dirty/non-repeatable read, phantom, lost update, write skew. `Serializable` может завершать одну из транзакций ошибкой — приложение обязано быть готово повторить её.\n\nRetry охватывает всю транзакцию от Begin и использует новую Tx. Он ограничен попытками, общим deadline, backoff/jitter и классификацией vendor error codes. Функция retry не должна выполнять необратимые внешние side effects внутри попытки. Для публикации события применяют transactional outbox, а внешний consumer делает идемпотентным.\n\nDeadlock — нормальный возможный исход конкурентного locking, а не обязательно баг БД. Снижают вероятность единым порядком обновления строк, короткими Tx и подходящими индексами; victim повторяют по политике.\n\nContext cancellation во время Commit создаёт тонкую неопределённость результата в распределённом смысле: клиент мог не получить подтверждение, хотя БД зафиксировала. Для критических операций используют idempotency key и возможность reconcile.\n\nНе передают `*sql.Tx` произвольным параллельным goroutine: одна Tx обычно использует одно connection и операции/протокол могут не поддерживать ожидаемый параллелизм.\n\n### Дополнительное техническое объяснение\n\nТранзакцию начинают с context, сразу откладывают `Rollback`, все операции выполняют через `Tx`, затем вызывают `Commit`. Уровень изоляции определяет видимые конкурентные эффекты, но фактическая поддержка зависит от БД/драйвера. Retry допустим для определённых ошибок и только для повторяемой логики.\n\nACID и названия isolation levels не гарантируют идентичное поведение всех СУБД. Нужно знать MVCC/locking конкретной БД и аномалии: dirty/non-repeatable read, phantom, lost update, write skew. `Serializable` может завершать одну из транзакций ошибкой — приложение обязано быть готово повторить её.\n\nRetry охватывает всю транзакцию от Begin и использует новую Tx. Он ограничен попытками, общим deadline, backoff/jitter и классификацией vendor error codes. Функция retry не должна выполнять необратимые внешние side effects внутри попытки. Для публикации события применяют transactional outbox, а внешний consumer делает идемпотентным.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nШаблон: **Begin → defer Rollback → только tx.Query/Exec → Commit и проверить ошибку**. Isolation — договор о конкуренции; transient retry должен повторять всю чистую/идемпотентную транзакцию.\n\n### Аналогия и объяснение\n\nШаблон: **Begin → defer Rollback → только tx.Query/Exec → Commit и проверить ошибку**. Isolation — договор о конкуренции; transient retry должен повторять всю чистую/идемпотентную транзакцию.\n\nПредставь базу как общий архив, которым одновременно пользуются многие сотрудники. Соединения, блокировки и транзакции определяют, кто и когда может читать или менять записи. Правильный протокол защищает данные от противоречий и не даёт одному запросу остановить остальных.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "sql",
+    "transactions",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

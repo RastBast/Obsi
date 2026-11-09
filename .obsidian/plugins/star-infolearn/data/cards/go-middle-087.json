@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-087",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/87-http2.md",
+  "front": "Как streams, frames и HPACK меняют работу по сравнению с HTTP/1.1 и где остаётся head-of-line blocking?",
+  "back": "HTTP/2 делит одно соединение на независимые logical streams из frames, сжимает headers и позволяет multiplexing. Это убирает application HOL между HTTP-запросами, но потеря TCP packet задерживает весь byte stream на transport layer.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Stream имеет ID и lifecycle; frames разных streams чередуются.\n- Flow control существует на stream и connection level.\n- Один connection экономит handshakes, но становится общей точкой congestion/failure.\n- Server push оказался мало полезен и часто отключён; не считать его главным преимуществом.\n\nSENIOR — ТОНКОСТИ\n\n- Неправильные flow-control windows могут ограничить throughput или память.\n- HPACK dynamic table создаёт state и security/complexity tradeoffs.\n- GOAWAY позволяет graceful migration, но client должен решить, какие streams безопасно повторить.\n- Многие долгие streams на одном connection требуют fairness и limits.\n\n### Дополнительное техническое объяснение\n\nHTTP/2 binary framing multiplexes streams with per-stream/connection flow control and HPACK header compression. TCP reliability preserves in-order bytes, поэтому packet loss вызывает transport HOL across multiplexed streams.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nHTTP/2 смешивает кадры нескольких запросов в одном TCP-соединении, но всё ещё зависит от порядка TCP.\n\n### Аналогия и объяснение\n\nОдна дорога разделена на пронумерованные грузы: части разных заказов могут ехать вперемешку. Но если сама дорога перекрыта из-за потерянной машины, ждут все заказы.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "http2",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-143",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/143-kafka-transactions.md",
+  "front": "Что может атомарно записать transactional producer и как fencing защищает от старого экземпляра?",
+  "back": "Producer с `transactional.id` может атомарно записать records в несколько partitions и offsets consumer group. Broker использует producer epoch для fencing старого producer. Consumers с `read_committed` скрывают aborted и ещё не завершённые transactional records.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Begin → produce → send offsets → commit/abort transaction.\n- Transaction timeout ограничивает зависшую transaction.\n- Stable unique transactional ID привязывают к instance/shard задачи, не генерируют случайно каждый раз.\n- EOS применима к поддерживаемому Kafka pipeline, не к произвольным внешним системам.\n\nSENIOR — ТОНКОСТИ\n\n- Open transaction ограничивает last stable offset и может задерживать read_committed consumers.\n- Coordinator/transaction state добавляет latency и operational complexity.\n- Fenced producer должен прекратить работу, а не бесконечно retry.\n- Для БД нужен outbox/inbox, CDC или иной dual-write protocol.\n\n### Дополнительное техническое объяснение\n\nTransactional producer coordinates PID epochs, partition markers and group offsets through transaction coordinator. Isolation `read_committed` reads only up to LSO and filters aborted batches, providing Kafka-scoped atomicity.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nTransaction связывает Kafka outputs и input offsets, epoch выгоняет старого writer, read_committed показывает только завершённое.\n\n### Аналогия и объяснение\n\nНесколько записей и отметка о прочитанном кладутся в один конверт: видны либо все, либо ни одна. Если старый сотрудник вернулся, новый номер смены не позволяет ему продолжить запись.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "transactions",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

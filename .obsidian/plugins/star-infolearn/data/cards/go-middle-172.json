@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-172",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/172-kubernetes-termination.md",
+  "front": "Как согласовать SIGTERM, readiness, preStop и load balancer propagation?",
+  "back": "При удалении Pod kubelet запускает preStop, отправляет SIGTERM main processes и ждёт terminationGracePeriodSeconds, затем SIGKILL. Параллельно endpoint удаляется из Service eventually. Приложение должно прекратить приём, завершить in-flight и выйти раньше deadline.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Go использует `signal.NotifyContext` и `http.Server.Shutdown`.\n- PreStop входит в общий grace period, поэтому долгий sleep отнимает время приложения.\n- Readiness переводят в false перед drain, если lifecycle требует.\n- Background workers прекращают intake и подтверждают только завершённые задачи.\n\nSENIOR — ТОНКОСТИ\n\n- Endpoint/load balancer updates не мгновенны; короткое окно новых connections неизбежно и требует retry.\n- PDB не влияет на прямое удаление/неvoluntary failure одинаково.\n- Sidecar termination ordering зависит от Kubernetes features/version.\n- Необрабатываемый SIGKILL делает идемпотентность внешних side effects обязательной.\n\n### Дополнительное техническое объяснение\n\nPod termination combines API deletion timestamp, endpoint convergence, lifecycle hook, TERM delivery and grace deadline. Application shutdown must fit budget and tolerate residual traffic/redelivery.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nSIGTERM — шанс на drain, grace period — общий бюджет, SIGKILL — жёсткий конец.\n\n### Аналогия и объяснение\n\nМагазин сначала снимают с указателей, затем просят закрыться и дают время обслужить вошедших. После срока электричество отключат независимо от оставшейся работы.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "lifecycle",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

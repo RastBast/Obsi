@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-119",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/119-join-algorithms.md",
+  "front": "Когда planner выбирает каждый алгоритм и как indexes/work_mem влияют на стоимость?",
+  "back": "Nested loop берёт строки outer и ищет inner, хорош для маленького outer и index lookup. Hash join строит hash table одной стороны для equality и эффективен на больших неотсортированных наборах. Merge join идёт по двум отсортированным входам и полезен при готовом порядке/range-like merge conditions.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Nested loop без index на большом inner может стать O(n×m).\n- Hash join требует equality и памяти; при нехватке разбивается на batches/disk.\n- Merge join требует sort или ordered index scans.\n- Join order сильно зависит от cardinality estimates.\n\nSENIOR — ТОНКОСТИ\n\n- `work_mem` применяется к каждому sort/hash node и worker, поэтому большое значение опасно глобально.\n- Parallel hash/joins имеют coordination overhead.\n- Outer joins ограничивают допустимые reorder transformations.\n- Forced enable/disable planner methods годится для диагностики, не как постоянная замена статистике/schema.\n\n### Дополнительное техническое объяснение\n\nJoin method cost model учитывает input cardinality, parameterized index paths, sort cost и hash memory/batching. Planner выбирает physical operator после logical join-order optimization.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nМалый набор+индекс — loop; equality больших наборов — hash; уже отсортированные потоки — merge.\n\n### Аналогия и объяснение\n\nМожно для каждой карточки искать пару в каталоге, построить словарь пар или одновременно идти по двум отсортированным стопкам. Лучший способ зависит от размера и готового порядка.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "joins",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

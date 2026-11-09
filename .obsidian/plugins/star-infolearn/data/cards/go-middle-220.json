@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-220",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/220-kafka-lag-recovery.md",
+  "front": "Как оценить время догоняния и почему простое добавление consumers помогает только до числа partitions и capacity downstream?",
+  "back": "Consumer догоняет, только если processing rate μ стабильно выше incoming rate λ; приблизительное время — backlog/(μ−λ). Параллелизм ограничен partitions, а БД/API downstream могут стать bottleneck. Нужны headroom, временное снижение входа/стоимости обработки и контроль retention horizon.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nСмотрят lag и oldest-event age по partition, consume/produce rate, errors/retries, rebalance и processing latency. Находят hot partition или poison event. Масштабируют group до полезного числа partitions и workers, не нарушая ordering.\n\nBatching и временное отключение необязательных side effects могут повысить μ по согласованной процедуре. Retention должна быть длиннее worst recovery, иначе непрочитанные segments удалятся.\n\nSENIOR — ТОНКОСТИ\n\nСуммарный lag скрывает skew. Добавление partitions не перераспределяет старые records и меняет key mapping. Если downstream уже saturated, новые consumers только увеличат timeout/retry storm.\n\nRecovery план учитывает autoscaling delay, quota, replica/network/disk и commit semantics. Replay большого окна может повторно вызвать устаревшие side effects; schema и business validity проверяют.\n\n### Дополнительное техническое объяснение\n\nBacklog dynamics: dL/dt=λ−μ. Stable drain требует μ>λ; service-rate variance и retries определяют tail. Capacity model строят per partition/shard and downstream constraint, сохраняя retention/RPO semantics.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nЕсли каждую минуту приходит 100 писем, а команда разбирает 120, очередь уменьшается только на 20. Миллион писем нельзя догнать быстро, просто добавив людей, если папок мало или единственная касса БД уже перегружена.\n\n### Аналогия и объяснение\n\nСначала останови причины замедления, затем добейся скорости выше входящего потока и посчитай реальное время. Отдельно проверь, что архив не уничтожит старые письма до их чтения.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

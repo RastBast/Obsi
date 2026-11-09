@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-109",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/109-two-pointers-sliding-window.md",
+  "front": "Какая монотонность позволяет сдвигать границы без полного перебора и какова сложность?",
+  "back": "Two pointers поддерживают две позиции в массиве/строке; sliding window хранит текущий интервал и инкрементально обновляет его состояние. Если каждая граница двигается только вперёд, общий проход O(n), а не O(n²).",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- В отсортированном массиве pointers с краёв ищут сумму.\n- Variable window расширяется правой границей и сжимается левой, пока условие нарушено/выполнено.\n- Состояние: сумма, frequency map, число distinct и т.п.\n- Для UTF-8 уточнить, индексируем bytes, runes или grapheme clusters.\n\nSENIOR — ТОНКОСТИ\n\n- Sliding window не работает напрямую, если условие не монотонно при добавлении/удалении.\n- Negative numbers ломают некоторые задачи минимальной суммы, где ожидается монотонный рост.\n- Каждый элемент входит/выходит ограниченное число раз — это доказательство O(n).\n- Frequency map может определять space O(alphabet) или O(n).\n\n### Дополнительное техническое объяснение\n\nAmortized analysis: each index advances at most n times, giving O(n) pointer movements. Correctness требует monotone feasibility и incremental window aggregate with reversible add/remove operations.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nЕсли левая и правая границы никогда не возвращаются назад, два вложенных while всё равно могут быть O(n).\n\n### Аналогия и объяснение\n\nРамка едет по строке: справа добавляем новый элемент, слева убираем лишнее. Не нужно заново пересчитывать каждый возможный отрезок, если состояние рамки можно обновить.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "array",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

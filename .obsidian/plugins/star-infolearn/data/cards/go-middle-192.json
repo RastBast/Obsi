@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-192",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/192-consistent-hashing.md",
+  "front": "Как ring, virtual nodes и replication используются для шардирования cache?",
+  "back": "Consistent hashing распределяет keys по кольцу hash space и при добавлении/удалении node перемещает только часть keys, а не почти все как `hash % N`. Virtual nodes улучшают равномерность и учитывают capacity.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nKey назначают следующему node по часовой стрелке. Replica keys идут к следующим различным physical nodes. Virtual points одного server распределены по ring и уменьшают skew.\n\nSENIOR — ТОНКОСТИ\n\n- Hot key остаётся hot независимо от равномерного hash.\n- Membership должен быть согласован между clients, иначе inconsistent routing.\n- Rendezvous hashing часто проще и хорошо поддерживает weighted nodes.\n- Rebalancing требует bandwidth, throttling и ownership handoff.\n\n### Дополнительное техническое объяснение\n\nHash ring partitions keyspace by successor ownership. Virtual nodes approximate balanced weighted distribution; membership consistency, replica placement and migration protocol определяют system behavior.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nИзменение состава кластера перемещает соседний диапазон keys, а не всю таблицу.\n\n### Аналогия и объяснение\n\nАдреса раскладывают по кругу, и каждый склад отвечает за участок до своей метки. Новый склад забирает только соседний кусок, а не заставляет переписать все адреса.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "distributed-systems",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

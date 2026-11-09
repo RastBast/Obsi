@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-200",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/200-kafka-go-consumer-parallelism.md",
+  "front": "Как сохранить порядок partition и не подтвердить незавершённые события?",
+  "back": "Безопаснее назначить последовательный worker каждой partition или хранить completion watermark. Нельзя commit-ить offset дальше незавершённого сообщения: crash потеряет работу. In-flight ограничивают, rebalance отменяет workers и ждёт/фиксирует завершённое.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nReader loop poll-ит, передаёт в bounded workers, обрабатывает idempotently и commit-ит только contiguous processed prefix. Context rebalance/shutdown прекращает intake и освобождает assignment.\n\nSENIOR — ТОНКОСТИ\n\n- Библиотеки имеют разные poll/heartbeat модели; blocking handler может вызвать rebalance.\n- Межpartition parallelism естественен, внутрипартиционный ломает completion order.\n- Batch commit балансирует overhead и duplicate window.\n- Commit failure не означает, что effect нужно бездумно повторить немедленно.\n\n### Дополнительное техническое объяснение\n\nConsumer tracks per-partition in-flight offsets and advances commit watermark over contiguous completions. Bounded concurrency, generation cancellation and idempotent effects preserve at-least-once semantics during rebalance/crash.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nПараллельность ограничена partitions; подтверждай только непрерывно завершённый участок.\n\n### Аналогия и объяснение\n\nЕсли пять писем выдали одновременно и пятое готово, а третье нет, нельзя ставить закладку после пятого: после аварии третье потеряется. Закладка двигается только через готовую непрерывную очередь.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "concurrency",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

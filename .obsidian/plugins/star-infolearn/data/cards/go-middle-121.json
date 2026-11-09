@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-121",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/121-database-constraints.md",
+  "front": "Чем PRIMARY KEY, UNIQUE, FOREIGN KEY, CHECK и NOT NULL отличаются и почему проверки только в Go недостаточно?",
+  "back": "Constraints атомарно защищают данные для всех writers. PK идентифицирует строку, UNIQUE запрещает дубликаты, FK поддерживает ссылочную целостность, CHECK проверяет выражение строки, NOT NULL запрещает null. Проверка «сначала SELECT, потом INSERT» имеет race.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Unique constraint/индекс решает concurrent duplicate, приложение обрабатывает conflict.\n- FK action (`RESTRICT`, `CASCADE`, `SET NULL`) выбирают по lifecycle.\n- CHECK не предназначен для произвольного запроса других строк; cross-row invariant требует иной модели.\n- NULL в UNIQUE имеет определённую PostgreSQL семантику и настраиваемые варианты в новых версиях.\n\nSENIOR — ТОНКОСТИ\n\n- Constraint можно сделать deferrable для проверки к commit, но это усложняет диагностику.\n- Добавление constraint на большую таблицу может блокировать/сканировать; используют staged `NOT VALID`/validate где применимо.\n- Cascade способен массово заблокировать/удалить данные.\n- Domain/application validation остаётся для понятных ошибок, БД — последняя защита.\n\n### Дополнительное техническое объяснение\n\nDeclarative constraints enforce relational invariants transactionally under concurrency. Unique enforcement participates in index/locking protocol; FK validates referenced keys and applies referential actions independent of application code path.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nПриложение объясняет ошибку, constraint не позволяет нарушить правило при гонке или другом writer.\n\n### Аналогия и объяснение\n\nПроверка в приложении — просьба соблюдать правило, constraint — замок на двери склада. Даже если два сотрудника одновременно решили положить одинаковый номер, замок пропустит только одного.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "constraints",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

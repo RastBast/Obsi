@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-106",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/106-dijkstra.md",
+  "front": "Для каких весов он корректен, зачем priority queue и какова сложность?",
+  "back": "Дейкстра находит кратчайшие пути от источника при неотрицательных весах. Он извлекает вершину с минимальной известной дистанцией из min-heap и relax-ит исходящие рёбра. С adjacency list и heap сложность O((V+E) log V).",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- `dist[source]=0`, остальные infinity.\n- Relax: если `dist[u]+w < dist[v]`, обновить dist/parent и добавить новую запись heap.\n- Без decrease-key можно хранить дубликаты и пропускать stale entry при извлечении.\n- Для одинаковых рёбер веса 1 проще BFS.\n\nSENIOR — ТОНКОСТИ\n\n- Negative edge ломает финальность извлечённой вершины; нужен Bellman-Ford/другая модель.\n- Сумма расстояний может overflow; infinity и сложение проверяют.\n- A* добавляет допустимую heuristic для одной цели.\n- Реальные routing systems учитывают динамические веса и incremental recomputation.\n\n### Дополнительное техническое объяснение\n\nGreedy invariant: при nonnegative weights minimum tentative-distance vertex has finalized shortest distance. Edge relaxation updates upper bounds; min-priority queue yields logarithmic frontier operations.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nВсегда выбирай ближайшую ещё не обработанную вершину и улучшай соседей; отрицательные веса запрещены.\n\n### Аналогия и объяснение\n\nРаспространяем волну от старта, всегда продолжая из места с самым маленьким уже найденным временем. Если дорога может дать отрицательное время, ранее окончательный ответ вдруг улучшится и правило сломается.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "graph",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-115",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/115-mvcc-vacuum.md",
+  "front": "Почему UPDATE создаёт новую версию строки, что такое dead tuples и transaction ID wraparound?",
+  "back": "MVCC хранит версии tuples с метаданными видимости. UPDATE обычно создаёт новую версию, DELETE помечает старую недоступной будущим snapshots. VACUUM освобождает место для повторного использования, обновляет visibility map и предотвращает опасный wraparound transaction IDs.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Долгая transaction удерживает старый snapshot и мешает очистке версий.\n- VACUUM обычно не уменьшает файл ОС; освобождает pages внутри relation.\n- ANALYZE обновляет статистику planner, это другая задача, хотя autovacuum запускает обе.\n- Bloat увеличивает I/O и размер indexes/table.\n\nSENIOR — ТОНКОСТИ\n\n- HOT update избегает новых index entries при неизменных indexed columns и наличии места на page.\n- Freeze делает старые tuples безопасными относительно wraparound.\n- Autovacuum thresholds масштабируются от размера, но hot tables часто требуют per-table tuning.\n- `VACUUM FULL` переписывает relation и берёт сильную lock; это не обычное лечение.\n\n### Дополнительное техническое объяснение\n\nTuple visibility определяется xmin/xmax и snapshot. VACUUM prunes dead tuples, maintains FSM/visibility map и freezes XIDs. Global xmin ограничивается long-lived transactions/replication slots.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nMVCC оставляет старые версии для читателей, vacuum убирает больше никому не нужные следы.\n\n### Аналогия и объяснение\n\nРедактор не стирает старую страницу, пока кто-то читает старое издание. Уборщик удаляет страницы, когда старых читателей не осталось. Если читатель держит книгу неделями, склад мусора растёт.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "mvcc",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

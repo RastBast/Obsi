@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-150",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/150-kafka-lag-observability.md",
+  "front": "Почему lag в records недостаточен, какие метрики нужны producer, broker и consumer и как оценить время отставания?",
+  "back": "Lag — разница log end offset и committed/processed offset по partition. Он показывает backlog records, но не их возраст/стоимость. Нужны oldest event age, consume/produce rate, processing latency/errors, rebalance, ISR, disk/network и under-replicated partitions.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Суммарный lag скрывает одну горячую partition; смотрят max/per-partition.\n- Commit lag может не равняться processing lag при async workers.\n- Lag растёт, если arrival rate выше sustainable processing rate.\n- Alert привязывают к SLA времени, а не универсальному числу records.\n\nSENIOR — ТОНКОСТИ\n\n- Low traffic partition с одной очень старой записью имеет маленький count и большой time lag.\n- Compaction/retention и reset offsets меняют интерпретацию.\n- Capacity headroom проверяют при broker/consumer failure, а не только steady state.\n- Метрики без event timestamp требуют оценки по offsets/rates и могут быть неточны.\n\n### Дополнительное техническое объяснение\n\nConsumer backlog is partition-level offset delta; end-to-end freshness derives from event/ingest timestamp and processed watermark. Capacity model compares arrival rate λ, service rate μ, failure headroom и retention horizon.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nLag показывает очередь, age показывает нарушение времени; смотреть нужно по partition и вместе с throughput/errors.\n\n### Аналогия и объяснение\n\nДесять коротких писем и десять огромных задач — одинаковое число, но разная работа. Важны и длина очереди, и возраст самого старого письма, и скорость поступления против скорости обработки.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "observability",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

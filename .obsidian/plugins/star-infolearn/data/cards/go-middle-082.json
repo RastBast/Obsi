@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-082",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/82-tcp-handshake-close.md",
+  "front": "Что происходит в three-way handshake, зачем sequence numbers и почему после закрытия бывает TIME_WAIT?",
+  "back": "Клиент отправляет SYN, сервер SYN-ACK, клиент ACK; стороны согласуют начальные sequence numbers и параметры. Закрытие обычно независимо в каждую сторону через FIN/ACK. TIME_WAIT удерживает tuple, чтобы старые сегменты не попали в новое соединение и финальный ACK можно было повторить.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- TCP создаёт надёжный упорядоченный byte stream, а не сообщения.\n- `connection refused` обычно означает активный RST/нет listener; timeout — отсутствие своевременного ответа.\n- Half-close позволяет закончить отправку, продолжая чтение.\n- RST завершает соединение аварийно и может потерять непрочитанные данные.\n\nSENIOR — ТОНКОСТИ\n\n- Backlog и SYN cookies влияют на поведение под нагрузкой/атакой.\n- TIME_WAIT обычно находится у active closer; массовые короткие соединения расходуют ephemeral ports.\n- Keep-alive на HTTP снижает handshake churn, но требует pool limits.\n- Успешный write в socket buffer ещё не доказывает обработку данных peer приложением.\n\n### Дополнительное техническое объяснение\n\nTCP state machine синхронизирует ISN через SYN/SYN-ACK/ACK. Full-duplex teardown использует FIN sequence space; TIME_WAIT длится порядка 2MSL по стеку ОС и предотвращает old-segment aliasing/retransmission ambiguity.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nHandshake подтверждает двустороннюю достижимость; FIN закрывает направление, TIME_WAIT защищает новые соединения от старых пакетов.\n\n### Аналогия и объяснение\n\nПеред разговором обе стороны трижды подтверждают, что слышат друг друга. После разговора одна сторона некоторое время хранит номер линии, чтобы запоздалые фразы не попали в следующий разговор.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "tcp",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

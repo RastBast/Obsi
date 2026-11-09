@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-216",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/216-runtime-sysmon.md",
+  "front": "Какие фоновые задачи выполняет monitor runtime и почему он работает независимо от обычного выполнения goroutine на P?",
+  "back": "Sysmon — фоновый runtime monitor, который участвует в preemption долгих goroutine, network polling, retake P у долгих syscalls, запуске timers и контроле GC/scavenging-related событий. Точные обязанности и интервалы — детали версии runtime, не API языка.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nПланировщик должен обеспечивать прогресс, даже если один M ушёл в syscall или goroutine долго выполняет CPU loop. Sysmon обнаруживает такие состояния и помогает вернуть scheduling resources/поставить preemption request.\n\nОн также помогает разбудить работу по timers/netpoll, когда нет обычного активного P, способного сделать это своевременно. Приложение не взаимодействует с sysmon напрямую.\n\nSENIOR — ТОНКОСТИ\n\nНе следует объяснять точную latency фиксированным периодом sysmon: алгоритмы, safe points и async preemption менялись. Cgo, `LockOSThread`, syscall и STW взаимодействуют с scheduler по разным путям.\n\nВысокая scheduler latency исследуется runtime trace и `/sched/latencies`, а не предположением «sysmon не успел». Проблема может быть CPU quota, runnable storm, locks или GC assist.\n\n### Дополнительное техническое объяснение\n\nSysmon runs without a normal P and periodically checks runtime global/per-P state, invokes netpoll, retakes scheduler resources, requests preemption and coordinates time-based maintenance. Implementation is deliberately outside Go language guarantees.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nЭто ночной диспетчер runtime: он проверяет, не застрял ли исполнитель в системном вызове, не пора ли разбудить таймер и не занял ли кто-то процессор слишком надолго.\n\n### Аналогия и объяснение\n\nОбычные менеджеры заняты текущей работой, поэтому нужен независимый наблюдатель, способный заметить отсутствие прогресса. Но точное расписание наблюдателя нельзя использовать как бизнес-таймер.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

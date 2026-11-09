@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-131",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Redis/131-redis-distributed-lock.md",
+  "front": "Почему `SET key token NX PX ttl` и проверяемое удаление лучше SETNX+DEL, и какие проблемы остаются?",
+  "back": "Lock создают атомарным SET с уникальным owner token и TTL. Освобождают Lua-операцией «удали, только если token мой», чтобы старый owner не удалил новый lock. Но истёкший owner может продолжать работу; fencing token на защищаемом ресурсе отвергает устаревшие операции.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- TTL предотвращает вечный lock после crash, но должен учитывать длительность работы.\n- Renewal требует проверки ownership и прекращения работы при потере lease.\n- Retry acquisition использует jitter/deadline.\n- Lock не заменяет unique constraint/transaction, если ресурс умеет атомарность сам.\n\nSENIOR — ТОНКОСТИ\n\n- GC pause/network partition может пережить TTL, создавая двух «владельцев» во времени.\n- Fencing token — монотонный номер, который storage сравнивает с последним принятым.\n- Failover/replication semantics влияют на гарантию lock; Redlock имеет спорные assumptions.\n- Для correctness-critical coordination используют систему с формализованным consensus/lease contract.\n\n### Дополнительное техническое объяснение\n\nRedis lease uses conditional write, owner identity и expiration. Mutual exclusion under pauses/partitions недостаточно для linearizable resource access; monotonically increasing fencing tokens enforce stale-writer rejection downstream.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nУникальный token защищает release, TTL — crash, fencing — ресурс от запоздавшего старого владельца.\n\n### Аналогия и объяснение\n\nАренда ключа истекла, но старый работник мог проснуться и продолжить. Новый номер талона позволяет складу отвергнуть команду со старым номером, даже если работник считает себя владельцем.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "redis",
+    "distributed-lock",
+    "flashcards/Redis"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

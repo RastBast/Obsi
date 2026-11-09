@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-103",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/103-binary-search-tree.md",
+  "front": "Как выполняются поиск/вставка/удаление и почему несбалансированное дерево деградирует?",
+  "back": "BST хранит ключи слева меньше, справа больше по выбранному правилу. Операции стоят O(h), где h — высота. У сбалансированного дерева h=O(log n), но последовательная вставка в обычное BST может сделать цепочку h=O(n).",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- In-order traversal выдаёт ключи по порядку.\n- Удаление node с двумя детьми заменяет его successor/predecessor и удаляет замену.\n- Правило duplicate keys задают явно: count, одна сторона или запрет.\n- Recursion использует O(h) stack и опасна на вырожденном дереве.\n\nSENIOR — ТОНКОСТИ\n\n- AVL/Red-Black сохраняют высоту rotations и дополнительным состоянием.\n- B-tree оптимизирует число I/O pages и используется в storage indexes.\n- Concurrent tree сложнее coarse mutex; lock-free варианты имеют reclamation challenges.\n- Для in-memory Go часто map+sorted slice проще специализированного дерева.\n\n### Дополнительное техническое объяснение\n\nOrdered BST operations are O(h). Self-balancing trees enforce height invariant через rotations/recoloring, guaranteeing logarithmic search/update; plain BST has linear adversarial height.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nСтоимость BST зависит от высоты, а не автоматически log n. Балансировка удерживает высоту.\n\n### Аналогия и объяснение\n\nВ каждой развилке меньшие значения идут налево, большие направо. Если развилки распределены равномерно, путь короткий; если каждый раз добавлять большее, получится длинная лестница.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "tree",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

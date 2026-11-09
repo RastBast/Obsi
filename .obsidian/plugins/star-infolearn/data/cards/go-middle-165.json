@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-165",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/165-docker-resource-limits-logs.md",
+  "front": "Что происходит при превышении CPU/memory и почему файлы логов внутри container — плохой default?",
+  "back": "CPU quota/weight, memory и PIDs limits задают через cgroups. Приложение пишет структурированные логи в stdout/stderr, runtime logging driver их собирает. Неограниченный log и отсутствие memory headroom могут заполнить disk или вызвать OOM.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- CPU throttling замедляет, memory limit может завершить process через OOM.\n- Go настраивает GOMEMLIMIT с запасом относительно cgroup limit.\n- Log rotation/size policy обязательна на host.\n- Метрики включают throttling, RSS, OOM, restart и disk usage.\n\nSENIOR — ТОНКОСТИ\n\n- Memory включает heap, stacks, mmap, cgo и page cache по правилам cgroup.\n- CPU limit в cores и CPU request/weight — разные модели.\n- Blocking log driver способен замедлить application; nonblocking может терять logs.\n- Core dump/profile тоже расходуют ephemeral disk и содержат sensitive data.\n\n### Дополнительное техническое объяснение\n\nCgroup controllers enforce quota/limit and expose pressure/throttling counters. Container logging captures stdio through configured driver with backpressure/drop and rotation semantics.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nLimits защищают host, а stdout/stderr отдаёт ротацию и доставку инфраструктуре.\n\n### Аналогия и объяснение\n\nКонтейнеру задают бюджет процессора, памяти и числа работников. Отчёты он сдаёт наружу, где их вращают и хранят; иначе собственный временный шкаф переполнится.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "docker",
+    "operations",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

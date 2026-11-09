@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-217",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Redis/217-redis-slowlog-latency.md",
+  "front": "Чем SLOWLOG, latency monitor, commandstats и OS/network метрики дополняют друг друга?",
+  "back": "SLOWLOG фиксирует время выполнения команды на сервере без network I/O, latency monitor классифицирует внутренние spikes, commandstats показывает агрегаты команд. Их сопоставляют с CPU, memory/fragmentation, fork/AOF/RDB, network, blocked clients, hot/big keys и client pool.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nНачинают с percentiles client-observed latency и времени проблемы. SLOWLOG показывает дорогие `KEYS`, большие collection operations или Lua scripts, но не объясняет ожидание в client queue/сети. `INFO commandstats` помогает найти рост частоты/стоимости.\n\nПроверяют `SLOWLOG GET`, latency diagnostics, connected/blocked clients, evictions, rejected connections, replication lag и persistence events. `SCAN` используют вместо `KEYS`, big keys ищут осторожными tools.\n\nSENIOR — ТОНКОСТИ\n\nRedis event loop делает долгую команду причиной head-of-line для остальных. Fork/COW, fsync, transparent huge pages, swapping и noisy neighbor дают spikes без очевидной slow command. Cluster aggregate скрывает один hot shard.\n\nThreshold SLOWLOG выбирают ниже пользовательского SLA, но sampling/storage ограничивают. Диагностические команды сами могут быть дорогими на production.\n\n### Дополнительное техническое объяснение\n\nEnd-to-end latency decomposes into client queue, connection acquisition, RTT, server event-loop wait, command execution and response transfer. Server observability covers only часть пути; correlation по node/time/workload обязательна.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nSLOWLOG измеряет время кассира за операцией, но клиент мог долго ждать очередь или дорогу до магазина. Нужно измерять весь путь и смотреть, не задержал ли один огромный заказ всех остальных.\n\n### Аналогия и объяснение\n\nЕсли среднее хорошее, а p99 плохой, ищут редкие блокирующие события: большой key, snapshot, swap, hot shard. Одной общей метрики Redis недостаточно.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/Redis"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

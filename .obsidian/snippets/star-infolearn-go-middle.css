@@ -1,0 +1,20 @@
+/* Readable multi-level explanations for Star InfoLearn short-answer cards. */
+.star-infolearn-container .sil-card-question,
+.star-infolearn-container .sil-user-answer .sil-answer-text,
+.star-infolearn-container .sil-correct-answer-section .sil-answer-text,
+.star-infolearn-container .sil-explanation > span {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.star-infolearn-container .sil-card-display.short-answer,
+.star-infolearn-container .sil-correct-answer-section,
+.star-infolearn-container .sil-explanation {
+  text-align: left;
+}
+
+.star-infolearn-container .sil-explanation {
+  max-height: 55vh;
+  overflow: auto;
+  font-family: var(--font-text);
+}

@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-170",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/170-requests-limits-qos.md",
+  "front": "Как requests/limits влияют на scheduling, throttling, OOM и QoS Pod?",
+  "back": "Request используется scheduler для размещения и обычно задаёт гарантированную долю CPU/ожидаемую память. Limit ограничивает runtime: CPU throttling, memory OOM kill. Соотношение requests/limits определяет QoS class и eviction priority.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Scheduler суммирует requests, а не фактическое текущее потребление.\n- CPU — compressible: процесс замедляется; memory — incompressible: возможен OOM.\n- Guaranteed требует равных requests/limits для всех CPU/memory containers по правилам QoS.\n- Метрики throttling, working set, OOM и latency помогают right-size.\n\nSENIOR — ТОНКОСТИ\n\n- Слишком маленький CPU limit создаёт tail latency даже при свободном node из-за CFS quota semantics.\n- Слишком высокий request снижает bin packing, слишком низкий вызывает overcommit/eviction.\n- Init container и sidecar учитываются по специальным scheduling rules.\n- Go GOMEMLIMIT оставляет запас под non-heap memory ниже container limit.\n\n### Дополнительное техническое объяснение\n\nScheduler performs bin packing on resource requests. Kubelet/runtime enforce cgroup CPU quota и memory limit; QoS classification influences eviction under node pressure.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nRequest резервирует место в плане, limit ставит потолок во время работы.\n\n### Аналогия и объяснение\n\nRequest — заявленный размер стола при рассадке, limit — запрет занять больше. Процессор можно временно делить медленнее, а закончившуюся память приходится освобождать завершением процесса.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "resources",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

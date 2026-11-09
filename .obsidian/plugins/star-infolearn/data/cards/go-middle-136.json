@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-136",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Redis/136-redis-cluster-hash-slots.md",
+  "front": "Что такое hash slots, MOVED/ASK redirects и hash tags для multi-key операций?",
+  "back": "Cluster делит keyspace на 16384 hash slots и назначает slots primary nodes. Client вычисляет slot и маршрутизирует команду; при изменении topology получает MOVED/ASK и обновляет mapping. Multi-key atomic operations требуют keys одного slot; `{tag}` заставляет общий hash fragment.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Replicas обеспечивают failover primary, но replication обычно asynchronous.\n- Cluster-aware client хранит topology и connection pools к nodes.\n- Resharding переносит slots/keys и временно использует redirects.\n- Hash tag помогает co-location, но может создать hotspot.\n\nSENIOR — ТОНКОСТИ\n\n- Cluster не даёт произвольной cross-slot transaction.\n- Failover может потерять подтверждённые writes в определённых partition scenarios; consistency contract изучают.\n- Replica reads могут быть stale.\n- Capacity планируют по самому горячему slot/node, а не только суммарной памяти.\n\n### Дополнительное техническое объяснение\n\nRedis Cluster computes CRC-based slot over key/hash tag, routes directly to slot owner и handles topology via MOVED/ASK. Atomic command scope ограничен single shard; failover inherits asynchronous replication tradeoffs.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nKey хешируется в slot, slot принадлежит node, client идёт прямо туда. Совместные keys должны делить slot.\n\n### Аналогия и объяснение\n\nВсе ключи распределены по пронумерованным ячейкам, а серверы владеют диапазонами ячеек. При переезде ячейки указатель сообщает новый адрес. Скобки в имени позволяют положить связанные ключи рядом.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "redis",
+    "cluster",
+    "flashcards/Redis"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

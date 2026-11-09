@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-189",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/189-service-discovery-dns.md",
+  "front": "Почему одно разрешение имени при старте недостаточно для динамического окружения?",
+  "back": "Service name резолвится в один или несколько адресов с TTL. Client должен обновлять resolution, балансировать адреса и убирать failed endpoints. Долгоживущий connection может пережить TTL, поэтому discovery и connection lifecycle координируют.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- DNS cache может принадлежать OS, runtime, library или proxy.\n- TTL задаёт верхнюю подсказку хранения, но application pool может удерживать connection дольше.\n- Resolver errors и empty answer требуют retry/backoff.\n- Health-aware load balancing не следует автоматически из DNS.\n\nSENIOR — ТОНКОСТИ\n\n- Client-side discovery распределяет сложность по SDK; proxy-side централизует её.\n- SRV даёт port/priority/weight, но поддержка клиентов различается.\n- Stale endpoint во время rollout должен корректно drain/отказывать.\n- Discovery outage не должен мгновенно выбрасывать все last-known-good endpoints без политики.\n\n### Дополнительное техническое объяснение\n\nDiscovery maps logical authority to dynamic endpoint set. Resolver TTL/cache, load-balancer subchannels and connection aging jointly determine convergence and stale endpoint exposure.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nИмя меняется медленнее endpoints; client обязан периодически обновлять карту и connections.\n\n### Аналогия и объяснение\n\nСправочник обновил адрес магазина, но такси уже едет по старому адресу. Нужно не только перечитать справочник, но и заменить уже открытые маршруты.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "discovery",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

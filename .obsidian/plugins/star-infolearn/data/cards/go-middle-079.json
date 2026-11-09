@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-079",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/79-finalizers-cleanup.md",
+  "front": "Когда runtime запускает finalizer/cleanup, какие гарантии отсутствуют и как правильно управлять файлами и соединениями?",
+  "back": "GC может запустить cleanup после недостижимости объекта, но время не гарантировано, а перед завершением процесса вызова может не быть. Файл, socket и transaction закрывают явно через `Close`/`Rollback`; cleanup годится как страховка и диагностика утечки.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Ресурс может закончиться задолго до memory pressure и запуска GC.\n- `defer Close` ставят сразу после успешного открытия.\n- Ошибку Close при записи иногда нужно вернуть.\n- Cleanup не должен блокироваться надолго и зависеть от порядка других cleanup.\n\nSENIOR — ТОНКОСТИ\n\n- Finalizer способен продлить жизнь объекта минимум на цикл и усложняет reachability.\n- Циклы с finalizers и resurrection имеют тонкую семантику; бизнес-протокол на них не строят.\n- `runtime.KeepAlive` указывает последнюю точку liveness для низкоуровневого interop, но не заменяет владение.\n- Новые cleanup API версии Go всё равно не дают deterministic destruction.\n\n### Дополнительное техническое объяснение\n\nFinalization привязана к reachability и nondeterministic GC scheduling, а resource exhaustion имеет независимый lifecycle. Deterministic RAII отсутствует; explicit Close и lexical defer обеспечивают bounded release, cleanup служит fallback telemetry.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nGC управляет памятью, но внешние ресурсы освобождают явно. Cleanup — последняя сигнализация, не основной путь.\n\n### Аналогия и объяснение\n\nУборщик приходит, когда решит убирать память, а не когда закончились файловые ручки. Поэтому дверь закрывает тот, кто вышел, а уборщик лишь сообщает о забытом случае.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "gc",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

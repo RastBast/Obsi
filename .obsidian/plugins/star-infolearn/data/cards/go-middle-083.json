@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-083",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/83-tcp-flow-congestion.md",
+  "front": "Какие окна ограничивают отправителя TCP и почему медленный consumer создаёт backpressure?",
+  "back": "Flow control защищает receiver: advertised receive window ограничивает непрочитанные байты. Congestion control защищает сеть: congestion window меняется по потерям/RTT/алгоритму. Реально отправитель ограничен минимумом этих окон и доступными данными.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Если приложение медленно читает, receive buffer заполняется и окно уменьшается.\n- Send может блокироваться после заполнения локальных buffers.\n- Packet loss вызывает retransmission и обычно снижает скорость.\n- Bandwidth-delay product объясняет, сколько данных должно быть in-flight для заполнения канала.\n\nSENIOR — ТОНКОСТИ\n\n- Head-of-line в одном TCP stream задерживает последующие bytes при потере сегмента.\n- Bufferbloat увеличивает latency при больших очередях без явной потери.\n- Разные congestion algorithms дают разную реакцию; приложение не должно предполагать фиксированный throughput.\n- Application-level queue поверх TCP обязана быть bounded, иначе backpressure превращается в memory growth.\n\n### Дополнительное техническое объяснение\n\nTCP effective flight size ограничен `min(rwnd, cwnd)`. Receiver advertises capacity, sender congestion algorithm оценивает path capacity по ACK/loss/RTT. Application read/write rates связаны с socket buffers и end-to-end backpressure.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nFlow control спрашивает «успевает ли получатель», congestion control — «справляется ли путь сети».\n\n### Аналогия и объяснение\n\nСкорость грузовика ограничивает и свободное место на складе получателя, и пробка на дороге. Даже быстрый отправитель не может бесконечно складывать коробки в очередь у себя.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "tcp",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

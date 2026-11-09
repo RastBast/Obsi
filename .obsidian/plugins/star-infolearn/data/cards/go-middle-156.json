@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-156",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/156-docker-networking.md",
+  "front": "Почему `localhost` внутри container не указывает на host или соседний container?",
+  "back": "Container получает отдельный network namespace и IP в bridge network. Containers в одной user-defined network находят друг друга по DNS-имени. `-p host:container` публикует порт на host; EXPOSE сам по себе порт не публикует.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- `localhost` всегда loopback текущего network namespace.\n- Сервис внутри container обычно слушает `0.0.0.0`, а не только 127.0.0.1.\n- Для связи containers используют service/container DNS name и внутренний порт.\n- Публикацию порта ограничивают нужным host interface и firewall policy.\n\nSENIOR — ТОНКОСТИ\n\n- Bridge использует veth, routing/NAT и host firewall rules; детали зависят от platform/runtime.\n- Docker Desktop работает через VM, поэтому host networking отличается от native Linux.\n- Ephemeral source ports и conntrack могут стать bottleneck под нагрузкой.\n- DNS/service discovery не заменяет timeout/retry/backpressure.\n\n### Дополнительное техническое объяснение\n\nNetwork namespace изолирует interfaces, routes и sockets. Bridge driver соединяет veth peers и предоставляет DNS; port publishing устанавливает host forwarding/NAT к container endpoint.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nУ каждого container свой localhost; сосед доступен по сетевому имени, внешний клиент — через published port.\n\n### Аналогия и объяснение\n\nКаждый контейнер живёт в своей квартире: `localhost` означает его собственную комнату. Чтобы зайти из дома или с улицы, нужен адрес соседа или открытая дверь-порт.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "docker",
+    "network",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

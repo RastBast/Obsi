@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-153",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/153-docker-multistage.md",
+  "front": "Как multi-stage сборка помогает Go-сервису и что нужно учесть при выборе финального image?",
+  "back": "Multi-stage build отделяет компиляцию от runtime image. Builder содержит toolchain и исходники, а финальный stage получает только бинарник и необходимые runtime-файлы. Это уменьшает image и attack surface.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```dockerfile\nFROM golang:1.24 AS build\nWORKDIR /src\nCOPY . .\nRUN CGO_ENABLED=0 go build -o /out/app ./cmd/app\n\nFROM gcr.io/distroless/static-debian12\nCOPY --from=build /out/app /app\nENTRYPOINT [\"/app\"]\n```\n\nНужны CA certificates, timezone data и другие runtime assets, если приложение их использует.\n\nSENIOR — ТОНКОСТИ\n\n- `scratch` подходит только действительно self-contained binary; cgo требует compatible libc/libraries.\n- Distroless снижает shell/tools, но усложняет exec-debugging.\n- Build reproducibility включает pinned base digest, module verification и build metadata.\n- Не копируют credentials, module cache и весь builder filesystem в final stage.\n\n### Дополнительное техническое объяснение\n\nMulti-stage OCI build создаёт отдельные stage rootfs и выполняет selective `COPY --from`. Final artifact исключает compiler/toolchain и уменьшает CVE surface, transfer size и runtime privileges.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nКомпилируй в большом stage, запускай только результат в маленьком.\n\n### Аналогия и объяснение\n\nДля изготовления продукта нужен цех с инструментами, но покупателю не нужен весь цех. В коробку кладут только готовый бинарник и необходимые сертификаты.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "docker",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

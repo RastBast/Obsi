@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-164",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/164-registry-tags-digests.md",
+  "front": "Как registry хранит layers/manifests и почему `latest` не является версией?",
+  "back": "Tag — изменяемое имя manifest, например `app:1.2`; его можно переназначить. Digest — content-addressed SHA-ссылка на конкретный manifest и неизменяемое содержимое. Для воспроизводимого deploy фиксируют digest, сохраняя удобный tag как metadata.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Registry дедуплицирует blobs по digest.\n- Multi-platform manifest list выбирает image для architecture.\n- `latest` — обычный tag без специальной гарантии новизны.\n- Pull policy и локальный cache влияют на фактически запущенный image.\n\nSENIOR — ТОНКОСТИ\n\n- Подпись связывает identity/provenance с digest, а не изменяемым tag.\n- Retention/garbage collection registry не должны удалить используемый manifest.\n- Private registry credentials имеют минимальные scopes и ротацию.\n- SBOM и attestations дополняют vulnerability scanning.\n\n### Дополнительное техническое объяснение\n\nOCI registry stores content-addressed blobs and manifests. Mutable tag resolves to manifest digest; digest pinning provides deterministic artifact identity for deployment, signature verification and provenance.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nTag удобен человеку и двигается; digest точно фиксирует bytes.\n\n### Аналогия и объяснение\n\nTag — наклейка «текущая версия», которую можно переклеить на другую коробку. Digest — отпечаток содержимого: другая коробка не получит тот же отпечаток.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "docker",
+    "registry",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-166",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/166-kubernetes-pod.md",
+  "front": "Что разделяют containers внутри Pod и почему Pod не равен отдельной VM?",
+  "back": "Pod — минимальная scheduling unit: один или несколько containers с общими network namespace/IP/ports и подключёнными volumes. Containers в Pod общаются через localhost. Pod считается заменяемым и обычно создаётся controller, а не вручную.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Main container и sidecar совместно планируются на один node.\n- Init containers выполняются последовательно до обычных containers.\n- Restart containers происходит внутри Pod по policy, но новый Pod получает новый UID/IP.\n- Данные вне ephemeral lifecycle хранят в persistent/external storage.\n\nSENIOR — ТОНКОСТИ\n\n- Sidecar должен иметь согласованный startup/shutdown lifecycle и resource requests.\n- Один Pod — failure/scaling boundary; несвязанные сервисы не объединяют.\n- Pod status — агрегат phases/conditions/container states и не является простым health boolean.\n- Static Pods и mirror Pods — специальные control-plane сценарии.\n\n### Дополнительное техническое объяснение\n\nKubelet реализует Pod sandbox с shared network namespace и volume mounts. Scheduler назначает Pod целиком node; controller восстанавливает desired replicas созданием новых Pod identities.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nPod — группа тесно связанных containers, которые всегда живут и масштабируются вместе.\n\n### Аналогия и объяснение\n\nPod похож на одну квартиру: жильцы делят адрес и кладовую и переезжают вместе. Если сервисы не обязаны всегда жить рядом, им нужны разные квартиры.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-178",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/178-rbac-security-context.md",
+  "front": "Чем API authorization отличается от прав процесса внутри container?",
+  "back": "ServiceAccount задаёт identity Pod для API, RBAC Role/ClusterRole разрешает verbs на resources, Binding связывает права с identity. SecurityContext ограничивает runtime UID, privileges, capabilities, filesystem и seccomp. Это разные уровни защиты.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Role namespace-scoped, ClusterRole может быть cluster-wide или reusable в RoleBinding.\n- Не монтируют service account token, если API не нужен.\n- `runAsNonRoot`, `allowPrivilegeEscalation: false`, drop capabilities и readOnlyRootFilesystem — полезная база.\n- Secrets read/list/watch дают широкий доступ к значениям.\n\nSENIOR — ТОНКОСТИ\n\n- Wildcards в RBAC расширяются при появлении новых resources.\n- `create pods` часто позволяет косвенно получить credentials/host access в namespace.\n- Admission policy проверяет security standards до создания.\n- Node/kubelet compromise шире namespace RBAC; threat model многоуровневый.\n\n### Дополнительное техническое объяснение\n\nKubernetes authentication binds Pod to ServiceAccount; authorizer evaluates RBAC tuples subject/resource/verb. Runtime securityContext configures UID/GID, capability set, privilege escalation, seccomp and mount behavior.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nRBAC решает, что identity может в API; SecurityContext — что process может на node/container.\n\n### Аналогия и объяснение\n\nПропуск определяет, какие документы сотрудник может запросить у администрации. Правила комнаты определяют, может ли он стать root, открыть сейф или менять стены.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "security",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

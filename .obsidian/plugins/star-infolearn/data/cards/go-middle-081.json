@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-081",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/81-osi-tcp-ip.md",
+  "front": "Какие уровни важны backend-разработчику и как по уровням локализовать сетевую проблему?",
+  "back": "Модели разделяют передачу данных на уровни: физическая/канальная доставка, IP-маршрутизация, транспорт TCP/UDP, прикладные протоколы HTTP/DNS/TLS. Это не точная реализация каждого стека, а язык для поиска границы сбоя.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- L2 доставляет frame внутри сегмента; L3 маршрутизирует packet по IP.\n- L4 предоставляет transport ports и свойства TCP/UDP.\n- HTTP, DNS и прикладная часть TLS относятся к верхним уровням.\n- Ошибка DNS отличается от connection refused, timeout TCP и HTTP 503.\n\nДиагностика идёт снизу вверх: адрес/route → DNS → TCP connection → TLS → application response.\n\nSENIOR — ТОНКОСТИ\n\n- Реальные протоколы пересекают идеальные границы, а OSI из семи уровней используют как модель, не догму.\n- NAT, proxy, service mesh и load balancer добавляют промежуточные stateful hops.\n- MTU и fragmentation нижнего уровня могут проявляться как timeout верхнего.\n- Наблюдаемость должна различать connect, TLS, first-byte и total latency.\n\n### Дополнительное техническое объяснение\n\nLayered model разделяет link framing, network routing, transport session и application semantics. Failure attribution использует DNS resolution, socket errno, handshake telemetry и protocol status вместо общего «сеть сломалась».\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nУровни помогают не искать HTTP-баг, когда имя не резолвится или TCP не устанавливается.\n\n### Аналогия и объяснение\n\nПосылка проходит адресацию города, транспорт между городами и правила конкретной службы доставки. Если она не пришла, сначала выясняют, найден ли адрес, доехала ли машина и только потом читают ответ получателя.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

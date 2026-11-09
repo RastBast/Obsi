@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-218",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Redis/218-redis-idempotency-script.md",
+  "front": "Как атомарно проверить idempotency key, сохранить результат и не выполнить side effect дважды?",
+  "back": "Lua/function может атомарно проверить key и записать состояние/результат с TTL, не допуская двух concurrent winners внутри Redis. Но внешний side effect нельзя атомарно включить в script: нужен state machine `in_progress/completed`, owner/lease, durable source и reconcile для crash между шагами.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nПростой случай — операция целиком в Redis: script проверяет отсутствие key, изменяет данные, сохраняет response и TTL одной командой. Повтор получает сохранённый response.\n\nЕсли затем вызывается payment/DB, процесс может умереть после side effect до `completed`. Нельзя просто дать другому worker повторить без idempotency upstream. Lease имеет token/expiry, а takeover проверяет status и бизнес-результат.\n\nSENIOR — ТОНКОСТИ\n\nTTL — окно дедупликации; после него старый retry считается новым. Один key с другим payload должен вернуть conflict, поэтому сохраняют payload hash/operation identity. Cluster требует всех script keys в одном hash slot.\n\nFailover/durability Redis влияют на correctness. Для критичной денежной операции unique constraint/transactional ledger и idempotency provider важнее cache-level key.\n\n### Дополнительное техническое объяснение\n\nRedis serialized script provides linearizable-like atomic transition on one shard under deployment guarantees. Cross-system exactly-once отсутствует; protocol требует fencing, durable idempotency key, state transition recovery and downstream deduplication.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nRedis может выдать одному человеку талон «ты первый» и запомнить ответ. Но если человек ушёл после оплаты и до отметки «готово», следующий должен не платить снова, а проверить реальный результат.\n\n### Аналогия и объяснение\n\nАтомарная запись решает гонку за талон, но не объединяет два разных здания в одну транзакцию. Поэтому внешний сервис тоже должен понимать тот же idempotency key.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/Redis"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

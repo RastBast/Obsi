@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-047",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/47-observability-logs-metrics-traces.md",
+  "front": "Как использовать три сигнала наблюдаемости в Go-сервисе, что логировать на границах и почему high-cardinality labels опасны?",
+  "back": "Логи дают дискретные события и контекст, метрики — агрегированные временные ряды, traces — путь запроса между компонентами. Их связывают trace/request ID, но не дублируют каждую ошибку на каждом слое. Labels метрик должны иметь ограниченную cardinality.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nСтруктурный лог содержит стабильные поля: level, message, operation, request/trace ID, duration, итог и безопасную ошибку. Секреты, токены и полные персональные данные не логируют.\n\nБазовые HTTP-метрики: request count, latency histogram, in-flight, error count; для dependency — latency/errors/saturation. Путь нормализуют шаблоном (`/users/{id}`), а не реальным ID.\n\nTrace span передаётся через `context.Context`; исходящий HTTP/DB вызов должен наследовать context. Ошибку отмечают на span, но status и sampling настраивают по принятой системе.\n\nSENIOR — ТОНКОСТИ\n\nObservability начинается с вопросов/SLO. RED (rate, errors, duration) подходит request-driven сервисам, USE (utilization, saturation, errors) — ресурсам. Метрика без action/alert часто создаёт стоимость без пользы.\n\nCardinality взрывается от user ID, URL с IDs, error text и trace ID в labels: число рядов растёт как комбинация значений. Такие данные оставляют логам/traces, а метрики используют bounded dimensions.\n\nОшибка должна логироваться один раз на владеющей границе, где известен итог запроса. Нижние слои добавляют контекст через `%w` и возвращают. Иначе один сбой порождает много одинаковых error logs и ломает alerting. Ожидаемые 404/отмены клиента не всегда уровень error.\n\nTail/head sampling трасс влияет на видимость редких ошибок; baggage распространяется между сервисами и может создать overhead/security leak. В baggage передают только строго контролируемые значения.\n\nTelemetry сама потребляет CPU, память и сеть. Экспорт должен быть bounded, асинхронным с понятной drop policy и не блокировать critical path. При shutdown exporter получает ограниченное время на flush.\n\n### Дополнительное техническое объяснение\n\nЛоги дают дискретные события и контекст, метрики — агрегированные временные ряды, traces — путь запроса между компонентами. Их связывают trace/request ID, но не дублируют каждую ошибку на каждом слое. Labels метрик должны иметь ограниченную cardinality.\n\nObservability начинается с вопросов/SLO. RED (rate, errors, duration) подходит request-driven сервисам, USE (utilization, saturation, errors) — ресурсам. Метрика без action/alert часто создаёт стоимость без пользы.\n\nCardinality взрывается от user ID, URL с IDs, error text и trace ID в labels: число рядов растёт как комбинация значений. Такие данные оставляют логам/traces, а метрики используют bounded dimensions.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\n**Logs — что случилось; metrics — насколько часто/долго; traces — где прошёл запрос.** Связывай идентификаторами, ограничивай cardinality и логируй ошибку на границе один раз.\n\n### Аналогия и объяснение\n\n**Logs — что случилось; metrics — насколько часто/долго; traces — где прошёл запрос.** Связывай идентификаторами, ограничивай cardinality и логируй ошибку на границе один раз.\n\nПредставь запрос как посылку, проходящую через несколько узлов. На каждом участке она может задержаться, потеряться или быть обработана повторно. Поэтому сетевой код обязан ограничивать ожидание, проверять результат и безопасно переживать частичные сбои.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "observability",
+    "backend",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

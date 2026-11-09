@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-140",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/140-kafka-key-ordering.md",
+  "front": "Как сохранить порядок событий одной сущности и что случится при добавлении partitions?",
+  "back": "Producer partitioner обычно хеширует key, поэтому одинаковый key попадает в одну partition и сохраняет её order. Records без key распределяются для balance. При увеличении числа partitions mapping hash modulo меняется, и будущие события key могут перейти в другую partition.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- В key кладут domain aggregate ID, если его события требуют порядка.\n- Один популярный key создаёт hotspot и не распараллеливается внутри group.\n- Consumer должен обрабатывать partition последовательно, если side effects требуют order.\n- Timestamp не заменяет partition order при clock skew/retries.\n\nSENIOR — ТОНКОСТИ\n\n- Repartition migration требует переходного протокола, если строгий per-key order нельзя нарушить.\n- Custom partitioner должен быть одинаковым у producers и стабильно versioned.\n- Async processing внутри consumer может переупорядочить completion даже при ordered fetch.\n- Poison event блокирует строгую последовательность; политика skip/DLQ меняет semantics.\n\n### Дополнительное техническое объяснение\n\nPartitioner deterministically maps record key to partition, making partition log order the per-key sequencing mechanism. Topology change or consumer-side concurrency can violate end-to-end processing order beyond append order.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nОдинаковый key связывает события с одной partition, но ограничивает параллелизм и усложняет repartition.\n\n### Аналогия и объяснение\n\nВсе письма одного клиента отправляют в одну сортировочную линию, и их порядок сохраняется. Если линию разделили на большее число дорожек, правило выбора может перенаправить новые письма.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "partitioning",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

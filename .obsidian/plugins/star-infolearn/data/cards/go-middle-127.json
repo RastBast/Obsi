@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-127",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Redis/127-redis-rdb-aof.md",
+  "front": "Какие компромиссы durability, recovery и I/O дают снимки и журнал команд?",
+  "back": "RDB периодически сохраняет компактный snapshot: быстро восстанавливается, но теряет изменения после снимка. AOF записывает mutating commands и в зависимости от fsync policy теряет меньше, но журнал/восстановление дороже; rewrite сжимает историю. Их можно комбинировать.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- `appendfsync always/everysec/no` меняет durability и latency.\n- RDB fork/copy-on-write может кратковременно увеличить память и I/O.\n- AOF rewrite создаёт эквивалентное компактное состояние, а не просто обрезает bytes.\n- Репликация не заменяет persistence/backup.\n\nSENIOR — ТОНКОСТИ\n\n- При memory pressure COW pages во время fork могут привести к OOM.\n- Disk latency влияет на event loop косвенно/через fsync policy.\n- После corruption нужны проверка/repair инструменты и проверенный restore runbook.\n- Выбор следует RPO/RTO; cache может жить без persistence, source-of-truth — редко.\n\n### Дополнительное техническое объяснение\n\nRDB materializes point-in-time dataset via fork/COW. AOF appends command log with configurable fsync and background rewrite. Durability window, recovery throughput и peak memory определяют режим.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nRDB — редкие полные фотографии, AOF — журнал изменений. Цена меньшей потери — больше постоянной записи.\n\n### Аналогия и объяснение\n\nМожно каждый час фотографировать доску или записывать каждое изменение в журнал. Фотография проста, но последние записи потеряются; журнал подробнее, но длиннее и требует уборки.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "redis",
+    "persistence",
+    "flashcards/Redis"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

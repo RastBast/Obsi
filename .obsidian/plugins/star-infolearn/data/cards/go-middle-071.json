@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-071",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/71-contention-profiling.md",
+  "front": "Чем mutex profile отличается от block profile и как интерпретировать высокое время ожидания?",
+  "back": "Mutex profile показывает время ожидания contended locks, обычно при освобождении владельцем. Block profile шире и включает ожидание каналов, select, mutex и других примитивов. Профиль показывает место симптома; исправление требует понять защищаемый инвариант и нагрузку.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Включают sampling осознанно и снимают профиль под репрезентативной нагрузкой.\n- Goroutine dump показывает текущие stacks, но не накопленное время.\n- Высокий cumulative stack может означать один глобальный lock или долгую секцию ниже.\n- Перед шардированием сокращают работу под lock и убирают I/O/callback.\n\nSENIOR — ТОНКОСТИ\n\n- Sampling и attribution не дают точного wall-clock каждого ожидания.\n- RWMutex может ухудшить contention при write-heavy профиле.\n- Lock convoy, cache-line bouncing и scheduler latency могут выглядеть похоже; сравнивают CPU/trace/metrics.\n- Уменьшение lock wait ценой неограниченных queues или гонок не является оптимизацией.\n\n### Дополнительное техническое объяснение\n\nContention profiles семплируют blocked duration и call stacks synchronization points. Анализ связывает wait time с critical-section length, arrival rate, lock granularity и cache coherence; оптимизация проверяется повторным профилем.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nMutex profile — где спорят за lock; block profile — где ждут вообще. Сначала измерь, потом меняй протокол.\n\n### Аналогия и объяснение\n\nЕсли много людей ждут одну дверь, нужно узнать не только номер двери, но и почему человек внутри так долго. Иногда достаточно вынести долгую работу наружу, а иногда нужны несколько независимых дверей.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "profiling",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

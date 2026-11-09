@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-179",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/179-network-policy.md",
+  "front": "Как построить default deny и разрешить только нужные соединения?",
+  "back": "NetworkPolicy выбирает Pods и разрешает ingress/egress peers, ports и направления. После выбора Pod по направлению неразрешённый трафик блокируется, если CNI реализует policy. Это L3/L4 контроль, не полноценная HTTP authorization.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Создают default-deny ingress/egress, затем allow DNS и конкретные dependencies.\n- Pod/namespace selectors используют labels; `ipBlock` — CIDR.\n- Policies additive: разрешение любой подходящей policy допускает трафик.\n- Проверяют поддержку CNI и тестируют фактический путь.\n\nSENIOR — ТОНКОСТИ\n\n- DNS names обычно не являются portable primitive стандартной NetworkPolicy.\n- NAT/service routing меняют видимый source/destination в зависимости от dataplane.\n- HostNetwork и node-local traffic имеют особенности CNI.\n- Policy не заменяет TLS, identity и application authorization.\n\n### Дополнительное техническое объяснение\n\nCNI dataplane enforces additive ingress/egress allowlists for selected Pod endpoints at IP/port layer. Zero-trust design дополняет policy workload identity, mTLS и L7 authorization.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nСначала запрети всё, затем разреши необходимые направления между labeled workloads.\n\n### Аналогия и объяснение\n\nЭто межкомнатные двери: по умолчанию закрыты, а правила открывают только нужные пары комнат и порты. Но открытая дверь ещё не доказывает личность посетителя.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "network",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

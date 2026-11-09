@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-039",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/39-pprof-and-trace.md",
+  "front": "Чем отличаются CPU, heap, allocs, goroutine, mutex и block profiles, и когда нужен runtime trace?",
+  "back": "CPU profile показывает, где тратится процессорное время; heap — живую память; allocs — накопленные аллокации; goroutine — стеки; mutex/block — ожидание синхронизации. Trace показывает временную картину scheduler, GC и событий. Сначала воспроизводят проблему, затем выбирают профиль под симптом.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nДля тестов:\n\n```bash\ngo test -bench . -cpuprofile cpu.out -memprofile mem.out ./pkg\ngo tool pprof -http=:0 cpu.out\n```\n\nВ сервисе часто подключают `net/http/pprof` на защищённом служебном endpoint. Профиль снимают под репрезентативной нагрузкой.\n\nВ pprof смотрят `top`, `list`, call graph, различают flat (сама функция) и cumulative (включая вызовы). Heap можно анализировать по `inuse_space` или `alloc_space` — они отвечают на разные вопросы.\n\nSENIOR — ТОНКОСТИ\n\nСимптом определяет инструмент: высокий CPU → CPU profile; растущий RSS → heap + runtime/system memory + GC metrics; высокая latency при низком CPU → block/mutex/goroutine/trace; scheduler/GC pauses → trace и runtime metrics.\n\nHeap profile семплируется и не равен RSS. RSS включает stacks, runtime metadata, mapped memory, cgo и память, ещё не возвращённую OS. «В heap profile мало, RSS много» не противоречие.\n\nMutex/block profiling имеет overhead и sampling rates; их включают осознанно. Trace гораздо объёмнее и дороже, поэтому берут короткое окно, сфокусированное на проблеме.\n\nПродакшен pprof раскрывает stack, URL, имена и потенциально чувствительные данные, а CPU profile создаёт нагрузку. Endpoint закрывают аутентификацией/сетью и ограничивают длительность.\n\nПрофиль показывает корреляцию затрат, но оптимизацию проверяют повторным профилем и benchmark. Inlining, labels и symbolization влияют на чтение. Для мультиарендного сервиса `pprof.Labels` помогает разделить работу по компоненту, не включая high-cardinality секреты.\n\n### Дополнительное техническое объяснение\n\nCPU profile показывает, где тратится процессорное время; heap — живую память; allocs — накопленные аллокации; goroutine — стеки; mutex/block — ожидание синхронизации. Trace показывает временную картину scheduler, GC и событий. Сначала воспроизводят проблему, затем выбирают профиль под симптом.\n\nСимптом определяет инструмент: высокий CPU → CPU profile; растущий RSS → heap + runtime/system memory + GC metrics; высокая latency при низком CPU → block/mutex/goroutine/trace; scheduler/GC pauses → trace и runtime metrics.\n\nHeap profile семплируется и не равен RSS. RSS включает stacks, runtime metadata, mapped memory, cgo и память, ещё не возвращённую OS. «В heap profile мало, RSS много» не противоречие.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nПодбирай профиль по вопросу: **CPU — где считаем; heap — что живёт; allocs — что создаём; block/mutex — где ждём; goroutine — кто висит; trace — когда всё происходило**.\n\n### Аналогия и объяснение\n\nПодбирай профиль по вопросу: **CPU — где считаем; heap — что живёт; allocs — что создаём; block/mutex — где ждём; goroutine — кто висит; trace — когда всё происходило**.\n\nПредставь, что это одно из правил языка и стандартной библиотеки: оно задаёт, как программа хранит данные или выполняет действие. Понимание правила помогает не угадывать поведение кода, а заранее предсказывать результат, находить ошибки и выбирать более простой API.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "pprof",
+    "trace",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

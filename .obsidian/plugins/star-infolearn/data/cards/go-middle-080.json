@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-080",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/80-runtime-metrics-godebug.md",
+  "front": "Что предоставляет `runtime/metrics`, когда использовать `GODEBUG` и почему внутренние имена/форматы нужно привязывать к версии?",
+  "back": "`runtime/metrics` даёт документированные process-wide метрики scheduler, GC, heap и memory classes. `GODEBUG` включает диагностические или совместимые режимы runtime. Флаги и детали меняются между версиями, поэтому их применяют временно и проверяют по документации toolchain.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Сначала выбирают метрику под симптом, а не экспортируют всё.\n- Полезны goroutines, GC CPU, heap objects/bytes, allocation rate и scheduler latencies.\n- `gctrace` помогает локально увидеть циклы GC, но шумен для постоянного production log.\n- Runtime metrics дополняют pprof/trace, а не заменяют их.\n\nSENIOR — ТОНКОСТИ\n\n- Histogram boundaries и metric names versioned; dashboard должен учитывать обновление runtime.\n- Process-wide данные нельзя напрямую приписать одному tenant/request.\n- Слишком частый scrape и преобразование больших histograms имеют overhead.\n- Debug flag способен менять семантику/производительность и должен быть частью controlled rollout.\n\n### Дополнительное техническое объяснение\n\n`runtime/metrics` экспонирует stable-by-version samples и histograms глобального runtime state. Pprof sampling и execution trace дают complementary attribution. GODEBUG toggles являются toolchain-specific operational controls и требуют version-aware rollout.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nMetrics показывают состояние во времени, pprof — распределение затрат, trace — последовательность событий, GODEBUG — точечную диагностику.\n\n### Аналогия и объяснение\n\nПанель приборов показывает температуру и обороты, снимок мастера показывает изношенные детали, а видеозапись — порядок событий. Диагностический переключатель включают только понимая, что он меняет.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "metrics",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

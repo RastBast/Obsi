@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-075",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/75-atomic-value-snapshots.md",
+  "front": "Как реализовать lock-free reads конфигурации и какие требования `atomic.Value` предъявляет к типам и мутации?",
+  "back": "Writer строит новый независимый immutable объект и атомарно публикует его через `Store`; readers получают целый snapshot через `Load`. Все Store должны использовать один concrete type, а опубликованный объект нельзя менять без отдельной синхронизации.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\nvar current atomic.Value\ncurrent.Store(&Config{})\ncfg := current.Load().(*Config)\n```\n\n- Первое Store выполняют до доступных Load либо обрабатывают отсутствие.\n- Copy-on-write подходит для редких updates и частых reads.\n- Вложенные map/slice также должны быть скопированы или считаться immutable.\n- Ошибочный тип Store приводит к panic.\n\nSENIOR — ТОНКОСТИ\n\n- Atomic защищает publication pointer, а не внутренние поля snapshot.\n- Частые большие copies увеличивают allocation rate и GC; mutex может быть дешевле.\n- Старые snapshots живут, пока readers удерживают ссылки, что удобно для safety, но влияет на память.\n- CAS нужен, если update зависит от текущей версии и конкурируют несколько writers.\n\n### Дополнительное техническое объяснение\n\n`atomic.Value` обеспечивает atomic publication и synchronizes-before между Store и наблюдающим Load. Copy-on-write snapshot требует transitive immutability; update cost O(snapshot), read cost O(1) без mutex contention.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nСобери новую неизменяемую конфигурацию целиком и одной операцией замени указатель.\n\n### Аналогия и объяснение\n\nЧитатели получают готовое издание справочника. Редактор не исправляет страницы у них в руках, а печатает новое издание и меняет табличку на входе. Старое исчезнет, когда его перестанут читать.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "atomic",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-209",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/209-webhook-delivery.md",
+  "front": "Какие timeout, retry, подпись, idempotency и ordering нужны, чтобы webhook переживал сетевые и частичные сбои?",
+  "back": "Webhook delivery является at-least-once: событие сохраняют в durable queue/outbox, отправляют с коротким timeout, повторяют transient failures с exponential backoff/jitter и ограничением. Запрос подписывают, включают event ID; receiver проверяет подпись, timestamp и дедуплицирует side effect.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n2xx означает принятие по контракту. 429/5xx/network errors обычно retryable, большинство 4xx — permanent до изменения endpoint/config. Payload имеет schema version, event type, ID и occurred time.\n\nHMAC подписывает raw body плюс timestamp; сравнение constant-time, допустимое окно защищает replay. Secret ротируют с периодом поддержки двух ключей. DLQ и dashboard позволяют переотправить исправленный endpoint.\n\nSENIOR — ТОНКОСТИ\n\nTimeout не говорит, выполнил ли receiver side effect: ответ мог потеряться. Поэтому idempotency обязательна. Глобальный порядок трудно сохранить при retries; обычно гарантируют per-aggregate sequence и позволяют receiver обнаружить gap/out-of-order.\n\nSSRF-защита валидирует destination, блокирует private/metadata ranges и повторно проверяет DNS redirects. Один медленный tenant не должен занимать весь worker pool; очереди и limits шардируют.\n\n### Дополнительное техническое объяснение\n\nDelivery worker реализует durable state machine pending→attempting→delivered/dead with attempt metadata. Cryptographic authenticity, replay window, deduplication store и bounded retry budget формируют end-to-end protocol.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nWebhook — курьер, который не знает, дошла ли квитанция. Он может принести письмо повторно, поэтому у письма есть уникальный номер, а получатель отмечает уже выполненные поручения.\n\n### Аналогия и объяснение\n\nПодпись доказывает отправителя, timestamp ограничивает повтор старого письма, retry переживает временно закрытую дверь, а DLQ сохраняет письма с неправильным адресом для ручного решения.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

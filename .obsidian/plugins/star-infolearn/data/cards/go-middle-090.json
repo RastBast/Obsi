@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-090",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/90-ip-subnet-nat.md",
+  "front": "Как читать CIDR, зачем default gateway и как NAT влияет на соединения сервисов?",
+  "back": "CIDR `/n` задаёт число бит network prefix; адреса с общим prefix относятся к сети по правилам маршрутизации. Gateway пересылает packets в другие сети. NAT переписывает адрес/порт и хранит state mapping, позволяя множеству private hosts использовать внешний адрес.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- `10.0.0.0/24` обычно содержит 256 адресов, но доступность network/broadcast зависит от среды.\n- Routing выбирает наиболее специфичный prefix.\n- Private ranges не маршрутизируются глобально напрямую.\n- NAT mapping имеет timeout и может ломать долгие idle connections.\n\nSENIOR — ТОНКОСТИ\n\n- Source IP за proxy/NAT не равен identity пользователя.\n- SNAT с множеством outbound connections может исчерпать ephemeral ports.\n- IPv6 уменьшает потребность в адресном NAT, но firewall/security policy остаётся.\n- MTU, tunnel overhead и path MTU discovery влияют на большие packets.\n\n### Дополнительное техническое объяснение\n\nLongest-prefix routing выбирает next hop по destination address. Stateful NAT преобразует network 5-tuple и ведёт conntrack mapping; capacity ограничена table entries и source port space.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nSubnet определяет адресный диапазон, route — следующий путь, NAT — переписывание адресов с состоянием.\n\n### Аналогия и объяснение\n\nCIDR похож на общий индекс района: чем больше бит префикса, тем меньше район. NAT похож на секретаря с одним внешним номером, который помнит, кому внутри передать каждый ответ.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "ip",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

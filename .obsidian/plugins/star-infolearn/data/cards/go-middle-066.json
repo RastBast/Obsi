@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-066",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/66-network-poller.md",
+  "front": "Что делает runtime network poller и почему блокирующий вызов `Read` не обязательно блокирует OS thread?",
+  "back": "Для поддерживаемых неблокирующих сетевых descriptor runtime регистрирует интерес в OS poller и паркует goroutine. Когда fd готов, poller делает goroutine runnable. API остаётся синхронным, а thread может исполнять другую работу.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- На Linux основой служит epoll, на других ОС — соответствующие механизмы readiness/completion.\n- Goroutine ожидает данные, но M/P не обязаны ждать вместе с ней.\n- Deadlines интегрируются с runtime timers и пробуждают ожидающую операцию с ошибкой.\n- Не каждый файл или syscall поддерживает netpoll одинаково; обычный blocking syscall обрабатывается другим путём scheduler.\n\nSENIOR — ТОНКОСТИ\n\n- Poller сообщает готовность, а не гарантирует полный application message; TCP остаётся потоком.\n- Масштаб ограничивают не только goroutine, но и fd limits, buffers, TLS state и память очередей.\n- Cgo networking может обходить интеграцию runtime и удерживать threads.\n- Высокая готовность fd не заменяет backpressure в application layer.\n\n### Дополнительное техническое объяснение\n\nRuntime переводит network fd в non-blocking mode, регистрирует readiness в platform poller и связывает descriptor с parked G. Event delivery помещает G в run queue; P продолжает scheduling без удержания M на blocking read.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nGo показывает простой blocking API, но runtime паркует только goroutine и ждёт события ОС.\n\n### Аналогия и объяснение\n\nВместо сотрудника у каждой двери есть один диспетчер: он следит, у какой двери появился сигнал, и будит только нужную задачу. Поэтому тысячи ожидающих соединений не требуют тысячи активно занятых потоков.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "netpoll",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

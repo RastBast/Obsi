@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-149",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/149-kafka-vs-rabbitmq-redis-streams.md",
+  "front": "Как log, queue routing и in-memory stream модели отличаются по replay, throughput и operations?",
+  "back": "Kafka — распределённый durable log с retention/replay и partition scalability. RabbitMQ — message broker с гибкой routing, per-message queue/ack и удобной task distribution. Redis Streams — более простой persistent stream рядом с Redis. Выбор делают по гарантиям и эксплуатации, не по популярности.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Kafka consumer хранит offset и может перечитать историю.\n- RabbitMQ обычно удаляет acked message из queue и предлагает exchanges/routing keys.\n- Redis Streams хранит IDs/consumer groups, но scale/retention ecosystem отличается.\n- Все требуют idempotency для redelivery.\n\nSENIOR — ТОНКОСТИ\n\n- Kafka порядок/parallelism привязаны к partitions; Rabbit queue может гибче раздавать отдельные tasks.\n- Большой replay и event sourcing естественнее log model.\n- Low-volume command queue с per-message priority/routing может быть проще в Rabbit.\n- Команда должна учитывать managed offering, skills, failure recovery и capacity cost.\n\n### Дополнительное техническое объяснение\n\nSystems differ in storage model, consumer cursor/ack semantics, routing topology, partitioning, retention и operational envelope. Architecture выбирает required replay, ordering, fanout, throughput и failure semantics.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nKafka — журнал истории, RabbitMQ — маршрутизируемые очереди задач, Streams — журнал внутри Redis-экосистемы.\n\n### Аналогия и объяснение\n\nKafka хранит книгу, которую разные читатели читают со своей закладки. RabbitMQ раздаёт конверты исполнителям и убирает после подтверждения. Redis Streams даёт похожий журнал в уже знакомом быстром хранилище.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "architecture",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

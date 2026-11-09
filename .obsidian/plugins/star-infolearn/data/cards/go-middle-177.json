@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-177",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/177-jobs-cronjobs.md",
+  "front": "Как backoff, parallelism, completions и concurrencyPolicy влияют на batch-задачи?",
+  "back": "Job запускает Pods до успешного completion, CronJob создаёт Jobs по расписанию, Deployment поддерживает постоянно работающие replicas. Job может повторять failed Pods, поэтому задача должна быть идемпотентной.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- `completions` — сколько успешных единиц, `parallelism` — сколько одновременно.\n- `backoffLimit` ограничивает retries, active deadline — общее время.\n- CronJob concurrency Allow/Forbid/Replace управляет overlap.\n- History/TTL cleanup не дают завершённым Jobs расти бесконечно.\n\nSENIOR — ТОНКОСТИ\n\n- Schedule может пропускаться при downtime/control-plane delay; `startingDeadlineSeconds` задаёт окно.\n- Cron timezone и DST требуют явной политики/version support.\n- Exactly-once запуск не гарантирован; задача использует business key/lease/unique constraint.\n- Большой parallelism перегружает БД, нужен downstream-aware limit.\n\n### Дополнительное техническое объяснение\n\nJob controller tracks terminal Pod successes against completion policy and retries failures. CronJob materializes Jobs from schedule with concurrency/deadline semantics, providing at-least-once-like execution rather than exactly once.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nDeployment живёт постоянно, Job должен завершиться, CronJob периодически создаёт Job.\n\n### Аналогия и объяснение\n\nОхранник работает постоянно, разовая бригада уходит после результата, расписание каждую ночь вызывает новую бригаду. Повторный вызов не должен дважды списать деньги.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "jobs",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

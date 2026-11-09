@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-118",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/118-savepoints.md",
+  "front": "Как частично откатить transaction и почему после SQL-ошибки PostgreSQL требует rollback?",
+  "back": "Savepoint отмечает точку внутри transaction. `ROLLBACK TO` отменяет изменения после неё, не завершая всю transaction; `RELEASE` удаляет savepoint. В PostgreSQL ошибка переводит transaction в aborted state до rollback всей transaction или к savepoint.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Savepoint полезен для локальной ожидаемой ошибки в большом атомарном процессе.\n- Он не делает внешние HTTP/Kafka effects откатываемыми.\n- Go `database/sql` не имеет high-level Savepoint API, но SQL-команды можно выполнять через Tx с контролем имён/протокола.\n- Вложенные application transactions обычно моделируют savepoints, а не настоящие независимые commits.\n\nSENIOR — ТОНКОСТИ\n\n- Много subtransactions имеет overhead и ограничения внутренних структур PostgreSQL.\n- Ошибку unique constraint часто лучше предотвратить `ON CONFLICT`, чем использовать savepoint на каждую строку.\n- Release не commit-ит данные независимо; внешний rollback отменит всё.\n- Transaction retry после serialization failure обычно повторяет целиком, а не спасает отдельным savepoint.\n\n### Дополнительное техническое объяснение\n\nSavepoint создаёт subtransaction boundary. Error marks current transaction command state aborted; rollback-to-savepoint restores parent subtransaction context. Durability и atomic visibility всё равно определяются outer commit.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nSavepoint — закладка для частичного отката внутри одной ещё не завершённой transaction.\n\n### Аналогия и объяснение\n\nЭто точка сохранения в игре. Можно отменить последние действия и продолжить, но окончательное сохранение всей партии происходит только при общем commit.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "transactions",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

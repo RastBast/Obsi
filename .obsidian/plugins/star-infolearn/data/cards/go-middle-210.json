@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-210",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/210-prefix-sum.md",
+  "front": "Как предварительные суммы позволяют отвечать на запрос суммы диапазона за O(1) и какие расширения применяются для обновлений и двумерных данных?",
+  "back": "Prefix array хранит `pref[i]` как сумму первых `i` элементов, обычно `pref[0]=0`. Тогда сумма полуинтервала `[l,r)` равна `pref[r]-pref[l]`. Построение O(n), каждый immutable range query O(1), память O(n).",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\npref := make([]int64, len(a)+1)\nfor i, x := range a {\n    pref[i+1] = pref[i] + int64(x)\n}\nsum := pref[r] - pref[l]\n```\n\nДополнительный нулевой элемент убирает отдельный случай `l=0`. Для подсчёта количества значений по условию суммируют 0/1. Prefix XOR аналогично отвечает XOR диапазона.\n\nSENIOR — ТОНКОСТИ\n\nОбычный prefix плохо поддерживает point updates: последующие значения нужно пересчитать O(n). Fenwick tree даёт update и prefix query O(log n), segment tree поддерживает более общие aggregates/range operations.\n\nСумма может overflow `int`; выбирают `int64` или проверяемую арифметику. В 2D rectangle sum использует inclusion-exclusion четырёх prefix corners. Для streaming без хранения всех запросов иногда достаточно running sum.\n\n### Дополнительное техническое объяснение\n\nPrefix sum — cumulative homomorphism для invertible aggregate: range result получается через inverse двух prefixes. Для additive group это subtraction. Static preprocessing обменивает O(n) memory/build на constant-time queries.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nВместо повторного сложения всех покупок между понедельником и пятницей храним общий итог на конец каждого дня. Вычитаем итог до понедельника из итога после пятницы и сразу получаем сумму периода.\n\n### Аналогия и объяснение\n\nСчётчик пробега автомобиля — prefix sum расстояния. Чтобы узнать путь между двумя точками, вычитают два показания одометра. Если прошлые показания постоянно исправляются, нужна другая структура данных.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

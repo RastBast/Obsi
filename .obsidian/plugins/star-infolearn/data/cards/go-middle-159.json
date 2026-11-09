@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-159",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/159-buildkit-secrets-cache.md",
+  "front": "Почему build args не подходят для credentials и чем secret mount отличается от cache mount?",
+  "back": "Не используют COPY или ARG для токенов: они могут остаться в layers/history. BuildKit secret/SSH mounts доступны только конкретному RUN и не попадают в итоговый image. Cache mount отдельно сохраняет dependency cache без включения в layer.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```dockerfile\nRUN --mount=type=secret,id=token \\\n    TOKEN=$(cat /run/secrets/token) ./fetch-private\nRUN --mount=type=cache,target=/go/pkg/mod go mod download\n```\n\nCI передаёт secret через builder API, а не файл в context.\n\nSENIOR — ТОНКОСТИ\n\n- Команда не должна скопировать secret в output или напечатать в log.\n- Cache scope/sharing mode важны при параллельных builds.\n- Remote builder имеет собственную trust boundary.\n- Supply-chain policy фиксирует provenance, base digest и доступ generator к сети.\n\n### Дополнительное техническое объяснение\n\nBuildKit LLB mounts separate ephemeral secret/SSH inputs and persistent cache directories from committed rootfs diff. Это предотвращает credential persistence при корректном step behavior.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nSecret mount — временный секрет для шага, cache mount — повторно используемый ускоритель.\n\n### Аналогия и объяснение\n\nКлюч дают мастеру только на время одной операции и забирают до упаковки товара. Ящик с инструментами можно оставить для следующей сборки, но в товар он не попадает.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "docker",
+    "buildkit",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

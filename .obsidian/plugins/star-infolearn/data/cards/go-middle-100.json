@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-100",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/100-binary-search.md",
+  "front": "Какие инварианты цикла нужны, как найти первый подходящий элемент и где возникают off-by-one ошибки?",
+  "back": "Бинарный поиск работает по монотонному предикату на отсортированном диапазоне и за O(log n) сужает интервал. Удобный шаблон хранит полуинтервал `[lo, hi)` и ищет минимальный индекс, где predicate true.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\nlo, hi := 0, len(a)\nfor lo < hi {\n    mid := lo + (hi-lo)/2\n    if a[mid] < x { lo = mid+1 } else { hi = mid }\n}\n```\n\nПосле цикла `lo` — lower bound; нужно проверить `lo < len(a)` и equality. Полуинтервал упрощает empty input и ответ `len(a)`.\n\nSENIOR — ТОНКОСТИ\n\n- Главное условие — монотонность predicate: false...false,true...true.\n- Формула mid избегает overflow в языках с ограниченной арифметикой; в Go индексы всё равно проверяют.\n- Поиск по ответу применяет тот же шаблон к пространству решений.\n- Comparator/order с NaN или несогласованностью ломает предпосылку.\n\n### Дополнительное техническое объяснение\n\nBinary search maintains loop invariant over half-open interval and monotone predicate. Each iteration halves cardinality, yielding O(log n); lower_bound returns partition point and требует postcondition validation.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nДержи `[lo, hi)`, выбрасывай половину и после цикла проверяй границу.\n\n### Аналогия и объяснение\n\nКак поиск слова в словаре: открываем середину и сразу отбрасываем половину страниц. Важно заранее решить, ищем точное слово, первое не меньшее или последнюю допустимую страницу.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "search",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

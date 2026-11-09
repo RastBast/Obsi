@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-180",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/180-statefulset-daemonset.md",
+  "front": "Когда стабильная identity действительно нужна и что controller не делает автоматически?",
+  "back": "StatefulSet даёт Pods стабильные ordinal names, ordered rollout и отдельные PVC, полезно stateful кластерам. DaemonSet поддерживает Pod на каждом подходящем node, например agent. Deployment управляет взаимозаменяемыми stateless replicas.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- StatefulSet обычно использует headless Service для DNS identities.\n- Удаление Pod сохраняет его PVC по policy; новый ordinal подключает прежнее хранилище.\n- DaemonSet подходит log/network/node monitoring agents.\n- Controller создаёт Pods, но не понимает replication protocol БД автоматически.\n\nSENIOR — ТОНКОСТИ\n\n- Stateful quorum, backup, failover и fencing обеспечивает operator/application.\n- Ordered rollout может остановиться на одном broken Pod.\n- DaemonSet tolerations нужны для специальных nodes, но расширяют поверхность доступа.\n- Parallel Pod management ускоряет start, но может нарушить bootstrap expectations.\n\n### Дополнительное техническое объяснение\n\nControllers reconcile distinct identity semantics: ReplicaSet fungibility, StatefulSet ordinal/PVC association и DaemonSet node coverage. Application-level distributed state remains outside generic controller guarantees.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nStatefulSet — стабильные имена/диски, DaemonSet — по Pod на node, Deployment — заменяемые replicas.\n\n### Аналогия и объяснение\n\nDeployment раздаёт одинаковых временных сотрудников. StatefulSet закрепляет за каждым номер кабинета и архив. DaemonSet ставит по одному смотрителю в каждом здании.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "controllers",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-124",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/124-postgresql-partitioning.md",
+  "front": "Чем range/list/hash partitioning помогают и почему partitioning не является автоматическим ускорителем?",
+  "back": "Partitioning делит logical table на physical partitions по ключу. Оно упрощает удаление/архивирование диапазонов, pruning и обслуживание очень больших таблиц. Плохой ключ или слишком много partitions увеличивают planning, indexes и operational complexity.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Range по времени удобен для retention: старую partition detach/drop быстро.\n- List делит категории/tenant groups, hash равномерно распределяет.\n- Query должен содержать условие по partition key для pruning.\n- Indexes обычно создаются/поддерживаются на partitions через partitioned index model.\n\nSENIOR — ТОНКОСТИ\n\n- Global uniqueness ограничена: unique/PK обычно должен включать partition key.\n- Skew создаёт oversized/hot partition.\n- Создание будущих partitions и routing ошибок автоматизируют.\n- Partitionwise join/aggregate и pruning зависят от версии/плана; измеряют EXPLAIN.\n\n### Дополнительное техническое объяснение\n\nDeclarative partitioning routes tuples by partition bound. Planner/executor pruning исключает irrelevant relations; DDL retention становится metadata operation. Constraint/plan overhead растёт с partition count.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nПартиция — физический кусок одной логической таблицы, полезный для pruning и lifecycle данных.\n\n### Аналогия и объяснение\n\nАрхив делят по месяцам. Чтобы удалить старый год, выбрасывают коробки целиком, а запрос за сегодня открывает одну коробку. Но поиск без даты вынужден смотреть многие коробки.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "partitioning",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

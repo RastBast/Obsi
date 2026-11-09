@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-076",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/76-cancel-cause.md",
+  "front": "Чем причина отмены отличается от `ctx.Err()` и как не потерять первичную ошибку группы задач?",
+  "back": "`WithCancelCause` позволяет отменить context с конкретной ошибкой; `context.Cause(ctx)` возвращает её, а `ctx.Err()` остаётся общей категорией canceled/deadline. Это помогает диагностике, но результат операции всё равно должен возвращаться обычным `error`.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Создатель вызывает `cancel(err)` и освобождает ресурсы.\n- Дочерние contexts наследуют причину по правилам первой произошедшей отмены.\n- Cause не кладут в Value и не используют как скрытый канал всех ошибок.\n- Caller проверяет собственный returned error и при необходимости Cause.\n\nSENIOR — ТОНКОСТИ\n\n- Гонки нескольких cancel означают, что контракт должен определить важность первой причины.\n- Причина может содержать sensitive data и распространиться дальше, чем обычный log context.\n- Deadline cause удобен для различения локальной политики и родительской отмены.\n- Library API не должно требовать Cause там, где поддерживается обычный Context от caller.\n\n### Дополнительное техническое объяснение\n\nCausal cancellation связывает cancellation signal с error payload, наследуемым context tree. `Err` сохраняет sentinel semantics, а `Cause` предоставляет diagnostic provenance; error propagation и API contract остаются явными return values.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nErr говорит «отменено», Cause может сказать «почему именно». Не заменяй им возврат результата.\n\n### Аналогия и объяснение\n\nОбычная отмена похожа на красную лампу «стоп». Cause добавляет записку: остановились из-за ошибки чтения, shutdown или другой причины. Основной ответ функции всё равно возвращается обычным способом.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "context",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

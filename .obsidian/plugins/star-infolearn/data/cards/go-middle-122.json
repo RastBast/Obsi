@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-122",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/122-keyset-pagination.md",
+  "front": "Почему большой OFFSET медленный и нестабилен при изменениях, как построить cursor для `(created_at,id)`?",
+  "back": "OFFSET заставляет БД найти и отбросить предыдущие строки, а concurrent inserts/deletes сдвигают страницы. Keyset продолжает после последнего sort key: `WHERE (created_at,id) < ($1,$2) ORDER BY ... LIMIT n`, используя composite index.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Order должен быть total и стабильным; неуникальный timestamp дополняют ID.\n- Cursor кодирует оба значения и направление, клиент не должен менять его поля.\n- Composite index соответствует WHERE/ORDER BY.\n- Keyset хорошо листает вперёд/назад, но не прыгает дешёво на страницу 500.\n\nSENIOR — ТОНКОСТИ\n\n- NULL ordering и collation должны совпадать в query/cursor.\n- Изменение sort key между запросами может переместить запись; snapshot pagination требует отдельного контракта.\n- Cursor подписывают/валидируют, если нельзя доверять клиенту.\n- Filters входят в index design и identity cursor query.\n\n### Дополнительное техническое объяснение\n\nSeek pagination использует lexicographic range predicate over unique ordered key и index scan starting position. Она даёт O(page size) traversal after seek и уменьшает drift относительно offset under concurrent mutations.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nOFFSET считает от начала каждый раз, keyset говорит «продолжи после этой последней записи».\n\n### Аналогия и объяснение\n\nВместо команды «пропусти миллион людей» показываем билет последнего увиденного человека и просим продолжить за ним. Очередь должна иметь однозначный порядок даже при одинаковом времени.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "pagination",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

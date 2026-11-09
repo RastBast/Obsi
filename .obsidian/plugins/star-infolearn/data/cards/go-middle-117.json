@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-117",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/117-postgresql-locks-deadlocks.md",
+  "front": "Чем row lock отличается от table lock, что показывает `pg_locks` и как уменьшить deadlock?",
+  "back": "SQL-команды автоматически берут table-level modes, а updates/`FOR UPDATE` — row locks. Несовместимые modes ждут. Deadlock возникает при цикле ожидания; PostgreSQL обнаруживает его и отменяет одну transaction. Единый порядок обновлений и короткие transaction снижают риск.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- `SELECT` обычно не блокируется обычным UPDATE благодаря MVCC.\n- DDL часто требует сильные table locks и может ждать старые queries.\n- `lock_timeout` ограничивает ожидание lock, `statement_timeout` — statement целиком.\n- `NOWAIT`/`SKIP LOCKED` меняют протокол ожидания и подходят не всем задачам.\n\nSENIOR — ТОНКОСТИ\n\n- Deadlock graph может включать advisory locks и внешние действия приложения.\n- `SKIP LOCKED` полезен для work queue, но не гарантирует fairness и может голодать строки.\n- Idle in transaction удерживает locks/snapshot и является operational bug.\n- Мониторят blockers, wait events, transaction age и query/application identity.\n\n### Дополнительное техническое объяснение\n\nPostgreSQL lock manager поддерживает compatibility matrix relation/advisory modes и tuple locking через tuple metadata/multixact. Deadlock detector строит wait graph; victim transaction aborts with retryable SQLSTATE.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nLock защищает конфликтующее изменение; одинаковый порядок ресурсов ломает циклы ожидания.\n\n### Аналогия и объяснение\n\nОдин работник держит ключ A и ждёт B, другой держит B и ждёт A. База заметит круг и выгонит одного, но приложение должно повторить работу и брать ключи в одинаковом порядке.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "locks",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

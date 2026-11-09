@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-187",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/187-connection-pool-queueing.md",
+  "front": "Как согласовать HTTP/SQL pool с capacity downstream и overload policy?",
+  "back": "Pool ограничивает дорогие connections и переиспользует их, но слишком большой pool перегружает downstream, а слишком маленький создаёт ожидание. Неограниченная очередь скрывает saturation и увеличивает tail latency. Нужны лимит, timeout и метрики ожидания.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nИзмеряют active/idle/waiters, wait duration, request deadline и downstream saturation. Общий budget делят между всеми replicas, а не выделяют каждой весь лимит сервера.\n\nSENIOR — ТОНКОСТИ\n\n- Несколько уровней pool/queue создают скрытое суммарное ожидание.\n- HTTP/2 multiplexing меняет связь connection↔concurrency.\n- Pool warmup/stale connection validation влияют на spikes.\n- Load shedding до дорогой очереди лучше timeout после долгого ожидания.\n\n### Дополнительное техническое объяснение\n\nConnection pool bounds concurrent sessions, while queueing delay follows utilization and service-time distribution. Capacity planning allocates global downstream budget and enforces bounded wait/deadline.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nPool — admission limit, а не способ бесконечно принять работу.\n\n### Аналогия и объяснение\n\nБольше касс у входа не поможет, если склад обрабатывает десять заказов. Лишние клиенты просто образуют длинную очередь и дождутся просроченного ответа.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "performance",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

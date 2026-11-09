@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-089",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/89-tls-handshake.md",
+  "front": "Как клиент проверяет сервер, откуда берутся session keys и почему шифрование без проверки сертификата опасно?",
+  "back": "Handshake согласует версию/алгоритмы, сервер предъявляет certificate chain и доказывает владение private key, стороны получают общие session keys через key exchange. Клиент проверяет hostname, сроки и доверенную цепочку. Без проверки возможна MITM-атака.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- TLS защищает конфиденциальность и целостность канала, но не исправляет уязвимое приложение.\n- SNI сообщает нужное hostname до выбора сертификата; ALPN согласует HTTP/2 и другие протоколы.\n- Сертификат содержит public key/identity, private key не передаётся.\n- mTLS дополнительно аутентифицирует клиента сертификатом.\n\nSENIOR — ТОНКОСТИ\n\n- TLS 1.3 использует современные AEAD и forward secrecy; legacy versions/ciphers отключают по политике.\n- Session resumption снижает latency, но ticket keys и срок имеют security implications.\n- Clock skew ломает проверку сроков.\n- `InsecureSkipVerify` нельзя использовать как обычное исправление self-signed certificate; настраивают trust roots/verification.\n\n### Дополнительное техническое объяснение\n\nTLS handshake аутентифицирует certificate chain/hostname, выполняет ephemeral key exchange и выводит traffic secrets. Record layer применяет AEAD integrity/confidentiality; ALPN/SNI участвуют в protocol и virtual-host negotiation.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nШифрование отвечает «никто не читает», сертификат — «я говорю с нужным сервером».\n\n### Аналогия и объяснение\n\nСтороны выбирают секретный язык и проверяют паспорт собеседника. Если паспорт не проверять, можно установить отличный шифр напрямую с мошенником.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "tls",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

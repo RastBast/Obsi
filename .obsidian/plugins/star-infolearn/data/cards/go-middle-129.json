@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-129",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Redis/129-redis-transactions-lua.md",
+  "front": "Чем MULTI/EXEC, WATCH и server-side Lua/function отличаются и дают ли они rollback?",
+  "back": "MULTI ставит команды в очередь и EXEC выполняет их последовательно без вклинивания других clients, но rollback как в SQL нет. WATCH реализует optimistic check: EXEC отменяется, если watched key изменился. Lua script выполняется атомарно относительно других команд и подходит read-modify-write.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Ошибка одной команды во время EXEC не откатывает уже выполненные команды.\n- WATCH требует retry loop с deadline/backoff.\n- Script должен быть коротким: пока он работает, другие команды ждут.\n- Keys передают явно для cluster routing и анализа.\n\nSENIOR — ТОНКОСТИ\n\n- Долгий script блокирует event loop и влияет на весь instance.\n- Script cache/function deployment и failover требуют versioning.\n- Cluster atomicity ограничена keys одного hash slot.\n- Внешние side effects нельзя включить в Redis atomic block.\n\n### Дополнительное техническое объяснение\n\nRedis command execution is serialized. MULTI/EXEC guarantees isolation from interleaving, WATCH adds optimistic concurrency control, Lua/functions provide atomic server-side execution. ACID rollback и cross-system transaction отсутствуют.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nMULTI группирует команды без interleaving, WATCH проверяет версию, Lua делает одну атомарную server-side операцию.\n\n### Аналогия и объяснение\n\nМожно отдать пачку команд, поставить пломбу «выполняй, только если никто не менял запись» или попросить сервер выполнить короткую инструкцию целиком. Но отмены уже выполненной инструкции как в SQL нет.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "redis",
+    "transactions",
+    "flashcards/Redis"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

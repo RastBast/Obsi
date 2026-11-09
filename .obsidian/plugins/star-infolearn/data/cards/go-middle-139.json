@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-139",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/139-kafka-producer-acks-idempotence.md",
+  "front": "Чем отличаются `acks=0/1/all`, зачем idempotence и почему retry может создать duplicate?",
+  "back": "`acks=0` не ждёт подтверждения, `acks=1` ждёт leader, `acks=all` — требуемые in-sync replicas. При потерянном ack producer повторяет record и без idempotence может записать duplicate. Idempotent producer использует producer ID и sequence numbers для дедупликации в рамках сессии/partition.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- `acks=all` работает вместе с replication factor и `min.insync.replicas`.\n- Retries должны быть ограничены delivery timeout и backoff.\n- Batching/compression повышают throughput ценой ожидания/CPU.\n- Ошибка отправки record должна быть наблюдаема; async callback нельзя игнорировать.\n\nSENIOR — ТОНКОСТИ\n\n- Idempotence не дедуплицирует два бизнес-события из разных producer sessions.\n- Max in-flight и ordering зависят от client/version/idempotent settings.\n- `acks=all` при недостаточном ISR отвергает write, предпочитая durability availability.\n- Transactional producer добавляет atomic multi-partition write/offset protocol, но требует stable transactional ID.\n\n### Дополнительное техническое объяснение\n\nProduce durability combines required acknowledgments, ISR replication and broker policy. Idempotent protocol assigns PID/epoch and per-partition sequence, suppressing retry duplicates while preserving ordered batches under configured constraints.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nAcks определяют, кто подтвердил запись; idempotence защищает retry одного producer от дублей.\n\n### Аналогия и объяснение\n\nКурьер может уйти без подписи, получить подпись одного склада или дождаться копий на нескольких. Если квитанция потерялась, повторная доставка может создать две посылки; номер попытки помогает складу узнать повтор.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "producer",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

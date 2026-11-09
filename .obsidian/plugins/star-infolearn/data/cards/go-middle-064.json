@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-064",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/64-binary-encoding-endianness.md",
+  "front": "Что такое little-endian и big-endian, почему нельзя отправлять память структуры как wire format и как помогает `encoding/binary`?",
+  "back": "Endianness задаёт порядок байтов многобайтового числа. Wire format должен явно определить порядок, размеры и поля. Прямое копирование памяти структуры непереносимо из-за padding, архитектуры, указателей и layout; используют `binary.ByteOrder` или специализированный протокол.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\nbuf := make([]byte, 4)\nbinary.BigEndian.PutUint32(buf, value)\nv := binary.BigEndian.Uint32(buf)\n```\n\n- Network byte order традиционно big-endian, но конкретный протокол решает сам.\n- Перед чтением проверяют достаточную длину, иначе helpers могут panic.\n- Variable-length fields требуют явной длины и лимита.\n- `binary.Read/Write` удобны, но ручная упаковка часто яснее и контролирует allocation.\n\nSENIOR — ТОНКОСТИ\n\n- Parsers должны защищаться от integer overflow при вычислении offset/length.\n- Версионирование требует возможности пропускать неизвестные поля или чёткого framing.\n- Checksums не заменяют аутентификацию; для недоверенного трафика нужен защищённый протокол.\n- `unsafe` zero-copy нарушает alignment/lifetime и часто экономит меньше, чем стоит риск.\n\n### Дополнительное техническое объяснение\n\nSerialization отделяет platform-dependent in-memory representation от stable wire representation. `encoding/binary.ByteOrder` выполняет deterministic integer encoding; parser валидирует framing, bounds, overflow и version compatibility до доступа к buffer offsets.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nБайты не знают тип числа. Протокол обязан договориться о порядке, размере и границах каждого значения.\n\n### Аналогия и объяснение\n\nЧисло из нескольких байтов можно записать начиная со старшего или младшего края. Если отправитель и получатель выбрали разные правила, они увидят разные числа. Поэтому формат записывает правило явно, а не копирует внутренности программы.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "encoding",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

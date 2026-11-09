@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-152",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/152-dockerfile-layers-cache.md",
+  "front": "Почему порядок инструкций влияет на скорость сборки и размер image?",
+  "back": "Инструкции Dockerfile создают build steps и обычно filesystem layers. Cache переиспользует результат, пока инструкция и её входы не изменились. Стабильные дорогие шаги размещают раньше, часто меняющиеся COPY — позже.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```dockerfile\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o /app ./cmd/app\n```\n\nИзменение исходника не инвалидирует download dependencies. Связанные `apt update && apt install` выполняют в одном RUN и очищают package cache внутри того же слоя.\n\nSENIOR — ТОНКОСТИ\n\n- Удаление файла в следующем слое не убирает bytes из предыдущего.\n- BuildKit cache mounts ускоряют compiler/package caches без включения их в final layer.\n- Cache key учитывает build args, mounts и metadata по правилам builder.\n- Минимальный размер не должен ухудшать patchability, debugging и supply-chain policy.\n\n### Дополнительное техническое объяснение\n\nLayered build использует content-addressed cache graph. Cache invalidation распространяется на downstream vertices; instruction ordering и scoped build context максимизируют hit rate и уменьшают duplicated bytes.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nСначала копируй редко меняющиеся dependency manifests, затем исходники.\n\n### Аналогия и объяснение\n\nСборка похожа на лестницу сохранений: изменение ступени заставляет перестроить её и всё выше. Поэтому тяжёлые стабильные шаги ставят внизу, а часто меняющийся код — наверху.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "docker",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

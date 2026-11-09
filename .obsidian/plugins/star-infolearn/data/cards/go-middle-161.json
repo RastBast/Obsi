@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-161",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/161-docker-health-restart.md",
+  "front": "Почему живой PID ещё не означает готовность приложения и кто должен реагировать на unhealthy?",
+  "back": "HEALTHCHECK периодически помечает container healthy/unhealthy по команде, но сам Docker не обязательно перезапускает unhealthy container. Restart policy реагирует на завершение процесса/exit code. Оркестратор может использовать health отдельно.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Health command должна быть быстрой, локальной и иметь timeout.\n- Start period учитывает прогрев.\n- Restart `always/on-failure/unless-stopped` имеет разную семантику.\n- Приложение при unrecoverable state лучше корректно завершает process, если supervisor должен рестартовать.\n\nSENIOR — ТОНКОСТИ\n\n- Проверка всех downstream может создать cascade: краткий сбой БД перезапустит весь fleet.\n- Liveness, readiness и startup — разные сигналы; Docker health объединяет их грубее Kubernetes.\n- Restart loop требует backoff/лимитов и сохранения diagnostics.\n- Health endpoint не раскрывает секреты и не выполняет дорогую работу.\n\n### Дополнительное техническое объяснение\n\nContainer state machine tracks main process exit and optional health status independently. Supervisor restart policy consumes exit state; higher-level orchestrator может маршрутизировать/recreate based on health.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nHealth сообщает состояние, restart policy реагирует на остановку процесса.\n\n### Аналогия и объяснение\n\nСотрудник может сидеть на месте, но не принимать клиентов. Проверка сообщает проблему, а правило перезапуска обычно срабатывает, когда сотрудник ушёл, а не просто получил плохую оценку.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "docker",
+    "operations",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

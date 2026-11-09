@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-096",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/96-big-o.md",
+  "front": "Как оценивать time/space complexity, почему константы отбрасывают и когда Big O недостаточно для выбора решения?",
+  "back": "O задаёт асимптотическую верхнюю границу, Ω — нижнюю, Θ — точную границу порядка роста. Обычно на интервью Big O используют для порядка роста worst/average case. Константы не влияют на асимптотику, но важны на реальных размерах, вместе с памятью и locality.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Один проход по n элементам — O(n), два вложенных независимых прохода n×n — O(n²).\n- Бинарный поиск — O(log n), сортировка сравнением обычно O(n log n).\n- Последовательные O(n)+O(n²) дают O(n²).\n- Нужно явно назвать параметр: для графа O(V+E), а не просто O(n).\n\nSENIOR — ТОНКОСТИ\n\n- Worst, average и amortized complexity отвечают на разные вопросы.\n- Hash map ожидаемо O(1), но не абсолютная worst-case гарантия.\n- Space включает auxiliary memory, recursion stack и иногда output отдельно.\n- Cache locality, allocation и parallel contention могут сделать асимптотически одинаковые решения очень разными.\n\n### Дополнительное техническое объяснение\n\nAsymptotic notation ограничивает функцию затрат при n→∞ с точностью до multiplicative constants и threshold. Корректный анализ фиксирует input dimensions, case distribution и amortization, затем дополняется empirical cost model.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nBig O показывает, как стоимость растёт с размером входа, а не точное время в наносекундах.\n\n### Аналогия и объяснение\n\nЕсли данных стало в десять раз больше, оценка подсказывает, станет ли работа примерно в десять, сто раз или лишь немного дольше. Она сравнивает масштабируемость, но не заменяет измерение реальной программы.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

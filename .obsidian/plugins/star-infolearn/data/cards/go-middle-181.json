@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-181",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/181-type-alias-defined-type.md",
+  "front": "Когда использовать `type A = B`, а когда `type A B`?",
+  "back": "Alias `type A = B` даёт другое имя тому же типу: identity и method set остаются B. `type A B` создаёт новый defined type с тем же underlying type, отдельным method set и необходимостью явных conversions.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nAlias полезен для migration/совместимости между packages. Defined type выражает доменный смысл: `type UserID string`, запрещая случайно смешать его с обычной строкой без conversion.\n\nSENIOR — ТОНКОСТИ\n\n- Defined type не наследует методы underlying named type.\n- Assignability для нетипизированных constants и named values различается.\n- Alias публичного типа сохраняет identity, но может раскрыть dependency как часть API.\n- Generics constraint `~string` допускает defined types с underlying string.\n\n### Дополнительное техническое объяснение\n\nType alias preserves type identity. Type definition introduces distinct named type with underlying representation B, separate method set and explicit conversion rules, enabling compile-time domain separation.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nЗнак `=` означает то же самое имя; без `=` появляется новый тип.\n\n### Аналогия и объяснение\n\nAlias — прозвище одного человека. Defined type — новый человек в такой же одежде: внешне похож, но документы и методы у него свои.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "types",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

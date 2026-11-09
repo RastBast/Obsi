@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-186",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/186-heap-rss-fragmentation.md",
+  "front": "Как расследовать «утечку», если heap profile маленький, а container memory растёт?",
+  "back": "RSS включает heap pages, goroutine stacks, runtime metadata, binary, mmap, cgo и page cache/accounting ОС. Heap profile показывает Go allocations, а не всю resident memory. Освобождённые spans могут не сразу вернуться ОС из-за scavenging и fragmentation.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nСравнивают runtime memory classes, heap in-use/idle/released, goroutine count/stacks, cgo/external allocators и OS mappings. Один snapshot не показывает тренд ownership.\n\nSENIOR — ТОНКОСТИ\n\n- Container working set и host RSS рассчитываются не идентично.\n- High-water workload оставляет size-class spans частично занятыми.\n- `debug.FreeOSMemory` не является регулярным лечением.\n- Memory limit оставляет headroom под non-heap и kernel-accounted buffers.\n\n### Дополнительное техническое объяснение\n\nGo heap profiles sample managed allocations; RSS aggregates resident VMAs/pages. Allocator fragmentation, retained spans, stacks, runtime metadata and foreign allocations explain divergence and require multi-layer telemetry.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nHeap — часть памяти процесса; RSS — страницы, реально находящиеся в RAM по учёту ОС.\n\n### Аналогия и объяснение\n\nОтчёт склада считает товары Go, а аренда здания включает коридоры, полки, сотрудников и чужое оборудование C. Пустая полка не всегда сразу возвращается арендодателю.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "memory",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

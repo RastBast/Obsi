@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-062",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/62-build-tags-cross-compilation.md",
+  "front": "Как ограничить файл платформой или тегом, что задают `GOOS` и `GOARCH` и какие ограничения добавляет cgo?",
+  "back": "Build constraints `//go:build` и суффиксы файлов выбирают исходники для конкретной сборки. `GOOS` задаёт ОС, `GOARCH` — архитектуру. Pure Go обычно легко кросс-компилируется; cgo требует подходящий C toolchain и совместимые библиотеки.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\n//go:build linux && amd64\n```\n\nConstraint размещают в начале файла с пустой строкой до package clause. Суффиксы `_linux.go`, `_windows.go`, `_amd64.go` также участвуют в выборе.\n\n```bash\nGOOS=linux GOARCH=amd64 go build ./cmd/app\n```\n\nBuild tags полезны для platform implementation, integration tests и optional features, но скрытые комбинации должны проверяться CI.\n\nSENIOR — ТОНКОСТИ\n\n- Пользовательские теги передают `-tags`; их комбинации способны породить отсутствующие или дублирующиеся symbol definitions.\n- `CGO_ENABLED=0` меняет доступность реализаций и иногда поведение DNS/user lookup.\n- Target architecture может требовать уровни вроде `GOAMD64`; производительность и совместимость CPU учитывают при релизе.\n- Build constraints не должны заменять понятный runtime configuration без причины.\n\n### Дополнительное техническое объяснение\n\nBuild constraints вычисляются toolchain до type checking package. Target tuple GOOS/GOARCH управляет predefined tags и code generation backend. Cgo нарушает простую hermetic cross compilation, поскольку требует target C compiler, headers и ABI-compatible libraries.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nТеги решают, какие файлы компилировать. GOOS/GOARCH решают, для какой платформы строится бинарник.\n\n### Аналогия и объяснение\n\nОдин проект может иметь разные детали для Linux и Windows. Перед сборкой Go отбирает только подходящие файлы, как набор деталей для нужной модели. Если вариант никогда не собирается в CI, поломка останется незаметной.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "build",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

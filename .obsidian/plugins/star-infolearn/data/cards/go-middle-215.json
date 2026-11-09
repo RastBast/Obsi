@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-215",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/215-optimistic-pessimistic-locking.md",
+  "front": "Когда использовать version compare-and-swap, а когда `SELECT ... FOR UPDATE`, и какие конфликты/ожидания создаёт каждый подход?",
+  "back": "Optimistic locking не держит lock во время пользовательской работы: UPDATE включает `WHERE id=? AND version=?`, увеличивает version и проверяет affected rows; конфликт приводит к retry/409. Pessimistic locking заранее блокирует строку (`FOR UPDATE`) до конца короткой transaction, заставляя конкурентов ждать или ошибаться.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nOptimistic подход хорош при редких конфликтах и долгом времени между read/write, например редактировании API-ресурса. Version/ETag должен участвовать в каждом update. Ноль updated rows означает stale version или отсутствие — различают по контракту.\n\nPessimistic lock полезен для короткого read-modify-write с высокой ценой конфликта. Transaction держат короткой, без HTTP-вызовов. `NOWAIT` сразу ошибается, `SKIP LOCKED` подходит очередям, но меняет semantics.\n\nSENIOR — ТОНКОСТИ\n\nOptimistic retry повторяет чистую операцию с новым state и ограничением; нельзя молча перетереть пользовательское решение. Pessimistic locks создают deadlocks, lock queues и tail latency; нужен единый порядок и timeouts.\n\nMVCC snapshot сам по себе не предотвращает lost update во всех шаблонах. Atomic `UPDATE balance=balance-? WHERE balance>=?` часто проще обоих вариантов.\n\n### Дополнительное техническое объяснение\n\nOptimistic concurrency control validates read version at write/commit and aborts on conflict. Pessimistic control acquires incompatible lock before mutation. Choice depends on contention probability, transaction duration, retry cost and invariant expressibility.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nOptimistic: оба редактора работают свободно, второй при сохранении узнаёт, что документ уже изменился. Pessimistic: первый забирает ключ от документа, второй ждёт.\n\n### Аналогия и объяснение\n\nЕсли конфликты редки, держать дверь запертой долго дорого. Если десятки касс одновременно меняют один остаток, заранее согласованный короткий lock или одна атомарная SQL-команда надёжнее.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

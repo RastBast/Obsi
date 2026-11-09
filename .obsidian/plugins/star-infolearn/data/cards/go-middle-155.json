@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-155",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/155-copy-add-dockerignore.md",
+  "front": "Почему `COPY . .` без фильтра опасен для cache, размера и безопасности?",
+  "back": "COPY переносит локальные файлы из build context. ADD имеет дополнительные возможности вроде распаковки локального tar и получения URL, поэтому без необходимости предпочитают предсказуемый COPY. `.dockerignore` исключает лишние и секретные файлы из context.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nИсключают `.git`, build outputs, editor cache, test artifacts, `.env` и credentials. Чем меньше context, тем быстрее передача builder и точнее cache invalidation.\n\nSENIOR — ТОНКОСТИ\n\n- Файл, попавший в ранний layer, нельзя надёжно удалить последующим RUN: bytes остаются в history.\n- Secrets передают BuildKit secret mount, а не COPY/ARG.\n- Remote ADD скрывает fetch/checksum semantics; явный downloader с checksum понятнее.\n- Context boundary не позволяет COPY произвольный путь вне context.\n\n### Дополнительное техническое объяснение\n\nBuild context является input graph для cache checksum. `.dockerignore` сокращает transmitted content и invalidation scope. Secret mounts предоставляют ephemeral credentials без сохранения в OCI layers/history.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nИспользуй COPY и минимальный context; секреты вообще не должны входить в слои.\n\n### Аналогия и объяснение\n\nПеред сборкой на завод отправляется коробка со всеми разрешёнными файлами. `.dockerignore` не даёт случайно положить туда пароль, историю Git и гигабайт мусора.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "docker",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

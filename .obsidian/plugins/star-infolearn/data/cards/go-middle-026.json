@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-026",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/26-worker-pool-bounded-concurrency.md",
+  "front": "Как обработать много задач, не создавая неограниченное число goroutine? Как передать backpressure, ошибки и отмену?",
+  "back": "Создают фиксированное число workers, читающих очередь задач, либо используют semaphore для ограничения активных операций. Размер — лимит ресурса, а не магическое число. Producer должен видеть backpressure/cancellation, а владелец — закрывать очередь и собирать ошибки.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\nfunc worker(ctx context.Context, jobs <-chan Job, results chan<- Result) error {\n    for {\n        select {\n        case <-ctx.Done():\n            return ctx.Err()\n        case j, ok := <-jobs:\n            if !ok { return nil }\n            r, err := process(ctx, j)\n            if err != nil { return err }\n            select {\n            case results <- r:\n            case <-ctx.Done(): return ctx.Err()\n            }\n        }\n    }\n}\n```\n\nОчередь закрывает producer после окончания отправки. Results закрывает координатор после завершения всех workers, а не один worker.\n\nДля простого лимита параллельных независимых задач можно использовать buffered channel как semaphore или `errgroup.SetLimit`.\n\nSENIOR — ТОНКОСТИ\n\nWorker count выбирают по bottleneck. CPU-bound работа часто ограничивается около доступного параллелизма; I/O-bound может иметь больше workers, но реальные лимиты задают connection pool, rate limit внешнего сервиса, память и latency. Настройку подтверждают нагрузочным тестом.\n\nBounded queue — часть overload policy. Когда она заполнена, можно блокировать producer (backpressure), отклонить запрос, удалить старое/новое сообщение или сбросить на устойчивый broker. Молчаливое создание goroutine в обход очереди разрушает лимит.\n\nНужно определить семантику ошибок: fail-fast с отменой, собрать все ошибки, частичный результат или retry. Retry внутри worker должен иметь backoff, jitter, лимит попыток и учитывать идемпотентность; иначе pool усиливает аварию внешней системы.\n\nСправедливость, порядок результатов и порядок задач — отдельные требования. Несколько workers обычно нарушают порядок. Если порядок важен, добавляют sequence и reorder buffer либо шардируют по ключу.\n\nGraceful shutdown должен прекратить приём, решить судьбу очереди и дождаться workers в пределах deadline. Закрытие jobs при активных senders вызывает panic, поэтому владелец очереди должен быть один.\n\n### Дополнительное техническое объяснение\n\nСоздают фиксированное число workers, читающих очередь задач, либо используют semaphore для ограничения активных операций. Размер — лимит ресурса, а не магическое число. Producer должен видеть backpressure/cancellation, а владелец — закрывать очередь и собирать ошибки.\n\nWorker count выбирают по bottleneck. CPU-bound работа часто ограничивается около доступного параллелизма; I/O-bound может иметь больше workers, но реальные лимиты задают connection pool, rate limit внешнего сервиса, память и latency. Настройку подтверждают нагрузочным тестом.\n\nBounded queue — часть overload policy. Когда она заполнена, можно блокировать producer (backpressure), отклонить запрос, удалить старое/новое сообщение или сбросить на устойчивый broker. Молчаливое создание goroutine в обход очереди разрушает лимит.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nWorker pool — **N обработчиков + ограниченная очередь + политика перегрузки**. Обязательно проговори лимит ресурса, backpressure, cancellation, ошибки и владельца закрытия каналов.\n\n### Аналогия и объяснение\n\nWorker pool — **N обработчиков + ограниченная очередь + политика перегрузки**. Обязательно проговори лимит ресурса, backpressure, cancellation, ошибки и владельца закрытия каналов.\n\nПредставь runtime как диспетчера, который распределяет работу и память между множеством исполнителей. Если не учитывать правила диспетчера, задачи могут мешать друг другу, ждать бесконечно или расходовать ресурсы. Поэтому всегда нужно понимать владельца состояния, момент синхронизации и условие завершения.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "worker-pool",
+    "concurrency",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

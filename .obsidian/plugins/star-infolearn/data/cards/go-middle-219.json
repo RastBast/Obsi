@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-219",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/219-kafka-kraft.md",
+  "front": "Как metadata quorum на Raft заменяет ZooKeeper и какие роли выполняют controller и broker?",
+  "back": "KRaft хранит metadata Kafka в replicated Raft log, управляемом controller quorum, без ZooKeeper. Brokers обслуживают data partitions и регистрируются у controllers. Active controller применяет metadata records; quorum обеспечивает leader election и согласованность control plane.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nController voters имеют стабильные IDs/endpoints и требуют majority для progress. В production controller role часто отделяют от broker на крупных clusters, хотя combined mode удобен для development.\n\nMetadata включает topics, partitions, replicas, configs и registrations. Broker failure/partition leader election проходят через KRaft control plane. Data records по-прежнему хранятся в partition logs brokers — KRaft не реплицирует пользовательские сообщения вместо обычной replication.\n\nSENIOR — ТОНКОСТИ\n\nQuorum из трёх controllers переживает один отказ, из пяти — два; слишком много voters повышает coordination cost. Нужны независимые failure domains, backups/config и мониторинг election/metadata lag.\n\nMigration с ZooKeeper зависит от версии и официального procedure; нельзя смешивать режимы произвольно. Controller listener/security и broker listener имеют отдельную конфигурацию.\n\n### Дополнительное техническое объяснение\n\nKRaft uses Raft-based metadata log with leader controller and committed records replicated to voter majority. Brokers maintain metadata image from log/snapshots. Control-plane quorum semantics separate from ISR replication of data partitions.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nРаньше правила и список разделов Kafka хранил отдельный ZooKeeper. Теперь несколько controllers ведут собственный согласованный журнал и выбирают одного главного редактора.\n\n### Аналогия и объяснение\n\nKRaft — журнал управления складом, а partition logs — сами товары. Надёжность журнала управления и копирование товаров связаны, но это разные механизмы и разные кворумы.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

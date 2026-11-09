@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-135",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Redis/135-redis-stream-consumer-groups.md",
+  "front": "Что означают `>`, PEL, ACK и claim, и как восстановить сообщения умершего consumer?",
+  "back": "Group хранит last-delivered ID и pending entries list. Чтение с `>` получает новые entries и назначает их consumer. После успешной обработки вызывают ACK. Если consumer умер, idle pending entries просматривают/claim-ят другому consumer и обрабатывают повторно.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Group создают с нужной стартовой позиции: начало или только новые.\n- ACK выполняют после side effect, иначе возможна потеря.\n- До ACK сообщение может доставиться снова; нужна idempotency.\n- Trimming не должен бездумно удалить ещё нужные entries.\n\nSENIOR — ТОНКОСТИ\n\n- Claim timeout больше нормального processing time, иначе два consumer обработают одновременно.\n- PEL растёт при ошибках/мертвых consumers; нужны метрики age/count.\n- Poison message требует retry limit и DLQ/parking stream.\n- Ordering сохраняется в stream ID, но параллельные consumers завершают не по порядку.\n\n### Дополнительное техническое объяснение\n\nConsumer group tracks delivery cursor and per-entry ownership in PEL. ACK removes pending state; auto-claim transfers idle ownership. Semantics are at-least-once, requiring idempotent processing and poison-message policy.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nНовые записи выдаются группе, pending помнит незавершённое, ACK подтверждает, claim передаёт брошенное.\n\n### Аналогия и объяснение\n\nДиспетчер выдаёт письма сотрудникам и записывает, у кого каждое находится. После отчёта письмо вычёркивают. Если сотрудник пропал, письмо после ожидания передают другому.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "redis",
+    "streams",
+    "flashcards/Redis"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

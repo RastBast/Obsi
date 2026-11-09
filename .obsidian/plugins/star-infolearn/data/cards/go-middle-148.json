@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-148",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/148-kafka-batching-backpressure.md",
+  "front": "Что настраивают batch size/linger/compression и как consumer ограничивает in-flight обработку?",
+  "back": "Producer собирает records в batches на partition; больший batch и небольшой linger улучшают compression/network efficiency ценой latency и памяти. Consumer fetch тоже получает batches. Processing concurrency должна быть bounded, а fetch/pause согласованы с max poll и commit frontier.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Compression обычно применяется к batch, поэтому заполненность важна.\n- Огромный record/batch должен укладываться в limits producer, broker и consumer.\n- Bounded worker pool предотвращает memory growth.\n- При перегрузке consumer pause partitions или снижает intake, а не продолжает бесконечно fetch.\n\nSENIOR — ТОНКОСТИ\n\n- Concurrency выше числа partitions не даёт partition parallelism без внутренней обработки и рискует order.\n- Out-of-order completion требует tracking минимального contiguous processed offset.\n- Compression экономит network/disk, тратит producer/broker/consumer CPU в зависимости от codec.\n- Tail latency учитывает linger плюс queueing, broker и processing.\n\n### Дополнительное техническое объяснение\n\nPartition-local batching amortizes protocol overhead and improves codec ratio. Flow control requires bounded in-flight records, partition pause/resume и commit watermark consistent with completed offsets.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nBatch повышает throughput, но добавляет ожидание; backpressure ограничивает число ещё не обработанных records.\n\n### Аналогия и объяснение\n\nГрузовик выгоднее отправлять заполненным, но первый пакет ждёт остальных. Если склад получателя переполнен, нужно временно остановить новые грузовики, а не складывать коробки на улице бесконечно.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "performance",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

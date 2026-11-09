@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-056",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/56-functional-options.md",
+  "front": "Как реализовать функциональные опции для конструктора, какие у паттерна плюсы и где обычная config-структура лучше?",
+  "back": "Functional option — функция, изменяющая внутреннюю конфигурацию конструктора. Паттерн удобен для множества необязательных настроек и эволюции API, но может скрывать обязательность, порядок применения и ошибки. Простая config-структура часто яснее.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\ntype Option func(*config) error\nfunc WithTimeout(d time.Duration) Option {\n    return func(c *config) error {\n        if d <= 0 { return errors.New(\"bad timeout\") }\n        c.timeout = d\n        return nil\n    }\n}\n```\n\nКонструктор задаёт defaults, последовательно применяет options, проверяет итоговые инварианты и только потом создаёт объект. Обязательные зависимости лучше оставить явными параметрами: `New(client, logger, opts...)`.\n\nSENIOR — ТОНКОСТИ\n\n- Нужно определить поведение повторных опций: last wins, ошибка или merge.\n- Option не должна запускать неожиданный I/O или сохранять mutable аргумент без копии/контракта.\n- `func(*T)` напрямую позволяет сломать инварианты; отдельная закрытая `config` безопаснее.\n- Для сериализуемой/сравнимой конфигурации или частых runtime-изменений обычная структура более прозрачна.\n\n### Дополнительное техническое объяснение\n\nFunctional options инкапсулируют mutations конфигурации в closures и поддерживают backward-compatible расширение constructor signature. Корректная реализация валидирует option application order, cross-field invariants, ownership переданных значений и возвращает ошибку до публикации объекта.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nОпции помогают расширять конструктор без длинного списка необязательных параметров. Но обязательное должно оставаться обязательным и видимым.\n\n### Аналогия и объяснение\n\nСначала создаётся стандартная настройка, затем каждая опция меняет один понятный переключатель. Это похоже на заказ блюда с добавками. Если добавок две, отдельная структура проще; если десятки и они редкие, опции делают вызов читаемее.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "api-design",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

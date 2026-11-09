@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-207",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/207-kubernetes-operator-crd.md",
+  "front": "Как custom resource, controller reconciliation и status/finalizer позволяют автоматизировать жизненный цикл stateful-системы?",
+  "back": "CRD добавляет собственный API kind/schema в Kubernetes. Operator — controller, который watch-ит custom resources и идемпотентно приводит реальные ресурсы/внешнюю систему к `spec`, записывая наблюдение в `status`. Finalizer блокирует удаление до cleanup.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nCustom resource описывает desired state, например кластер БД и его version/replicas. Reconcile получает key, читает текущее состояние, создаёт/обновляет дочерние ресурсы и requeue-ит при необходимости. Он должен переживать повторы и частичные ошибки.\n\n`status.conditions` сообщают Ready/Degraded/Progressing с reason/message/observedGeneration. OwnerReference обеспечивает garbage collection дочерних Kubernetes objects.\n\nSENIOR — ТОНКОСТИ\n\nFinalizer удаляют только после успешного или осознанно прекращённого external cleanup; иначе объект навсегда Terminating. Schema evolution, defaulting, conversion webhooks и backward compatibility становятся API-контрактом.\n\nController использует work queue, rate limiting, leader election и optimistic concurrency. Нельзя хранить workflow только в памяти controller — после restart он восстанавливает решение из API/external state.\n\n### Дополнительное техническое объяснение\n\nCRD регистрирует REST resource в API discovery/storage. Reconciler является level-triggered control loop, а не последовательным обработчиком событий. Spec/status separation, generation и conditions обеспечивают convergent declarative automation.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nCRD добавляет в Kubernetes новый тип заявки, например «Кластер PostgreSQL». Operator — опытный администратор-робот, который постоянно сверяет заявку с реальностью и выполняет следующий безопасный шаг.\n\n### Аналогия и объяснение\n\nРобот не должен помнить единственный план в голове. После перезапуска он снова читает заявку и состояние, понимает, что уже сделано, и продолжает. Поэтому каждое действие проектируют повторяемым.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-111",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/111-postgresql-architecture.md",
+  "front": "Что делают client backend processes, shared buffers, WAL writer, checkpointer и autovacuum?",
+  "back": "PostgreSQL обычно создаёт отдельный backend process на connection. Процессы используют shared memory и shared buffers. WAL фиксирует изменения до data pages; checkpointer сбрасывает dirty pages, background writer сглаживает запись, autovacuum очищает/анализирует версии строк.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Connection не равен query; слишком много connections расходуют process memory и scheduler.\n- Shared buffers кешируют страницы БД, но OS page cache тоже участвует.\n- WAL обеспечивает durability/recovery и основу replication.\n- Catalog хранит schema/metadata как системные таблицы.\n\nSENIOR — ТОНКОСТИ\n\n- Commit обычно ждёт flush WAL по durability policy, а data page может записаться позже.\n- Checkpoint spikes зависят от dirty pages, WAL volume и настройки интервала.\n- Backend local memory (`work_mem`) умножается на операции и connections, а не выделяется один раз.\n- Pooler снижает connection overhead, но transaction pooling ограничивает session state.\n\n### Дополнительное техническое объяснение\n\nPostgreSQL process architecture сочетает per-connection backends, shared buffer pool и WAL-based redo. Checkpoint устанавливает recovery point, а MVCC maintenance выполняется autovacuum workers.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nConnections обслуживают процессы, данные идут через pages/cache, WAL первым сохраняет изменения, vacuum убирает старые версии.\n\n### Аналогия и объяснение\n\nУ каждого посетителя есть сотрудник, все сотрудники пользуются общим складом страниц. Перед изменением они пишут запись в надёжный журнал, поэтому после аварии можно восстановить порядок действий.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

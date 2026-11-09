@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-126",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Redis/126-redis-data-types.md",
+  "front": "Когда использовать string, hash, list, set, sorted set, bitmap и HyperLogLog?",
+  "back": "String хранит bytes/counter, hash — поля объекта, list — ordered deque, set — уникальные элементы, sorted set — элементы с score и range/rank. Bitmap компактно хранит boolean positions, HyperLogLog оценивает cardinality с ошибкой. Выбор определяется операциями, а не названием сущности.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- `INCR` атомарно меняет integer string.\n- Set поддерживает membership/intersection, sorted set — leaderboard/time index.\n- List подходит простой очереди, но надёжная обработка требует протокола/Streams.\n- Key naming включает namespace/tenant и не должен создавать огромную cardinality без TTL.\n\nSENIOR — ТОНКОСТИ\n\n- Операция над большим key может блокировать single command execution; оценивают complexity.\n- Hash экономит overhead для небольших объектов, но TTL обычно ставится на key целиком.\n- HyperLogLog не возвращает сами элементы и даёт приблизительный count.\n- Cluster multi-key операции требуют одинакового hash slot.\n\n### Дополнительное техническое объяснение\n\nRedis exposes typed key values with command-specific atomicity and complexity. Data-model choice determines memory encoding, server event-loop time, cluster slot constraints и available set/range operations.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nRedis — не только key→string; выбирай структуру по нужным атомарным операциям и сложности.\n\n### Аналогия и объяснение\n\nЭто шкаф с разными контейнерами: строка, карточка полей, очередь, уникальная коробка и рейтинг. Если выбрать правильный контейнер, сервер выполнит нужное действие одной безопасной командой.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "redis",
+    "flashcards/Redis"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

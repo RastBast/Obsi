@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-120",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/120-normalization.md",
+  "front": "Что решают 1NF, 2NF, 3NF и когда денормализация оправдана?",
+  "back": "Нормализация уменьшает дублирование и anomalies вставки/обновления/удаления, раскладывая факты по зависимостям. 1NF требует атомарных значений в модели, 2NF убирает зависимость от части составного ключа, 3NF — транзитивные зависимости non-key. Денормализация осознанно дублирует ради чтения.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Каждый факт хранится у сущности, которой принадлежит.\n- Constraints/foreign keys поддерживают ссылки.\n- JSON column полезен для действительно гибких attributes, но не заменяет модель всех связей.\n- Денормализованные поля требуют источника истины и механизма обновления.\n\nSENIOR — ТОНКОСТИ\n\n- Нормальная форма — инструмент зависимостей, а не требование максимального числа таблиц.\n- OLTP и аналитические star schemas имеют разные workload.\n- Materialized views/read models уменьшают join cost с контролируемым lag.\n- Distributed boundary иногда вынуждает дублировать данные; consistency contract становится явным.\n\n### Дополнительное техническое объяснение\n\nNormalization decomposes relations according to functional dependencies and lossless joins, reducing update anomalies. Denormalization materializes derived/duplicated state and требует consistency propagation/repair semantics.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nХрани один факт в одном месте, пока измеренная цена чтения не требует контролируемой копии.\n\n### Аналогия и объяснение\n\nЕсли адрес клиента переписан в тысяче заказов, его трудно изменить без противоречий. Лучше хранить адрес клиента один раз и ссылаться на него, если история заказа не требует отдельного снимка.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "database",
+    "schema",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

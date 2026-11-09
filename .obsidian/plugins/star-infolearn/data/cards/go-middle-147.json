@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-147",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/147-kafka-retries-dlq.md",
+  "front": "Чем transient error отличается от poison message и как не заблокировать partition навсегда?",
+  "back": "Transient error повторяют с bounded attempts/backoff. Poison message после лимита отправляют в DLQ/parking topic с исходным payload и диагностикой. Немедленный retry в tight loop блокирует partition и перегружает dependency. Выбор retry topic влияет на порядок.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Ошибки классифицируют, а не повторяют все.\n- DLQ должен иметь owner, alert и процесс replay, иначе это кладбище.\n- Payload/headers сохраняют event ID, topic/partition/offset, attempt и безопасную error category.\n- Handler идемпотентен, потому что redelivery возможна.\n\nSENIOR — ТОНКОСТИ\n\n- Retry topic освобождает source partition, но нарушает per-key order.\n- Pause partition сохраняет order, но блокирует последующие события.\n- Delayed retry обычно строят несколькими topics/scheduler; нельзя держать consumer sleeping дольше poll contract.\n- Replay DLQ контролирует rate, schema compatibility и повторные side effects.\n\n### Дополнительное техническое объяснение\n\nFailure handling combines error taxonomy, bounded exponential backoff, delivery-attempt metadata и dead-letter routing. Ordering, consumer liveness и idempotency определяют pause versus retry-topic architecture.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nВременное повторяем ограниченно, неисправимое паркуем и расследуем; политика порядка выбирается явно.\n\n### Аналогия и объяснение\n\nЕсли дверь временно закрыта, письмо пробуют доставить позже. Если адрес испорчен, бесконечно стучать бессмысленно — письмо откладывают с объяснением, чтобы человек исправил и запустил повторно.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "retry",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

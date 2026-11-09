@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-205",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/205-kubernetes-control-plane.md",
+  "front": "Как взаимодействуют kube-apiserver, etcd, scheduler, controller-manager и kubelet при создании Pod?",
+  "back": "API server — вход и проверка всех API-операций, etcd — согласованное хранилище состояния, scheduler назначает unscheduled Pods nodes, controller-manager приводит фактическое состояние к желаемому. Kubelet на node наблюдает назначенные Pods и через runtime запускает containers.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nПосле создания Deployment API server сохраняет объект в etcd. Deployment controller создаёт ReplicaSet, тот — Pods. Scheduler записывает `nodeName` подходящего Pod. Kubelet выбранного node создаёт sandbox/containers, монтирует volumes и обновляет status через API.\n\nКомпоненты в основном не вызывают друг друга цепочкой напрямую, а watch-ят API и выполняют reconciliation. Это делает control plane eventually consistent.\n\nSENIOR — ТОНКОСТИ\n\netcd требует quorum, быстрый durable disk, backup и отдельный security lifecycle. API server stateless относительно persisted state и масштабируется за load balancer. Leader election не даёт нескольким controller replicas одновременно выполнять один active control loop.\n\nAdmission chain mutating/validating policy работает после authn/authz и до persistence. Watch cache, resourceVersion и optimistic concurrency важны для controllers.\n\n### Дополнительное техническое объяснение\n\nKubernetes — level-based declarative system: controllers compare desired API objects with observed state and submit idempotent changes. etcd обеспечивает linearizable metadata store, API server — serialization/admission/watch boundary, scheduler — binding decision, kubelet — node executor.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nAPI server — единое окно заявок, etcd — официальный журнал, scheduler — диспетчер мест, controllers — менеджеры, сравнивающие план с реальностью, kubelet — исполнитель в конкретном здании.\n\n### Аналогия и объяснение\n\nНикто не передаёт бумагу лично по длинной цепочке. Каждый смотрит в общий журнал, замечает работу своей компетенции и записывает результат. Поэтому система восстанавливается после временной остановки одного менеджера.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

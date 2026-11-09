@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-162",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/162-docker-pid1-signals.md",
+  "front": "Как Docker останавливает container и зачем init process или `exec` в entrypoint script?",
+  "back": "Главный процесс container имеет PID 1 в namespace, получает stop signal и должен reap-ить дочерние процессы. Shell wrapper без exec может не передать SIGTERM. Go-сервис должен обработать сигнал, прекратить приём, завершить работу до stop timeout и выйти.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nDocker посылает configured stop signal, ждёт timeout, затем SIGKILL. Exec-form ENTRYPOINT делает приложение PID 1. Если нужны child processes, используют маленький init (`--init`) или корректный supervisor.\n\nSENIOR — ТОНКОСТИ\n\n- SIGKILL нельзя обработать; deadline shutdown короче orchestrator grace period.\n- `os/signal.NotifyContext` связывает сигнал с cancellation tree.\n- Zombie reaping важен только при дочерних процессах, но wrapper часто создаёт их неожиданно.\n- Сигнал и HTTP shutdown не гарантируют завершение detached goroutines без WaitGroup/errgroup.\n\n### Дополнительное техническое объяснение\n\nRuntime stop protocol сигнализирует namespace PID 1, затем применяет forced kill после grace timeout. Direct exec preserves signal delivery; init handles orphan adoption/SIGCHLD reaping.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nЗапускай binary напрямую и обрабатывай SIGTERM; wrapper завершай через exec.\n\n### Аналогия и объяснение\n\nГлавный процесс — руководитель контейнера. Команда «закрываемся» приходит ему, и он должен остановить новых клиентов, дождаться текущих и вывести сотрудников. Если перед ним стоит глухой секретарь-shell, команда потеряется.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "docker",
+    "signals",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-088",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/88-http3-quic.md",
+  "front": "Как QUIC уменьшает head-of-line blocking и что дают connection IDs и встроенный TLS?",
+  "back": "QUIC работает поверх UDP, реализует надёжные независимые streams, congestion control и TLS 1.3 в одном transport. Потеря packet одного stream не блокирует delivery других streams. Connection ID позволяет переживать смену IP/порта, например переход Wi‑Fi→mobile.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- HTTP/3 использует QUIC streams и QPACK для headers.\n- Handshake может требовать меньше round trips; 0-RTT доступен только с replay-safe семантикой.\n- UDP middleboxes/firewalls могут блокировать или ухудшать путь, поэтому нужен fallback.\n- QUIC шифрует больше transport metadata, усложняя старые способы диагностики.\n\nSENIOR — ТОНКОСТИ\n\n- Независимость streams убирает transport HOL между ними, но не congestion effects общего path.\n- 0-RTT подвержен replay: небезопасные операции нельзя принимать без защиты.\n- User-space implementation ускоряет evolution, но потребляет CPU и требует tuning buffers/batching.\n- Migration и connection ID добавляют privacy/linkability considerations.\n\n### Дополнительное техническое объяснение\n\nQUIC combines encrypted transport handshake, stream-level reliability, loss recovery and congestion control. Packet loss blocks only affected stream data, while connection IDs decouple session identity from network 4-tuple.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nQUIC переносит функции TCP+TLS в новый защищённый transport с независимыми streams поверх UDP.\n\n### Аналогия и объяснение\n\nВместо одной очереди для всех заказов каждый заказ получает свою дорожку. А номер разговора сохраняется даже при смене сети телефона. Но общая пропускная способность дороги всё равно одна.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "quic",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

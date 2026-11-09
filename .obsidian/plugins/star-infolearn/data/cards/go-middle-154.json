@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-154",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/154-entrypoint-cmd.md",
+  "front": "Как комбинируются ENTRYPOINT и CMD и почему для Go-сервиса предпочтительна exec form?",
+  "back": "ENTRYPOINT задаёт основной executable container, CMD — аргументы по умолчанию или команду, если ENTRYPOINT отсутствует. Exec form запускает процесс напрямую; shell form добавляет `/bin/sh -c` и меняет обработку сигналов и переменных.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```dockerfile\nENTRYPOINT [\"/app\"]\nCMD [\"serve\", \"--port=8080\"]\n```\n\nАргументы `docker run image other` заменят CMD, сохраняя ENTRYPOINT. `--entrypoint` меняет entrypoint явно.\n\nSENIOR — ТОНКОСТИ\n\n- Shell form может сделать shell PID 1, и signal не всегда корректно дойдёт до приложения.\n- JSON exec form не выполняет shell expansion `$VAR`; конфигурацию читает приложение или wrapper с `exec`.\n- Wrapper должен завершиться через `exec \"$@\"`, иначе появляются signal/zombie проблемы.\n- API image должен иметь предсказуемый override contract для orchestrator.\n\n### Дополнительное техническое объяснение\n\nOCI config хранит Entrypoint и Cmd arrays, которые runtime объединяет. Exec form сохраняет direct process and signal semantics; shell form вводит interpreter process и shell parsing.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nENTRYPOINT — программа, CMD — её стандартные аргументы.\n\n### Аналогия и объяснение\n\nENTRYPOINT выбирает приложение, CMD предлагает стандартный режим запуска. Пользователь может заменить режим, не меняя само приложение.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "docker",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

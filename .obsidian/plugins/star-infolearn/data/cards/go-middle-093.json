@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-093",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/93-grpc-vs-rest.md",
+  "front": "Какие преимущества дают protobuf, HTTP/2 streams и code generation, и где REST проще?",
+  "back": "gRPC даёт строгую schema, generated clients, компактный protobuf и unary/streaming RPC поверх HTTP/2. Он удобен для внутренних typed сервисов. HTTP/JSON проще для браузеров, ручной отладки, публичных API и широкого tooling. Выбор зависит от потребителей и контракта.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- gRPC имеет status codes и metadata, отличные от обычных HTTP status API.\n- Deadline передают через context; сервер обязан прекращать работу после отмены.\n- Protobuf field numbers нельзя переиспользовать после удаления.\n- REST может иметь OpenAPI/codegen, поэтому типизация не уникальна gRPC.\n\nSENIOR — ТОНКОСТИ\n\n- Streaming требует flow control, bounded buffers и lifecycle half-close.\n- Browser обычно нуждается в gRPC-Web/proxy.\n- Retry policy учитывает idempotency и commit point RPC.\n- Schema evolution: добавление optional fields безопаснее смены типа/номера; unknown fields должны переживать промежуточные hops.\n\n### Дополнительное техническое объяснение\n\ngRPC maps protobuf service definitions to generated stubs and HTTP/2 streams with deadlines, metadata and canonical status. REST uses HTTP resource semantics and textual representations; interoperability, schema governance и operational infrastructure определяют выбор.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\ngRPC — строгий RPC-контракт и streaming; REST/JSON — универсальная web-совместимость и понятность.\n\n### Аналогия и объяснение\n\ngRPC похож на заранее напечатанные бланки для обеих сторон: быстро и меньше ошибок формы. JSON похож на универсальное письмо, которое легко прочитать браузером и человеком.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "grpc",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-208",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/208-tcp-keepalive-heartbeat.md",
+  "front": "Какие сбои обнаруживает каждый механизм и почему одного keepalive часто недостаточно для контроля здоровья соединения?",
+  "back": "TCP keepalive — kernel probes для обнаружения давно не отвечающего peer/path у idle connection; интервалы часто велики и platform-specific. Application heartbeat — сообщение протокола с выбранным SLA, способное подтвердить, что event loop и бизнес-протокол отвечают. Оба требуют timeout и реакции.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nTCP соединение может выглядеть established после исчезновения peer, пока не будет I/O или keepalive timeout. Application ping/pong быстрее обнаруживает broken/зависший канал и поддерживает NAT/load balancer mapping.\n\nHeartbeat interval должен быть меньше инфраструктурного idle timeout, но не создавать лишнюю нагрузку. Несколько пропусков обычно надёжнее одного для сетевого jitter.\n\nSENIOR — ТОНКОСТИ\n\nУспешный TCP ACK подтверждает получение bytes kernel, а не обработку application. Application heartbeat может зависнуть за длинной очередью и дать сигнал saturation. Одновременные heartbeats миллионов clients создают синхронный burst — используют jitter.\n\nMobile/NAT paths расходуют battery/state; interval выбирают по требованиям. Detection без reconnect/backoff/fencing protocol неполна.\n\n### Дополнительное техническое объяснение\n\nSO_KEEPALIVE использует TCP probes после idle с OS-configured idle/interval/count. Application heartbeat находится внутри protocol framing и измеряет end-to-end liveness до нужного processing layer. Failure detector остаётся probabilistic в asynchronous network.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nTCP keepalive спрашивает: «телефонная линия ещё существует?». Application heartbeat спрашивает: «приложение на другом конце слышит и отвечает?». Живая линия не гарантирует, что оператор не завис.\n\n### Аналогия и объяснение\n\nПроверка должна соответствовать уровню обещания. Если нужно лишь убрать мёртвые sockets — хватит transport. Если нужен живой подписчик с задержкой до 10 секунд — нужен heartbeat протокола с таким бюджетом.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

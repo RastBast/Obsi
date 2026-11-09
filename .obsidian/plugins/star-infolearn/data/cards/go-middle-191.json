@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-191",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/191-trie.md",
+  "front": "Каковы сложности поиска/вставки и какие варианты уменьшают память?",
+  "back": "Trie хранит строки по символам/байтам на путях от корня. Поиск prefix занимает O(L), где L — длина ключа, и естественно поддерживает autocomplete. Цена — много nodes/pointers и память; hash map проще для точного lookup.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nКаждый node хранит children и признак terminal. Поиск всех слов prefix сначала находит node prefix, затем обходит subtree. Radix tree сжимает цепочки с одним child в строковые edges.\n\nSENIOR — ТОНКОСТИ\n\n- Нужно выбрать bytes/runes/graphemes и нормализацию Unicode.\n- Fixed alphabet array быстрее, но тратит память; map sparse.\n- Для immutable dictionary используют compact automata/FST.\n- Concurrent mutation требует locks/copy-on-write.\n\n### Дополнительное техническое объяснение\n\nPrefix tree indexes sequences by symbols with O(L) traversal independent of key count. Radix compression reduces unary nodes; memory layout and alphabet encoding dominate practical cost.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nОбщий prefix хранится один раз, поэтому prefix search естественен.\n\n### Аналогия и объяснение\n\nСлова идут по общим коридорам букв: «кот» и «котик» делят начало пути. Дойдя до «ко», можно показать все продолжения.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "strings",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

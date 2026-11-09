@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-113",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/113-composite-index.md",
+  "front": "Что означает правило левого префикса и как equality/range/order влияют на использование `(a,b,c)`?",
+  "back": "B-tree упорядочен лексикографически по `(a,b,c)`. Наиболее эффективно запрос фиксирует ведущие columns equality, затем может использовать range следующей. Условие только по `b` обычно не даёт обычный точечный поиск по левому префиксу, хотя planner может применить другие техники.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Порядок выбирают под реальные WHERE+ORDER BY, а не просто «самое selective первым».\n- `(tenant_id, created_at)` подходит списку tenant по времени.\n- Индекс может помочь ORDER BY, если направление/order совместимы.\n- Два отдельных индекса не всегда эквивалентны одному composite; bitmap combine имеет другую стоимость.\n\nSENIOR — ТОНКОСТИ\n\n- Range на раннем column ограничивает эффективность последующих ключей для navigation.\n- INCLUDE покрывает SELECT columns без включения их в порядок поиска.\n- Skip scan и planner capabilities зависят от версии/статистики; базовый дизайн не полагается на редкую оптимизацию вслепую.\n- Redundant indexes увеличивают write amplification; проверяют usage и constraints перед удалением.\n\n### Дополнительное техническое объяснение\n\nMulticolumn B-tree применяет lexicographic key ordering. Equality constraints on leading attributes и inequality on first non-equality attribute определяют contiguous index range; ordering/covering меняют total plan cost.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nСоставной индекс сортирует сначала по первому полю, внутри него по второму и далее.\n\n### Аналогия и объяснение\n\nТелефонная книга отсортирована по фамилии, затем имени. По одному имени искать трудно, потому что одинаковые имена разбросаны среди фамилий. Запросы должны соответствовать порядку каталога.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "index",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

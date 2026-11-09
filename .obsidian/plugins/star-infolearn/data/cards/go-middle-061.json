@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-061",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/61-sort-and-slices.md",
+  "front": "Чем отличаются `sort.Interface`, `sort.Slice`, функции пакета `slices` и стабильная сортировка?",
+  "back": "Современный generic-пакет `slices` сортирует ordered values или принимает comparator. Старый `sort.Interface` требует Len/Less/Swap. Обычная сортировка не обязана сохранять порядок равных элементов; стабильная сохраняет.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\nslices.Sort(xs)\nslices.SortFunc(users, func(a, b User) int {\n    return cmp.Compare(a.Age, b.Age)\n})\n```\n\n- Сортировка изменяет slice на месте.\n- Для независимого результата сначала делают clone.\n- Comparator должен задавать согласованный строгий порядок; противоречивый результат делает поведение бессмысленным.\n- Если порядок равных элементов важен, используют stable-вариант.\n\nSENIOR — ТОНКОСТИ\n\n- Стабильность обычно дороже по ресурсам; выбирать её «на всякий случай» не нужно.\n- Для top-K полная O(n log n) сортировка может быть хуже heap O(n log k) или selection.\n- Строковое сравнение — побайтовое, не locale-aware collation.\n- Float с NaN требует осознанного порядка; стандартные helpers имеют документированную семантику, custom comparator не должен нарушать транзитивность.\n\n### Дополнительное техническое объяснение\n\nComparator должен формировать strict weak ordering; нарушение antisymmetry/transitivity ломает предпосылки алгоритма. In-place sort использует O(n log n) сравнений в общем случае, а stable variant сохраняет relative order equivalent elements с иной стоимостью.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nСортировка меняет исходный slice. Stable нужна только когда равные элементы должны сохранить прежний порядок.\n\n### Аналогия и объяснение\n\nОбычная сортировка расставляет элементы по правилу, но одинаковые элементы может поменять местами. Стабильная сортировка прикрепляет к одинаковым элементам их прежнюю очередь. Перед сортировкой реши, можно ли менять исходный список.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "sorting",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-085",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/85-dns-resolution.md",
+  "front": "Что происходит при разрешении имени, что означает TTL и почему DNS может быть причиной редких timeout?",
+  "back": "Resolver ищет записи через cache и DNS servers, следуя delegation/recursive resolution. TTL задаёт срок кеширования ответа, включая иногда отрицательный. DNS использует UDP и TCP, а modern environments могут добавлять DoH/DoT и service discovery.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- A/AAAA дают адреса, CNAME — alias, SRV — service endpoint metadata.\n- Один hostname может вернуть несколько адресов; client выбирает/перебирает их.\n- TTL не гарантирует мгновенную смену: caches обновятся постепенно.\n- NXDOMAIN отличается от временного сбоя resolver.\n\nSENIOR — ТОНКОСТИ\n\n- Go resolver может использовать pure Go или системный resolver/cgo в зависимости от платформы и конфигурации.\n- Search domains и `ndots` в контейнерах умножают запросы и latency.\n- Успешный DNS не означает здоровый endpoint; stale addresses живут до TTL.\n- Happy Eyeballs балансирует IPv6/IPv4 попытки, не дожидаясь долгого провала одного семейства.\n\n### Дополнительное техническое объяснение\n\nRecursive resolver кеширует RRsets по authoritative TTL и выполняет delegation chain. Client latency включает search expansion, negative caching, transport fallback и address selection; observability отделяет DNS phase от connect phase.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nDNS переводит имя в данные маршрутизации, а TTL делает изменения постепенно согласованными.\n\n### Аналогия и объяснение\n\nDNS похож на телефонную книгу с копиями у многих помощников. После смены номера старые копии ещё действуют до срока хранения, поэтому часть звонков некоторое время идёт по старому адресу.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "dns",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

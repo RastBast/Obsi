@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-084",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/84-udp.md",
+  "front": "Какие гарантии даёт UDP, когда он подходит и что приложение должно реализовать само?",
+  "back": "UDP отправляет отдельные datagrams без установления соединения и не гарантирует доставку, порядок, уникальность или congestion control приложения. Он подходит для DNS, telemetry, real-time и как основа QUIC, когда задержка и контроль протокола важнее встроенной надёжности TCP.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Одна отправка соответствует datagram, но пакет может потеряться или продублироваться.\n- Datagram больше безопасного path MTU рискует fragmentation/drop.\n- UDP «connection» в API обычно лишь фиксирует peer и фильтрует packets, handshake не появляется.\n- Retry, sequence, dedupe и auth проектирует прикладной протокол.\n\nSENIOR — ТОНКОСТИ\n\n- UDP легко spoof-ить и использовать для amplification; сервер ограничивает response/request ratio и валидирует client.\n- NAT mapping имеет timeout, поэтому долгий сеанс требует keepalive/перепривязки.\n- Отсутствие встроенного congestion control не разрешает агрессивную отправку; ответственный протокол его добавляет.\n- Packet truncation и receive buffer overflow нужно наблюдать.\n\n### Дополнительное техническое объяснение\n\nUDP предоставляет connectionless best-effort datagram transport с checksum и ports. Reliability, ordering, retransmission, pacing, congestion control и session security являются responsibility application protocol.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nUDP сохраняет границы сообщений, но почти ничего не обещает о доставке.\n\n### Аналогия и объяснение\n\nЭто отправка открытки без уведомления: она может прийти, потеряться или прийти позже другой. Зато не нужно заранее созваниваться и можно самому выбрать, что делать при пропаже.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "network",
+    "udp",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

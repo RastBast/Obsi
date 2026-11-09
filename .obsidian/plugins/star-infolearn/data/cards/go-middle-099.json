@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-099",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/99-hash-table-collisions.md",
+  "front": "Почему разные ключи могут иметь один hash, что такое load factor и как separate chaining отличается от open addressing?",
+  "back": "Hash сжимает большое пространство ключей в конечное число позиций, поэтому коллизии неизбежны. Таблица хранит и проверяет сам ключ. Chaining размещает конфликтующие entries в связанных buckets; open addressing ищет другой slot по probe sequence. Рост снижает load factor.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Хороший hash равномерно распределяет реальные ключи и быстро вычисляется.\n- Expected lookup близок к O(1), worst case O(n).\n- Load factor влияет на число collisions/probes и память.\n- Resize обычно O(n), но амортизируется или выполняется постепенно.\n\nSENIOR — ТОНКОСТИ\n\n- Security-sensitive map нуждается в randomized hashing против collision attacks.\n- Open addressing улучшает locality, но deletion требует tombstones/специального алгоритма.\n- Hash equality не означает key equality; ключи сравнивают после hash match.\n- Конкретная реализация Go map меняется и не является контрактом.\n\n### Дополнительное техническое объяснение\n\nHash table maps key hash to bucket/probe sequence and resolves collision через chaining или open addressing. Expected complexity зависит от distribution и load factor; resize amortizes rehash cost.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nHash выбирает место, равенство подтверждает ключ, стратегия коллизий хранит несколько претендентов.\n\n### Аналогия и объяснение\n\nХеш — номер ящика, но двум людям может выпасть один номер. Поэтому на ящике всё равно проверяют имя, а при переполнении добавляют место или перестраивают шкаф.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "hash",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-198",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/198-kafka-outbox-cdc.md",
+  "front": "Как выбрать relay для transactional outbox в Kafka?",
+  "back": "Polling workers читают outbox SQL-запросами и помечают rows; просто, но создают polling latency/load. CDC читает WAL/binlog и публикует committed outbox changes почти потоково. Оба требуют idempotency, schema и monitoring lag.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nPolling с `FOR UPDATE SKIP LOCKED` распределяет batch между workers. CDC connector управляет replication slot/offset и преобразует rows в Kafka records.\n\nSENIOR — ТОНКОСТИ\n\n- Replication slot при остановленном CDC удерживает WAL и заполняет disk.\n- Snapshot/bootstrap может повторить или переупорядочить относительно stream без protocol.\n- Delete/cleanup outbox согласуют с lag/recovery.\n- Event order берут из aggregate sequence, не только connector time.\n\n### Дополнительное техническое объяснение\n\nOutbox relay consumes committed rows via SQL locking or logical decoding. Delivery remains at-least-once; connector offset/slot retention, snapshot consistency and event key ordering are operational invariants.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nPolling спрашивает таблицу, CDC слушает журнал БД; гарантии повторов нужны обоим.\n\n### Аналогия и объяснение\n\nКурьер может каждые секунды проверять лоток или получать копию каждой новой строки из журнала кассы. Второй способ быстрее, но требует следить, чтобы чтение журнала не остановилось.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "cdc",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

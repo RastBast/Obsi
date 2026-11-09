@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-097",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/97-array-linked-list.md",
+  "front": "Сравните доступ, вставку, удаление и cache locality массива/среза и linked list.",
+  "back": "Массив даёт O(1) доступ по индексу и хорошую locality, но вставка в середину требует O(n) сдвига. Связный список при известном узле вставляет/удаляет за O(1), но поиск узла O(n), каждый узел несёт указатели и хуже использует cache.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Append динамического массива амортизированно O(1), отдельный рост O(n).\n- Удаление с сохранением порядка в slice — O(n); без порядка можно заменить последним.\n- Linked list не даёт произвольный индекс за O(1).\n- В Go `container/list` использует `any` и редко выигрывает у slice для обычных размеров.\n\nSENIOR — ТОНКОСТИ\n\n- Заявление O(1) вставки списка предполагает уже найденный node; поиск не исчезает.\n- Pointer chasing увеличивает cache misses и GC scan.\n- Стабильный адрес node бывает полезен для intrusive structures, но ownership усложняется.\n- Deque/ring buffer часто лучше списка для очереди.\n\n### Дополнительное техническое объяснение\n\nContiguous storage обеспечивает random access и spatial locality. Linked representation обеспечивает O(1) splice при node reference, но требует O(n) traversal, pointer metadata и увеличивает cache/GC overhead.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nМассив быстрее читает и компактнее; список полезен только при частых локальных перестановках уже известных узлов.\n\n### Аналогия и объяснение\n\nМассив — книги на одной полке: номер сразу ведёт к книге, но вставка в середину сдвигает остальные. Список — каждая книга хранит адрес следующей: вставить легко, но до сотой нужно пройти предыдущие.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-060",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/60-regexp-compilation.md",
+  "front": "Когда компилировать регулярное выражение, чем отличаются `Compile` и `MustCompile` и защищает ли Go от catastrophic backtracking?",
+  "back": "Regexp компилируют один раз и переиспользуют; `Compile` возвращает ошибку для динамического шаблона, `MustCompile` паникует и подходит для проверенной константы при инициализации. Стандартный engine основан на RE2-подобной модели и гарантирует линейное время по входу, но память и размер входа всё равно ограничивают.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Не вызывают `regexp.MatchString` с одним и тем же шаблоном в каждой итерации: это повторная компиляция.\n- `Regexp` безопасен для concurrent use, кроме документированных mutable-настроек.\n- Для простой проверки prefix/suffix/substr пакет `strings` понятнее и дешевле.\n- Подгруппы извлекают через `FindStringSubmatch`, заранее проверяя наличие результата и индексы.\n\nSENIOR — ТОНКОСТИ\n\n- Go regexp намеренно не поддерживает backreferences и lookaround, несовместимые с линейной моделью RE2.\n- Линейность не означает бесплатность: огромный input или pattern всё ещё создаёт CPU/memory pressure.\n- Unicode-классы и байтовые границы должны соответствовать доменной задаче; regexp не решает нормализацию Unicode.\n- Пользовательский pattern является ресурсом: ограничивают длину, число выражений и кеш.\n\n### Дополнительное техническое объяснение\n\nПакет `regexp` использует automata-подход с linear-time matching и не реализует конструкции, требующие backtracking. Compiled `*Regexp` переиспользуется конкурентно; operational limits применяются к pattern length, input size и cardinality кеша.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nКонстантный pattern — `MustCompile` один раз. Динамический — `Compile` и обработка ошибки. Простую строковую операцию regexp не усложняют.\n\n### Аналогия и объяснение\n\nРегулярное выражение сначала превращается в план поиска. Нет смысла строить один и тот же план для каждой строки. Go избегает известных взрывных вариантов поиска, но миллион символов всё равно остаётся миллионом символов.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "regexp",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

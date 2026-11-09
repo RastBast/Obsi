@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-193",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/193-postgresql-jsonb-gin.md",
+  "front": "Чем JSONB отличается от JSON и какие издержки у GIN?",
+  "back": "JSONB подходит для полуструктурированных attributes, которые всё равно нужно транзакционно хранить рядом. GIN ускоряет containment/existence по элементам документа. Часто фильтруемые и constrained поля лучше оставить обычными columns.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nJSONB хранит разобранное бинарное представление, нормализует object key order/duplicates по своей семантике. Expression index полезен для конкретного path, generated column — для типизированного часто используемого значения.\n\nSENIOR — ТОНКОСТИ\n\n- GIN велик и дороже на write; pending list требует обслуживания.\n- `jsonb_ops` и `jsonb_path_ops` поддерживают разные operators/размер.\n- Частичное update логически может переписать tuple и создать WAL/bloat.\n- Schema validation и migration не исчезают, а переходят в приложение/constraints.\n\n### Дополнительное техническое объяснение\n\nJSONB is decomposed binary document type with containment operators. GIN inverted index maps tokens/paths to tuples; operator class, write amplification and selectivity determine benefit.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nJSONB даёт гибкость, GIN — поиск внутри, но основные инварианты лучше моделировать columns.\n\n### Аналогия и объяснение\n\nВ ячейке можно хранить папку произвольных полей, а отдельный каталог помогает искать внутри папок. Но номер клиента и сумма лучше лежат в подписанных обязательных колонках.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "jsonb",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

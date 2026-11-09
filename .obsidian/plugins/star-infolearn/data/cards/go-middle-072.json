@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-072",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/72-deadlock-diagnostics.md",
+  "front": "Когда runtime сообщает `all goroutines are asleep`, почему не каждый deadlock обнаруживается и как искать цикл ожидания?",
+  "back": "Deadlock — цикл или вечное ожидание, при котором нужное событие не произойдёт. Runtime паникует, если не осталось runnable goroutine и нет ожидаемых событий, но сервер с живым network poller или одной активной goroutine может зависнуть частично без глобальной panic.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Снимают goroutine dump через pprof или SIGQUIT и группируют одинаковые stacks.\n- Проверяют send/receive без пары, nil channels, забытый Unlock/Done и порядок нескольких locks.\n- Timeouts обнаруживают зависание, но не исправляют протокол.\n- Locks всегда берут в едином глобальном порядке.\n\nSENIOR — ТОНКОСТИ\n\n- Deadlock может быть распределённым: goroutine ждёт БД, БД — lock транзакции, владелец lock — ответ сервиса.\n- Дамп — моментальный снимок; trace/block profile помогают увидеть историю.\n- Recovery не помогает: это не panic, а отсутствие прогресса.\n- Watchdog обязан сохранять диагностику до рестарта, иначе причина теряется.\n\n### Дополнительное техническое объяснение\n\nDeadlock нарушает liveness из-за cycle в wait-for graph либо недостижимого event. Runtime detector видит только глобальное отсутствие runnable work; partial deadlocks диагностируют goroutine profiles, block traces и resource dependency analysis.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nНарисуй wait-for graph: кто чего ждёт и кто должен дать событие. Ищи цикл или отсутствующего владельца.\n\n### Аналогия и объяснение\n\nДва человека могут вечно ждать ключ друг от друга. Нужно выписать каждое ожидание стрелкой и найти замкнутый круг. Просто подождать дольше не поможет.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "deadlock",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-204",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/204-oci-runtime.md",
+  "front": "Какие роли выполняют image specification, runtime specification, containerd и низкоуровневый runtime вроде runc?",
+  "back": "OCI стандартизирует image format/distribution и runtime bundle/config. Высокоуровневый runtime вроде containerd управляет images, snapshots, lifecycle и CRI-интеграцией; низкоуровневый `runc` создаёт namespaces/cgroups и запускает process по OCI Runtime Spec. Docker добавляет build, API и UX поверх этих уровней.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nImage состоит из manifest, config и content-addressed layers. После pull runtime распаковывает snapshot, формирует OCI bundle с `config.json` и root filesystem, затем shim/low-level runtime создаёт container process.\n\nРазделение объясняет, почему Kubernetes может использовать containerd/CRI-O без Docker Engine и всё равно запускать OCI images. Registry хранит manifests/blobs, а digest фиксирует конкретный artifact.\n\nSENIOR — ТОНКОСТИ\n\nCRI — Kubernetes gRPC-интерфейс к runtime, OCI — спецификации artifact/process; это разные уровни. Shim позволяет daemon перезапускаться без немедленного уничтожения containers и управляет stdio/exit. Snapshotters определяют overlay/lazy-pull behavior.\n\nRuntimeClass может выбрать другой handler, например sandboxed runtime. Совместимость OCI не означает одинаковую security/performance семантику всех implementations.\n\n### Дополнительное техническое объяснение\n\nOCI Image Spec описывает descriptor graph и rootfs diff layers; Distribution Spec — registry API; Runtime Spec — process, mounts, namespaces, hooks и resources. Container manager materializes bundle и делегирует create/start/kill/delete low-level runtime.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nOCI — общий стандарт чертежа и инструкции запуска. Registry — склад деталей, containerd — заведующий складом и жизненным циклом, runc — мастер, который реально собирает изоляцию и включает процесс.\n\n### Аналогия и объяснение\n\nЕсли Docker исчезнет, стандартный контейнерный образ всё равно можно запустить другим совместимым инструментом. Именно разделение стандартов и runtime-слоёв делает экосистему взаимозаменяемой.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

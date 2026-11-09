@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-142",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/142-kafka-offset-delivery.md",
+  "front": "Когда commit-ить consumer offset относительно side effect и почему обычная обработка чаще at-least-once?",
+  "back": "Commit до обработки рискует потерять событие при crash — at-most-once. Обработка, затем commit может повторить side effect после crash между шагами — at-least-once. Exactly-once требует атомарно связать output и consumed offsets в поддерживаемой системе либо сделать side effect идемпотентным.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Offset обычно означает следующую позицию для чтения.\n- Auto-commit может подтвердить ещё не завершённую асинхронную работу.\n- Идемпотентный consumer хранит event ID/unique constraint вместе с effect.\n- Batch commit увеличивает окно повторов, но уменьшает overhead.\n\nSENIOR — ТОНКОСТИ\n\n- Kafka transactions дают EOS для Kafka read-process-write при `read_committed`, но не атомарно с произвольным HTTP.\n- DB effect+offset можно связать inbox table, а Kafka offset восстановить из неё/координировать протоколом.\n- Rebalance и out-of-order workers усложняют contiguous commit frontier.\n- Exactly-once — end-to-end property, не одна настройка broker.\n\n### Дополнительное техническое объяснение\n\nDelivery semantics определяются ordering of side-effect commit and offset commit. Atomic transaction boundary либо deduplication/inbox protocol превращает redelivery в observationally single effect.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nДо effect — возможна потеря; после effect — возможен повтор. Идемпотентность делает повтор безопасным.\n\n### Аналогия и объяснение\n\nЕсли отметить письмо прочитанным до выполнения поручения, поручение потеряется при аварии. Если после — поручение могут сделать дважды. Уникальный номер позволяет второй раз узнать уже выполненное.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "delivery",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

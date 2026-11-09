@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-042",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/42-http-client-transport-reuse.md",
+  "front": "Почему `http.Client` нужно переиспользовать, какие timeouts задавать и зачем читать/закрывать response body?",
+  "back": "`Client` и особенно `Transport` предназначены для переиспользования: они держат connection pool. У запроса должен быть deadline/context. `resp.Body` всегда закрывают; для повторного использования соединения body обычно дочитывают до EOF, если это разумно и ограничено.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\nclient := &http.Client{\n    Timeout: 10 * time.Second,\n    Transport: &http.Transport{\n        MaxIdleConns:        100,\n        MaxIdleConnsPerHost: 20,\n        IdleConnTimeout:     90 * time.Second,\n    },\n}\n\nreq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)\nresp, err := client.Do(req)\nif err != nil { return err }\ndefer resp.Body.Close()\n```\n\nHTTP status 500 не возвращается как `Do` error — transport выполнил запрос успешно, статус проверяет приложение. Body читают через limit, чтобы недоверенный сервер не исчерпал память.\n\nНе создают новый Transport на каждый запрос: это теряет keep-alive и может исчерпать sockets.\n\nSENIOR — ТОНКОСТИ\n\n`Client.Timeout` ограничивает общий цикл, включая redirects и чтение body. Более точные границы задают context и Transport: dial timeout, TLS handshake, response header timeout, expect-continue. Нужен целостный time budget, а не независимые таймеры, сумма которых превышает SLA.\n\nПри раннем отказе от большого body полное дренирование может быть дорого или опасно; закрытие пожертвует reuse конкретного соединения. Нельзя безлимитно копировать в `io.Discard`. Политика зависит от размера/доверия и версии HTTP.\n\nRetry допустим только для подходящих transient errors и идемпотентной операции либо с idempotency key. Body запроса должен быть воспроизводим (`GetBody`/буфер/файл), попытки — ограничены общим deadline, backoff и jitter. Бездумный retry создаёт retry storm.\n\nTransport безопасен для concurrent use. Настройки pool согласуют с concurrency и лимитами upstream. `MaxIdleConnsPerHost` не является общим лимитом активных соединений; при необходимости задают `MaxConnsPerHost`.\n\nRedirect policy может передавать заголовки и credentials между hosts по правилам клиента; для чувствительных API задают `CheckRedirect`. Наблюдаемость можно добавлять через обёртку `RoundTripper`, не мутируя shared request небезопасно.\n\n### Дополнительное техническое объяснение\n\n`Client` и особенно `Transport` предназначены для переиспользования: они держат connection pool. У запроса должен быть deadline/context. `resp.Body` всегда закрывают; для повторного использования соединения body обычно дочитывают до EOF, если это разумно и ограничено.\n\n`Client.Timeout` ограничивает общий цикл, включая redirects и чтение body. Более точные границы задают context и Transport: dial timeout, TLS handshake, response header timeout, expect-continue. Нужен целостный time budget, а не независимые таймеры, сумма которых превышает SLA.\n\nПри раннем отказе от большого body полное дренирование может быть дорого или опасно; закрытие пожертвует reuse конкретного соединения. Нельзя безлимитно копировать в `io.Discard`. Политика зависит от размера/доверия и версии HTTP.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nШпаргалка клиента: **переиспользуй Client/Transport, ставь deadline, проверяй status, ограничивай body, закрывай Body, retry только безопасно**.\n\n### Аналогия и объяснение\n\nШпаргалка клиента: **переиспользуй Client/Transport, ставь deadline, проверяй status, ограничивай body, закрывай Body, retry только безопасно**.\n\nПредставь запрос как посылку, проходящую через несколько узлов. На каждом участке она может задержаться, потеряться или быть обработана повторно. Поэтому сетевой код обязан ограничивать ожидание, проверять результат и безопасно переживать частичные сбои.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "http",
+    "client",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

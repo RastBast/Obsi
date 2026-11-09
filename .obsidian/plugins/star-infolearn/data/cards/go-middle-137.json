@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-137",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Redis/137-redis-sentinel-replication.md",
+  "front": "Что делает replica, как Sentinel выбирает новый primary и какие consistency риски остаются?",
+  "back": "Replica асинхронно копирует command stream primary и может обслуживать stale reads. Sentinel instances наблюдают topology, достигают quorum о недоступности, выбирают replica, повышают её и сообщают clients новый primary. Failover не делает систему строго согласованной.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Replication lag означает, что новый primary может не иметь последние writes.\n- Client должен поддерживать Sentinel discovery и переподключение.\n- Read scaling на replicas требует допустимой stale semantics.\n- Quorum и majority для failover настраивают с учётом независимых failure domains.\n\nSENIOR — ТОНКОСТИ\n\n- Network partition может оставить старый primary принимающим writes до ограничений; clients должны переключиться.\n- `min-replicas-to-write` уменьшает риск, но снижает availability и не даёт абсолютной гарантии.\n- Full resync требует snapshot/bandwidth, partial resync зависит от backlog.\n- Failover drills и мониторинг lag важнее наличия трёх процессов Sentinel на одном host.\n\n### Дополнительное техническое объяснение\n\nRedis asynchronous replication uses replication IDs/offset backlog for partial resync. Sentinel performs distributed failure detection, leader election и reconfiguration; resulting failover has explicit RPO and stale-read window.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nReplica копирует, Sentinel обнаруживает сбой и назначает новую primary, но async lag допускает потерю/устаревание.\n\n### Аналогия и объяснение\n\nПомощники переписывают журнал главного с небольшой задержкой. Наблюдатели выбирают нового главного при аварии, но последние строки могли ещё не попасть в его копию.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "redis",
+    "sentinel",
+    "flashcards/Redis"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

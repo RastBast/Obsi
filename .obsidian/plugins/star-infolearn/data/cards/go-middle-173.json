@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-173",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/173-kubernetes-scheduling.md",
+  "front": "Чем affinity отличается от taint/toleration и как распределить replicas по zones?",
+  "back": "nodeSelector/required affinity задают обязательные labels, preferred affinity — предпочтения. Pod anti-affinity/topology spread распределяют replicas. Taint отталкивает Pods, toleration разрешает, но не гарантирует размещение. Scheduler также учитывает resources и constraints.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Labels описывают node/workload attributes.\n- Taint `NoSchedule` запрещает новое размещение без toleration; `NoExecute` может выселить.\n- Topology key zone/hostname задаёт failure domain.\n- Слишком строгие required rules оставляют Pod Pending.\n\nSENIOR — ТОНКОСТИ\n\n- Anti-affinity на больших clusters может быть дорогой; topology spread часто яснее.\n- Toleration не означает «размести именно здесь» — нужна affinity.\n- Autoscaler должен уметь создать node, удовлетворяющий labels/taints/resources.\n- Распределение Pods бесполезно, если storage или load balancer остаётся одной точкой отказа.\n\n### Дополнительное техническое объяснение\n\nScheduler filters nodes by hard predicates and scores preferences. Taints/tolerations control admissibility; affinity and topology constraints encode placement/failure-domain policy.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nAffinity притягивает, taint отталкивает, toleration разрешает терпеть taint.\n\n### Аналогия и объяснение\n\nМожно попросить комнату с окном, запретить вход в служебный этаж без пропуска и разнести команду по разным зданиям. Слишком много обязательных условий оставит человека без комнаты.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "scheduling",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

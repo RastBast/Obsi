@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-157",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/157-docker-storage.md",
+  "front": "Где хранить данные БД, исходники разработки и временные секреты?",
+  "back": "Volume управляется Docker и хранится вне writable layer. Bind mount подключает конкретный host path и тесно связан с host. tmpfs хранит данные в памяти и исчезает после остановки. Выбор зависит от долговечности, переносимости и безопасности.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- БД обычно использует named volume или внешнее storage.\n- Bind mount удобен для live source code в development.\n- Read-only mount уменьшает случайные изменения.\n- Backup должен копировать согласованное состояние, а не только каталог работающей БД.\n\nSENIOR — ТОНКОСТИ\n\n- UID/GID и permissions должны совпасть между process и mounted filesystem.\n- Mount скрывает файлы image в той же точке.\n- Filesystem semantics/performance отличаются на Docker Desktop и network storage.\n- Secrets лучше передавать специализированным secret mount, не обычным долговечным volume.\n\n### Дополнительное техническое объяснение\n\nMount types подключаются в container mount namespace и обходят overlay writable layer. Lifecycle, backing filesystem, ownership и persistence semantics определяют durability и portability.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nVolume — управляемое постоянное хранилище, bind — путь host, tmpfs — временная память.\n\n### Аналогия и объяснение\n\nВстроенный слой контейнера — черновик, volume — отдельный склад, bind mount — выбранная папка хозяина, tmpfs — доска, которую сотрут после выключения.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "docker",
+    "storage",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

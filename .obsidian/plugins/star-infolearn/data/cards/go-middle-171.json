@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-171",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/171-kubernetes-probes.md",
+  "front": "Что должна проверять каждая probe и почему readiness не должна быть копией liveness?",
+  "back": "Startup даёт приложению время запуститься и до успеха блокирует другие probes. Readiness решает, включать ли Pod в трафик. Liveness выявляет зависший процесс и вызывает restart. Неверная liveness может усилить аварию restart storm.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- HTTP, TCP и exec probes имеют разные costs/семантику.\n- Readiness может учитывать локальную готовность и критичную dependency осторожно.\n- Liveness проверяет восстановимость restart, а не краткий downstream outage.\n- Timeout/period/failureThreshold согласуют с latency и SLA.\n\nSENIOR — ТОНКОСТИ\n\n- Probe endpoint обходит обычный auth только на безопасном внутреннем пути и не раскрывает данные.\n- Все replicas, проверяющие БД каждую секунду, создают probe storm.\n- Readiness flapping вызывает endpoint churn; используют устойчивые thresholds.\n- Terminating Pod должен стать not-ready до завершения текущих запросов.\n\n### Дополнительное техническое объяснение\n\nKubelet probe state gates container restart and Pod Ready condition. Endpoint controllers consume readiness; liveness failure invokes restart policy, startup probe suppresses premature health decisions.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nStartup — «запустился?», readiness — «давать трафик?», liveness — «перезапустить?».\n\n### Аналогия и объяснение\n\nСначала сотруднику дают время одеться. Затем табличка показывает, принимает ли он клиентов. Отдельная проверка решает, не завис ли он настолько, что поможет только перезапуск.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "probes",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

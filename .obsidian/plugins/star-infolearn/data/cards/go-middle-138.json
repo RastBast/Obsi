@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-138",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/138-kafka-broker-partition.md",
+  "front": "Как partitioning даёт масштабирование и какую границу порядка гарантирует Kafka?",
+  "back": "Topic разделён на ordered partitions, размещённые на brokers. Record получает offset внутри partition. Producer выбирает partition, consumers читают log. Порядок гарантирован только внутри одной partition, не между всем topic. Число partitions ограничивает параллелизм consumer group.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Broker хранит segment files и обслуживает produce/fetch.\n- Partition имеет leader и replicas.\n- Offset — позиция записи, а не глобальный ID события.\n- Retention удаляет старые segments независимо от того, прочитал ли конкретный consumer, если политика не иная.\n\nSENIOR — ТОНКОСТИ\n\n- Больше partitions повышает parallelism, но увеличивает metadata, files, rebalance и cost порядка.\n- Изменение partition count меняет mapping key→partition для обычного hash.\n- Hot key создаёт hot partition, даже если cluster в среднем свободен.\n- Durability определяется replication/acks/min ISR, не самим словом Kafka.\n\n### Дополнительное техническое объяснение\n\nKafka stores append-only partition logs with monotonically increasing offsets and replicated leaders. Partition is unit of ordering, placement and consumer assignment; aggregate topic has no total order.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nTopic — набор журналов-partitions; offset и порядок локальны одному журналу.\n\n### Аналогия и объяснение\n\nБольшую книгу разрезали на несколько независимых томов и разложили по серверам. Страницы упорядочены внутри тома, но нельзя сказать, какая страница из разных томов была «раньше» без дополнительного времени/ключа.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

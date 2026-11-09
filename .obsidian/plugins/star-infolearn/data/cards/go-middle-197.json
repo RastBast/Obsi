@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-197",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Redis/197-bloom-filter-cache-penetration.md",
+  "front": "Что такое cache penetration и какие ограничения у Bloom filter?",
+  "back": "Bloom filter битовым массивом и несколькими hash проверяет membership. `definitely not` позволяет не идти в БД, `possibly yes` требует проверку. False positives возможны, false negatives отсутствуют только при корректном добавлении и без неподдерживаемого удаления.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nCache penetration — повторные запросы отсутствующих IDs, которые каждый раз доходят до source. Дополнительно используют negative cache, validation и rate limit.\n\nSENIOR — ТОНКОСТИ\n\n- Размер bits и число hashes выбирают по ожидаемому n и false-positive rate.\n- Обычный Bloom не удаляет; counting Bloom платит counters/memory.\n- Filter должен обновляться при insert до/в согласованном порядке, иначе false negative.\n- Переполнение capacity ухудшает false-positive rate и требует rebuild/version swap.\n\n### Дополнительное техническое объяснение\n\nProbabilistic set maps item through k hashes into m bits. Membership query has no false negatives under append-only correct state and tunable false-positive probability; source remains authority.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nФильтр быстро доказывает отсутствие, но положительный ответ только «возможно есть».\n\n### Аналогия и объяснение\n\nОхранник по быстрым отметкам точно говорит, кого нет в списке. Если отметки совпали, он отправляет к настоящему списку, потому что совпадение иногда случайно.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "redis",
+    "algorithms",
+    "flashcards/Redis"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

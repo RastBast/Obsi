@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-168",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/168-kubernetes-service-dns.md",
+  "front": "Зачем Service, если Pod уже имеет IP, и чем отличаются основные Service types?",
+  "back": "Service даёт стабильный virtual IP/DNS и selector выбирает ready endpoints. ClusterIP доступен внутри cluster, NodePort открывает порт nodes, LoadBalancer просит внешний балансировщик. Headless Service не выдаёт virtual IP и возвращает endpoints через DNS.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Pod IP меняется при пересоздании, Service identity остаётся.\n- `port` — порт Service, `targetPort` — порт Pod.\n- EndpointSlice хранит масштабируемый список backend endpoints.\n- Readiness failure удаляет endpoint, liveness — нет напрямую.\n\nSENIOR — ТОНКОСТИ\n\n- kube-proxy/eBPF dataplane реализует virtual service различными способами.\n- Session affinity ухудшает balance/failover и не заменяет state design.\n- Internal/external traffic policy меняет locality и source IP.\n- DNS caching и termination propagation создают короткие окна stale endpoints.\n\n### Дополнительное техническое объяснение\n\nService abstraction selects Pods into EndpointSlices and exposes stable cluster identity. Dataplane load-balances transport flows to ready endpoints; DNS publishes service/headless records.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nService — стабильное имя и точка доступа к сменяющимся Pod IP.\n\n### Аналогия и объяснение\n\nСотрудники меняются, но номер отдела остаётся один. Секретарь знает, кто сейчас готов, и переводит звонок на одного из них.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "network",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

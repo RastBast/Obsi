@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-182",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/182-go-embed.md",
+  "front": "Какие типы поддерживаются и какие данные нельзя бездумно встраивать?",
+  "back": "Директива embed включает выбранные файлы в binary на этапе сборки и инициализирует string, `[]byte` или `embed.FS`. Pattern вычисляется относительно package directory. Это удобно для templates/static assets, но увеличивает binary и требует пересборки при изменении.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\n//go:embed templates/*.html\nvar templates embed.FS\n```\n\nPackage импортирует `embed`, path не выходит через `..`, hidden files и pattern rules учитывают документацию.\n\nSENIOR — ТОНКОСТИ\n\n- Секрет нельзя встраивать: он окажется в artifact и истории release.\n- Большие assets повышают distribution/startup memory tradeoffs.\n- `embed.FS` read-only и реализует `fs.FS`; subdirectory получают через `fs.Sub`.\n- Reproducibility требует детерминированного содержимого generated assets до build.\n\n### Дополнительное техническое объяснение\n\nCompiler/build tool resolves embed patterns and emits file bytes into program data, exposing immutable `fs.FS` view. Artifact size, confidentiality and release coupling становятся частью контракта.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nEmbed пакует файлы внутрь бинарника как read-only ресурсы.\n\n### Аналогия и объяснение\n\nШаблоны кладут прямо в чемодан приложения, поэтому рядом не нужна отдельная папка. Но заменить шаблон без нового чемодана уже нельзя.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "build",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-074",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/74-sync-map.md",
+  "front": "Чем `sync.Map` отличается от map под mutex и для каких workload он оптимизирован?",
+  "back": "`sync.Map` — специализированная конкурентная map для ключей/значений `any`. Она полезна, когда ключ записывается один раз и много читается или когда goroutine работают по непересекающимся ключам. Для обычного typed state map+mutex часто яснее и поддерживает составные инварианты.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- `Load`, `Store`, `LoadOrStore`, `LoadAndDelete`, `CompareAndSwap` выражают атомарные операции над entry.\n- Range не является согласованным snapshot.\n- Значения требуют type assertion или typed wrapper.\n- Нельзя копировать `sync.Map` после начала использования.\n\nSENIOR — ТОНКОСТИ\n\n- Внутренняя read/dirty модель — implementation detail; решение принимают benchmark workload.\n- Атомарность одной entry не защищает связь между двумя ключами.\n- `Clear` и новые операции зависят от версии Go; библиотека должна учитывать minimum toolchain.\n- Удаление entry не освобождает объект, если его удерживают другие ссылки/readers.\n\n### Дополнительное техническое объяснение\n\n`sync.Map` предоставляет entry-level synchronization и memory-model guarantees для observed writes. Она не обеспечивает multi-key transaction или consistent Range snapshot; workload suitability определяется read/write distribution и contention benchmark.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nsync.Map — не «быстрая map всегда», а инструмент для специальных конкурентных паттернов.\n\n### Аналогия и объяснение\n\nЭто общая таблица с готовыми безопасными операциями. Она хороша, когда большинство записей создаётся один раз и потом читается. Если нужно согласованно менять несколько записей, обычный замок проще.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "sync",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

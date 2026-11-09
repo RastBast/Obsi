@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-199",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/199-kafka-partition-reassignment.md",
+  "front": "Зачем reassignment при добавлении broker и какие риски у массового переноса?",
+  "back": "Reassignment меняет replica placement и копирует log на новые brokers, затем удаляет старые replicas. Процесс потребляет disk/network и конкурирует с production traffic, поэтому его throttling, batch size, ISR и free space контролируют.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nДобавление broker само по себе не перемещает старые partitions автоматически во всех сценариях. План распределяет leaders/replicas по brokers/racks и выполняется постепенно.\n\nSENIOR — ТОНКОСТИ\n\n- Source/target disk headroom учитывает временную двойную копию.\n- Moving leader и replica имеют разный traffic impact.\n- Under-replicated partitions и consumer/producer latency — stop signals.\n- Tiered storage и controller mode/version меняют operational details.\n\n### Дополнительное техническое объяснение\n\nReplica reassignment performs inter-broker log replication and metadata transition. Operational safety requires bandwidth throttle, ISR preservation, storage headroom and staged leader balancing.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nНовый broker не помогает старым данным, пока partitions не перераспределены; перенос ограничивают по нагрузке.\n\n### Аналогия и объяснение\n\nНовый склад пуст, а старые переполнены. Товары нужно реально перевезти, но слишком много грузовиков одновременно заблокируют обычные доставки.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "operations",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

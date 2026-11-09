@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-146",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/146-kafka-schema-evolution.md",
+  "front": "Что означают backward/forward compatibility и почему producer/consumer обновляют независимо?",
+  "back": "Backward compatibility позволяет новому reader читать старые данные, forward — старому reader читать новые. При rolling deploy одновременно живут разные версии, поэтому добавляют optional/default fields, не переиспользуют field IDs и проверяют schema registry compatibility.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Event envelope содержит type/version/id/occurred_at/correlation metadata.\n- Удаление поля проходит этап: consumers перестали использовать → producer перестал писать → schema эволюционирует.\n- Unknown fields должны игнорироваться/сохраняться по формату.\n- Breaking semantic change иногда требует нового event type/topic.\n\nSENIOR — ТОНКОСТИ\n\n- Синтаксически совместимое поле может изменить смысл/единицы и сломать потребителей.\n- Defaults применяются reader/writer schema по правилам Avro/Protobuf/JSON Schema по-разному.\n- Upcaster может нормализовать старые версии, но становится важным кодом миграции.\n- PII retention и право на удаление должны учитывать immutable log и downstream copies.\n\n### Дополнительное техническое объяснение\n\nSchema compatibility formalizes writer-reader resolution across independently deployed producers/consumers. Registry policy, stable field identifiers/defaults и semantic version governance обеспечивают replay safety.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nСобытия переживают код, поэтому новая и старая версии обязаны сосуществовать во время обновления и replay.\n\n### Аналогия и объяснение\n\nСтарые письма останутся в архиве после обновления бланка. Новый сотрудник должен понимать старый бланк, а старый сотрудник — не ломаться от дополнительной необязательной строки.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "schema",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

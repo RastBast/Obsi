@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-078",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/78-cgo-costs.md",
+  "front": "Почему вызов C из Go сложнее обычной функции, какие ограничения есть у указателей и как cgo влияет на сборку?",
+  "back": "Cgo пересекает runtime/ABI boundary, имеет overhead вызова, усложняет scheduler, GC и обработку panic/signals. C-код не может произвольно хранить Go pointers после вызова. Сборке нужны C toolchain и platform libraries, что ухудшает cross compilation.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Мелкие частые вызовы лучше batch-ить.\n- Память C освобождают C-функцией; GC её автоматически не видит как Go heap.\n- Долгий C-вызов может занимать OS thread, хотя runtime продолжает другие goroutine.\n- Race detector и profiler имеют ограничения на неинструментированный C-код.\n\nSENIOR — ТОНКОСТИ\n\n- Передача pointer регулируется cgo pointer rules; объект с Go pointers особенно ограничен.\n- Callback из C в Go требует правил thread/runtime и аккуратного lifecycle handle.\n- Crash/undefined behavior C-кода способен повредить весь процесс, recover не спасает.\n- Часто отдельный процесс с RPC даёт лучшую изоляцию ценой latency.\n\n### Дополнительное техническое объяснение\n\nCgo выполняет ABI transition и координацию runtime с foreign call. Pointer passing ограничено, чтобы C не удерживал movable/GC-managed references; external allocation, thread affinity и toolchain dependencies требуют отдельного lifecycle и observability.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nCgo открывает доступ к C, но выводит часть программы из обычных гарантий Go и усложняет поставку.\n\n### Аналогия и объяснение\n\nЭто переход между двумя странами с разными законами памяти. На границе нужно оформить данные и нельзя оставить временный адрес навсегда. Ошибка на чужой стороне способна уронить весь общий процесс.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "cgo",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

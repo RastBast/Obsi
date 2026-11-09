@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-151",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Docker/151-docker-image-container.md",
+  "front": "Чем Docker image отличается от container и где сохраняются изменения файловой системы процесса?",
+  "back": "Image — неизменяемый шаблон из слоёв с файловой системой и metadata. Container — запущенный или остановленный экземпляр image с собственным writable layer, namespace и настройками runtime. Удаление container не меняет image.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Один image может породить множество containers.\n- Запись процесса попадает в writable layer container, если путь не подключён как volume.\n- Container не является виртуальной машиной: он разделяет kernel host.\n- Долговечные данные не хранят только в writable layer; используют volume или внешнее хранилище.\n\nSENIOR — ТОНКОСТИ\n\n- Image адресуется tag или immutable digest; tag может быть переназначен.\n- Copy-on-write overlay снижает дублирование, но write-heavy workload может требовать volume.\n- Остановленный container сохраняет writable layer до удаления, но это не backup.\n- Isolation зависит от namespaces, cgroups, capabilities, seccomp и конфигурации runtime.\n\n### Дополнительное техническое объяснение\n\nOCI image состоит из content-addressed read-only layers и config. Runtime создаёт container bundle, mount namespace и writable copy-on-write layer, затем запускает process с заданными isolation/resource controls.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nImage — рецепт и заготовка, container — конкретный запущенный экземпляр.\n\n### Аналогия и объяснение\n\nImage похож на форму для печенья: сама форма не меняется, сколько бы экземпляров ни сделали. Container — отдельное печенье с собственными изменениями. Важные данные нужно вынести из временного экземпляра.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "docker",
+    "flashcards/Docker"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

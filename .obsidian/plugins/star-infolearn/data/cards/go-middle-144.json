@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-144",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kafka/144-kafka-retention-compaction.md",
+  "front": "Когда записи удаляются и как tombstone влияет на compacted topic?",
+  "back": "Delete retention удаляет старые log segments по времени/размеру независимо от keys. Compaction старается сохранить последнее значение каждого key, позволяя восстановить current state, но не обещает немедленно удалить предыдущие версии. Null value с key — tombstone для удаления состояния.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Topic может применять delete, compact или оба policy.\n- Compaction требует meaningful non-null key.\n- Consumer нельзя считать, что в compacted log всегда ровно одна запись на key прямо сейчас.\n- Tombstone хранится delete-retention период, чтобы consumers увидели удаление.\n\nSENIOR — ТОНКОСТИ\n\n- Segment-level cleanup асинхронен и зависит от dirty ratio/config.\n- Медленный/offline consumer после удаления tombstone может восстановить удалённый stale state из своей логики/backup.\n- Compaction не заменяет event history, если нужны все переходы.\n- Retention capacity рассчитывают по ingress bytes, replication factor и headroom.\n\n### Дополнительное техническое объяснение\n\nLog cleaner rewrites eligible segments retaining latest offset per key plus tombstones within delete retention. Time/size segment deletion is orthogonal; cleanup is eventual and constrained by segment lifecycle.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nRetention хранит окно истории, compaction хранит последнее состояние ключей, tombstone сообщает удаление.\n\n### Аналогия и объяснение\n\nОбычный архив выбрасывает старые страницы по дате. Сжатый справочник оставляет последнюю карточку каждого клиента. Карточка с пометкой «удалён» тоже должна пожить, чтобы опоздавшие читатели её увидели.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kafka",
+    "storage",
+    "flashcards/Kafka"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

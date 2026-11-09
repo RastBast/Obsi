@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-063",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/63-go-generate-codegen.md",
+  "front": "Когда генерация кода лучше reflection или ручного boilerplate, что гарантирует `go generate` и нужно ли коммитить результат?",
+  "back": "`go generate` запускает команды из директив `//go:generate`; он не выполняется автоматически при `go build` или `go test`. Генерация переносит часть работы в build-time и сохраняет статическую типизацию. Политика репозитория должна фиксировать версии инструмента и судьбу generated files.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Директива — инструкция разработчику, а не dependency system.\n- Generated-файл помечают `// Code generated ... DO NOT EDIT.`\n- Частые задачи: mocks, stringer, protobuf, schema clients, repetitive adapters.\n- CI может повторно запустить generator и проверить отсутствие diff.\n\nОбычно результат коммитят, если потребителю не должен быть нужен generator; иногда генерируют в build pipeline. Главное — воспроизводимость.\n\nSENIOR — ТОНКОСТИ\n\n- Версию binary/tool фиксируют в module/tooling policy, иначе разные разработчики получают разный output.\n- Generator обрабатывает недоверенный schema/input как код, поэтому supply-chain и sandbox важны.\n- Генерация не должна зависеть от случайного порядка map, локального пути, timezone или сети без фиксации.\n- Слишком большой generated diff усложняет review; источник истины и команда обновления должны быть очевидны.\n\n### Дополнительное техническое объяснение\n\nCode generation выполняет source-to-source transformation до compilation и сохраняет compile-time type checking результата. Reproducibility требует pinned generator toolchain, deterministic ordering, declared inputs и CI-проверки generated artifacts.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\n`go generate` — явная команда подготовки исходников, не часть обычной сборки. Генератор и результат должны быть воспроизводимыми.\n\n### Аналогия и объяснение\n\nВместо того чтобы сто раз писать одинаковый код, программа-шаблонизатор делает это сама. Но команда не запускается магически: команда должна знать, когда и какой версией инструмента её выполнять.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "tooling",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-065",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/65-api-compatibility.md",
+  "front": "Что считается breaking change для экспортированного API и как эволюционировать функции, интерфейсы и структуры?",
+  "back": "Удаление или изменение экспортированного имени/сигнатуры ломает компиляцию. Добавление метода в интерфейс ломает внешние реализации. Добавление поля в экспортированную структуру может ломать positional literals и сравнимость. Эволюцию планируют через новые symbols, options и major version.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Публичны экспортированные identifiers и наблюдаемое поведение, ошибки и форматы.\n- Новая функция безопаснее изменения старой сигнатуры.\n- Маленький consumer-owned interface легче эволюционировать.\n- Клиенты должны использовать keyed struct literals; библиотека не всегда может заставить внешнего пользователя так делать.\n\nДокументация, error categories и concurrency guarantees являются частью практического контракта, даже если компилятор их не проверяет.\n\nSENIOR — ТОНКОСТИ\n\n- Добавление метода concrete type обычно совместимо, но может создать конфликт embedding или неожиданно реализовать interface.\n- Изменение nil/empty JSON, порядка, timeout или wrapping errors способно сломать runtime-потребителей.\n- Semantic versioning требует нового major module path для v2+.\n- Deprecation даёт миграционный путь: старый API остаётся рабочим до объявленного удаления.\n\n### Дополнительное техническое объяснение\n\nCompatibility включает source, binary/toolchain и behavioral contracts. Interface method set, exported struct layout, error identity и serialization schema образуют dependency surface. Breaking evolution выпускают через semver major и module path suffix с документированной миграцией.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nПубличный API — обещание не только компилятору, но и поведению клиентов. Расширяй добавлением, а не неожиданным изменением.\n\n### Аналогия и объяснение\n\nЕсли другие команды строят код из ваших деталей, изменение формы детали ломает их сборку. Даже незаметное изменение поведения может сломать работающую систему. Поэтому старую деталь оставляют, добавляют новую и дают время перейти.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "api-design",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

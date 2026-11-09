@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-206",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/206-pod-disruption-budget.md",
+  "front": "Как `minAvailable` и `maxUnavailable` влияют на voluntary disruption и почему PDB не является гарантией общей доступности?",
+  "back": "PDB ограничивает число Pods выбранного workload, которые Kubernetes разрешит одновременно вывести при voluntary disruptions через Eviction API, например drain/upgrade. Он не предотвращает node crash, OOM, прямое удаление Pod и не создаёт дополнительные replicas.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nPDB выбирает Pods selector-ом и задаёт либо `minAvailable`, либо `maxUnavailable`. Node drain использует eviction и может ждать, пока disruption budget разрешит выселение. Deployment replicas/readiness должны позволять сохранить бюджет.\n\nСлишком строгий PDB, например `minAvailable: 1` для единственного Pod, блокирует обслуживание node. Для quorum systems бюджет согласуют с правилами кворума.\n\nSENIOR — ТОНКОСТИ\n\nUnhealthy Pod eviction policy и поведение менялись/расширялись версиями Kubernetes. PDB учитывает expected/healthy counts по controller scale, но не гарантирует, что ready Pod действительно обслуживает SLA.\n\nCluster Autoscaler и upgrades могут остановиться из-за PDB. Direct `kubectl delete pod`, controller rollout и involuntary failures имеют другую семантику. Нужны topology spread и достаточное число replicas.\n\n### Дополнительное техническое объяснение\n\nDisruption controller рассчитывает `disruptionsAllowed` из desired healthy count и observed readiness. Eviction admission декрементирует budget для voluntary operation. PDB — policy gate control plane, не fault-tolerance mechanism.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nPDB говорит ремонтной бригаде: «не закрывайте больше одной кассы одновременно». Но он не остановит пожар и не построит новую кассу. Если касса всего одна, слишком строгий запрет не даст ремонтировать помещение.\n\n### Аналогия и объяснение\n\nДоступность получается из нескольких вещей: достаточных replicas, распределения по nodes/zones, readiness и корректного приложения. PDB защищает только плановые выселения внутри этой системы.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

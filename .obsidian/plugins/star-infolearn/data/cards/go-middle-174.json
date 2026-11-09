@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-174",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/174-pv-pvc-storageclass.md",
+  "front": "Как access modes, reclaim policy и topology влияют на persistent workload?",
+  "back": "PVC — запрос workload на storage, PV — конкретный cluster storage resource, StorageClass описывает provisioner и параметры динамического создания. Binding связывает PVC с подходящим PV, а Pod монтирует claim.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Access modes RWO/ROX/RWX описывают возможности provider, не универсальную блокировку приложения.\n- Reclaim Retain/Delete определяет судьбу volume после claim.\n- StatefulSet обычно создаёт отдельный claim на replica.\n- Snapshot/backup зависит от CSI/provider и application consistency.\n\nSENIOR — ТОНКОСТИ\n\n- Zone-bound volume ограничивает nodes; WaitForFirstConsumer учитывает scheduling topology.\n- Filesystem resize и volume expansion требуют поддержки driver/class/filesystem.\n- RWO может означать один node, а не один Pod.\n- DB crash consistency не равна transaction-consistent backup без quiesce/protocol.\n\n### Дополнительное техническое объяснение\n\nKubernetes storage API decouples claim from CSI-backed persistent volume. Binding/provisioning honors capacity, access mode, class and topology; reclaim and snapshot semantics define data lifecycle.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nPVC просит хранилище, PV представляет его, StorageClass умеет создавать подходящее.\n\n### Аналогия и объяснение\n\nЗаявка говорит «нужен склад такого размера», склад — реальное помещение, а класс — каталог поставщиков и условий. После удаления арендатора склад можно удалить или сохранить по политике.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "storage",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

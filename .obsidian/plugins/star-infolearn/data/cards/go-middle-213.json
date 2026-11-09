@@ -1,0 +1,29 @@
+{
+  "id": "go-middle-213",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/213-postgresql-upsert.md",
+  "front": "Как `INSERT ... ON CONFLICT` атомарно обрабатывает конкурентное создание и чем `DO NOTHING` отличается от `DO UPDATE`?",
+  "back": "`ON CONFLICT` использует unique/exclusion arbiter и атомарно выбирает вставку либо альтернативу при конфликте. `DO NOTHING` пропускает конфликтующую строку, `DO UPDATE` обновляет её с доступом к proposed row через `EXCLUDED`. Это безопаснее check-then-insert в приложении.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```sql\nINSERT INTO counters(key, value)\nVALUES ($1, 1)\nON CONFLICT (key)\nDO UPDATE SET value = counters.value + 1\nRETURNING value;\n```\n\nОперация выполняется одной SQL-командой под механизмом уникального индекса. Conflict target указывает columns/constraint или позволяет inference подходящего unique index. `RETURNING` отдаёт вставленную/обновлённую строку.\n\n`DO UPDATE ... WHERE` может не обновить строку после lock, и semantics результата нужно учитывать.\n\nSENIOR — ТОНКОСТИ\n\nUPSERT не устраняет все deadlocks: разные keys/дополнительные updates могут образовать цикл. Частые updates одного key создают hotspot и bloat. Conditional update с version позволяет optimistic concurrency, а слепой update может потерять доменную проверку.\n\n`MERGE` выражает более общие ветви matched/not matched, но имеет иные concurrency semantics; нельзя автоматически считать его синонимом UPSERT.\n\n### Дополнительное техническое объяснение\n\nUnique index arbitration и speculative insertion координируют concurrent inserters. `ON CONFLICT DO UPDATE` гарантирует атомарный insert-or-update outcome для каждой proposed row при обычном исполнении, сохраняя statement-level MVCC/locking semantics.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nВместо «посмотри, есть ли карточка, потом положи» мы одной командой говорим архиву: «если места нет, обнови существующую». Архив сам разруливает двух сотрудников, пришедших одновременно.\n\n### Аналогия и объяснение\n\nГлавная защита — уникальный замок в самой БД. Предварительный SELECT приложения оставляет окно гонки; UPSERT закрывает решение внутри одной атомарной операции.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

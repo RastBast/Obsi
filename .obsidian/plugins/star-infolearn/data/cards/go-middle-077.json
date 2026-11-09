@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-077",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/77-timer-ticker-lifecycle.md",
+  "front": "Когда применять Timer/Ticker, зачем вызывать Stop и какие сложности есть у Reset?",
+  "back": "Timer даёт одно событие, Ticker — периодические. Владелец останавливает их, когда события больше не нужны. Reset/Stop имеют семантику, зависящую от состояния и версии Go; код следует документации minimum version и не допускает конкурентного управления без протокола.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- `time.After` удобно для единичного select, Timer — для управления lifecycle.\n- Ticker может пропускать/сливать ticks, если consumer не успевает; это не очередь всех интервалов.\n- `defer ticker.Stop()` ставят после создания в ограниченной функции.\n- Для scheduler по wall time отдельно учитывают clock jumps и DST.\n\nSENIOR — ТОНКОСТИ\n\n- Старые советы о drain канала Timer могут отличаться для новых реализаций; фиксируют версию и читают docs.\n- Callback `AfterFunc` выполняется в отдельной goroutine и требует синхронизации с Stop/Reset.\n- Тысячи индивидуальных timers имеют runtime cost; иногда нужен общий scheduler/heap.\n- Периодическую задачу защищают от overlap, если предыдущий запуск дольше интервала.\n\n### Дополнительное техническое объяснение\n\nRuntime timer heap планирует wakeups; Ticker delivery допускает coalescing. Lifecycle operations Stop/Reset координируются с channel/callback delivery по versioned API semantics, а job scheduler отдельно определяет overlap и drift policy.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nTimer — один сигнал, Ticker — повтор. У каждого должен быть владелец остановки и политика медленного consumer.\n\n### Аналогия и объяснение\n\nБудильник звонит один раз, метроном — регулярно. Если работу по удару не успевают закончить, метроном не обязан хранить все пропущенные удары. При уходе из комнаты устройство нужно выключить.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "timers",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

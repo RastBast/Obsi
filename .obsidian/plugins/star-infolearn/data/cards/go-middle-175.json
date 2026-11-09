@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-175",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/175-ingress-gateway.md",
+  "front": "Где завершается TLS и как host/path route связывается с Service?",
+  "back": "Ingress описывает внешнюю HTTP(S)-маршрутизацию к Services, но требует Ingress Controller. Gateway API разделяет инфраструктурный Gateway и Routes, поддерживает более выразительные роли и протоколы. Объект без controller сам трафик не обрабатывает.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Controller создаёт/настраивает proxy/load balancer.\n- TLS Secret содержит certificate/key для termination по host.\n- Route указывает Service port, readiness его endpoints решает backend availability.\n- Timeout/body limits/retries зависят от controller annotations/policy.\n\nSENIOR — ТОНКОСТИ\n\n- Разные controllers интерпретируют extensions по-разному; portability проверяют.\n- Forwarded headers доверяют только от known proxy chain.\n- TLS passthrough не позволяет обычный L7 path routing без termination.\n- Gateway API ReferenceGrant контролирует cross-namespace references.\n\n### Дополнительное техническое объяснение\n\nIngress/Gateway resources are control-plane intent reconciled by controller into L7 data plane. Listener, TLS termination, hostname/path matching и backend references образуют routing graph.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nIngress/Gateway — декларация маршрута, controller — реальный proxy, Service — стабильный backend.\n\n### Аналогия и объяснение\n\nПравило на бумаге говорит, куда направлять `api.example.com`, но нужен настоящий диспетчер, который прочитает правило и будет переводить звонки.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "network",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

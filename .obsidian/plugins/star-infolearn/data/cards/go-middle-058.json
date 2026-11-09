@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-058",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/58-bufio-scanner-reader.md",
+  "front": "Какие ограничения есть у Scanner, как увеличить размер token и почему ошибки проверяют после цикла?",
+  "back": "`Scanner` удобен для последовательных token по SplitFunc, но имеет максимальный размер token и прекращает работу при его превышении. Для больших строк, точного контроля буфера или сохранения delimiters используют `bufio.Reader`. После `Scan()` проверяют `Err()`.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\ns := bufio.NewScanner(r)\nbuf := make([]byte, 64*1024)\ns.Buffer(buf, 1024*1024)\nfor s.Scan() { use(s.Text()) }\nif err := s.Err(); err != nil { return err }\n```\n\n- По умолчанию Scanner разбивает по строкам и удаляет перевод строки.\n- `Bytes()` может ссылаться на буфер, который изменится при следующем Scan; для долгого хранения нужна копия.\n- Reader предлагает `ReadString`, `ReadBytes`, `ReadSlice`, `Peek` и полный контроль над ошибкой/разделителем.\n\nSENIOR — ТОНКОСТИ\n\n- `Scanner.Buffer` вызывают до первого `Scan`; максимальный размер задают из protocol limits, а не безгранично.\n- Custom SplitFunc обязана обеспечивать прогресс и корректно работать с `atEOF`, иначе возможны panic или loop.\n- `ReadSlice` может вернуть фрагмент и `ErrBufferFull`; вызывающий собирает части либо выбирает другой API.\n- Буферизация сокращает syscalls, но добавляет отдельный слой, который нужно flush при записи.\n\n### Дополнительное техническое объяснение\n\n`bufio.Scanner` управляет reusable token buffer и вызывает SplitFunc над доступным prefix. Token lifetime ограничен следующей итерацией, а `ErrTooLong` защищает от unbounded allocation. `bufio.Reader` экспонирует более низкоуровневое управление delimiter и partial reads.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nScanner — простой token loop с лимитом. Reader — больше контроля для больших или сложных протоколов.\n\n### Аналогия и объяснение\n\nScanner сам режет поток на строки или слова, поэтому код короткий. Но у него есть ограничение размера одного куска. Если вход может содержать огромную строку, лимит нужно осознанно увеличить или читать частями через Reader.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "io",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-105",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/105-bfs-dfs.md",
+  "front": "Какие структуры данных используют обходы, какова сложность и когда BFS находит кратчайший путь?",
+  "back": "BFS идёт слоями через queue и находит кратчайшее число рёбер в невзвешенном графе. DFS идёт в глубину через recursion/stack и удобен для components, cycles и topological algorithms. Оба работают за O(V+E) при adjacency list.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- `visited` отмечают при добавлении в queue/stack, чтобы не размножать вершины.\n- Для восстановления пути хранят parent.\n- В disconnected graph запускают обход из каждой непосещённой вершины.\n- Recursive DFS может переполнить stack; iterative вариант контролируемее.\n\nSENIOR — ТОНКОСТИ\n\n- BFS memory O(V) может быть узким местом на широком графе.\n- DFS cycle detection в directed graph различает состояния visiting/visited.\n- Bidirectional BFS резко сокращает frontier при известной цели и обратимых рёбрах.\n- Для implicit graph соседи генерируются, но сложность зависит от branching factor/depth.\n\n### Дополнительное техническое объяснение\n\nGraph traversal marks each reachable vertex and examines each edge once. FIFO frontier обеспечивает nondecreasing hop distance; LIFO/recursion формирует depth-first forest и discovery/finish structure.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nBFS использует очередь и идёт по расстоянию, DFS — стек и углубляется.\n\n### Аналогия и объяснение\n\nBFS сначала проверяет всех соседей, потом соседей соседей. DFS выбирает один коридор до конца и возвращается. Поэтому BFS первым найдёт путь с минимальным числом дверей.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "graph",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

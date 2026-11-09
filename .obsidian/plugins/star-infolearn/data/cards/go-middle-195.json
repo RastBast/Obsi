@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-195",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/195-transactional-outbox.md",
+  "front": "Какие гарантии даёт outbox и почему consumer всё равно должен быть идемпотентным?",
+  "back": "Бизнес-изменение и запись события в outbox table выполняются одной DB transaction. Отдельный relay/CDC публикует outbox в broker и отмечает/удаляет запись. Это исключает «БД committed, событие забыто», но доставка остаётся at-least-once.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nOutbox содержит event ID, aggregate ID/type, schema version, payload, time. Publisher batch-ит, retry-ит с backoff; cleanup сохраняет audit/retention policy.\n\nSENIOR — ТОНКОСТИ\n\n- Crash после publish до mark создаёт duplicate.\n- Polling с `SKIP LOCKED` масштабируется workers, CDC уменьшает polling latency.\n- Порядок событий aggregate требует sequence и partition key.\n- Poison row, schema evolution и backlog имеют monitoring/runbook.\n\n### Дополнительное техническое объяснение\n\nOutbox atomically persists domain mutation and integration event in one ACID boundary. Asynchronous publisher provides at-least-once transfer; event identity/consumer deduplication produce idempotent effect.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nСохрани данные и обещание отправить событие одной транзакцией, отправляй позже с безопасными повторами.\n\n### Аналогия и объяснение\n\nКассир одновременно проводит покупку и кладёт письмо в надёжный лоток. Курьер может забрать письмо повторно, но оно не исчезнет между кассой и почтой.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "database",
+    "distributed-systems",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

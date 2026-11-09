@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-169",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Kubernetes/169-configmap-secret.md",
+  "front": "Как обновления попадают в Pod и почему переменные окружения не обновляются автоматически?",
+  "back": "ConfigMap хранит несекретную конфигурацию, Secret — чувствительные bytes, но base64 не является шифрованием. Оба можно передать через env или volume. Нужны RBAC, encryption at rest, внешний secret manager и ротация по риску.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Env значения фиксируются при старте container; для изменения нужен restart.\n- Volume projection обновляется eventually, но приложение должно перечитать файл.\n- Immutable config уменьшает случайные изменения.\n- Deployment annotation/checksum часто запускает rollout при новой config.\n\nSENIOR — ТОНКОСТИ\n\n- Secret может утечь через manifest, logs, process env, debug endpoint и backup etcd.\n- CSI/external secrets синхронизируют внешний store, но добавляют failure mode.\n- Ротация требует периода одновременной поддержки старого/нового credential.\n- RBAC ограничивает чтение по namespace/service account и least privilege.\n\n### Дополнительное техническое объяснение\n\nKubernetes API objects persist configuration in etcd and project data via env or volumes. Confidentiality depends on API authorization, at-rest encryption, transport, node exposure и rotation workflow.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nSecret — не просто base64 ConfigMap: для него нужен полный безопасный lifecycle.\n\n### Аналогия и объяснение\n\nConfigMap — инструкция на стене, Secret — ключ от сейфа. Записать ключ другими буквами не значит спрятать его; нужно ограничить, кто видит и как его заменяют.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "kubernetes",
+    "config",
+    "flashcards/Kubernetes"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

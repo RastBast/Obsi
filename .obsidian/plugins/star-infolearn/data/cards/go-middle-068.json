@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-068",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Рантайм/68-gomemlimit-gogc.md",
+  "front": "Что регулируют `GOGC` и `GOMEMLIMIT`, почему memory limit мягкий и как избежать GC thrashing?",
+  "back": "`GOGC` задаёт целевой относительный рост heap между циклами GC. `GOMEMLIMIT` задаёт мягкую цель памяти, управляемой runtime. Слишком низкая цель заставляет GC работать почти непрерывно и снижает throughput; настройки выбирают по live heap, RSS и latency.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- `GOGC=100` примерно разрешает heap вырасти относительно объёма live data перед следующим циклом.\n- Большее значение обычно означает реже GC и больше памяти; меньшее — наоборот.\n- Limit оставляет запас ниже container limit для stacks, binary, cgo и внешней памяти.\n- Метрики GC CPU, heap goal, allocation rate и OOM важнее одной настройки.\n\nSENIOR — ТОНКОСТИ\n\n- Soft limit может быть превышен из-за non-Go memory, минимального прогресса и резкого burst.\n- При live heap, близком к limit, runtime не может собрать достижимые данные и начинается thrash.\n- Memory limit не заменяет bounded caches/queues и admission control.\n- Изменение процента программно влияет на весь процесс и должно иметь одного владельца.\n\n### Дополнительное техническое объяснение\n\nGC pacer вычисляет heap goal из live heap, GOGC и runtime memory limit. Когда reachable set приближается к goal, assist ratio и GC CPU растут. Capacity planning учитывает runtime-managed и external RSS с safety headroom.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nGOGC балансирует CPU и размер heap, GOMEMLIMIT добавляет абсолютную мягкую границу. Оба не исправят удержание живых объектов.\n\n### Аналогия и объяснение\n\nСборщик можно вызывать чаще и занимать меньше склада либо реже и держать больше коробок. Если разрешённый склад меньше уже нужных коробок, уборщик будет бегать постоянно, но места не освободит.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "runtime",
+    "gc",
+    "flashcards/Рантайм"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

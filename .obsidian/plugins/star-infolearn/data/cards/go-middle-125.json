@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-125",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/БД/125-wal-replication-backup.md",
+  "front": "Чем physical replication отличается от logical, что такое replication slot и почему replica не является backup?",
+  "back": "WAL описывает изменения страниц/транзакций для crash recovery. Physical replica воспроизводит WAL кластера, logical декодирует изменения таблиц для выбранных публикаций. Slot удерживает WAL до consumer. Backup плюс архив WAL позволяет PITR. Реплика повторит ошибочное удаление, поэтому не заменяет независимый backup.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Synchronous replication может ждать подтверждение replica и повышает durability ценой latency/availability.\n- Async replica имеет lag и может потерять последние commits при failover.\n- Slot без живого consumer способен заполнить disk удержанным WAL.\n- Restore регулярно тестируют; наличие файлов backup не доказывает восстановимость.\n\nSENIOR — ТОНКОСТИ\n\n- Failover требует fencing старого primary, иначе split brain.\n- Read replica возвращает stale data; read-after-write маршрутизируют осознанно.\n- Logical replication не переносит автоматически все DDL/sequences/large objects одинаково.\n- RPO определяет допустимую потерю, RTO — время восстановления; архитектура следует этим целям.\n\n### Дополнительное техническое объяснение\n\nWAL обеспечивает write-ahead durability и redo. Streaming physical replication replays records, logical decoding emits relation changes. PITR combines base backup with continuous WAL archive under defined RPO/RTO.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nWAL — журнал для повтора, replica — живая копия, backup — независимая точка восстановления.\n\n### Аналогия и объяснение\n\nКопировщик в реальном времени повторит и полезную запись, и случайное удаление. Архивный снимок и журнал позволяют вернуться к моменту перед ошибкой. Но это работает только после настоящей проверки восстановления.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "postgresql",
+    "wal",
+    "flashcards/БД"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

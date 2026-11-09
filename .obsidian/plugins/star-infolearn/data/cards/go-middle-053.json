@@ -1,0 +1,30 @@
+{
+  "id": "go-middle-053",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Go/53-make-vs-new.md",
+  "front": "Что возвращают `new(T)` и `make`, для каких типов применяется `make` и гарантируют ли они heap allocation?",
+  "back": "`new(T)` создаёт нулевое значение `T` и возвращает `*T`. `make` инициализирует внутреннюю runtime-структуру slice, map или channel и возвращает само значение, а не указатель на него. Размещение на stack или heap определяет escape analysis.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\np := new(int)          // *int, *p == 0\ns := make([]int, 3, 8) // []int с len=3, cap=8\nm := make(map[string]int)\nch := make(chan int, 1)\n```\n\n- `var p *int` даёт nil-указатель, а `new(int)` — ненулевой указатель на нулевой int.\n- `var s []int` допускает append, но `make` задаёт длину/ёмкость заранее.\n- `var m map[K]V` читается, но запись паникует; `make` подготавливает map к записи.\n- `var ch chan T` блокируется навсегда; `make` создаёт рабочий канал.\n\nSENIOR — ТОНКОСТИ\n\n- `&T{}` часто эквивалентен `new(T)`, но composite literal позволяет сразу задать поля.\n- `make([]T, n)` создаёт n логических zero elements; для последующего append обычно нужен `make([]T, 0, n)`.\n- Capacity/hint не является точным обещанием внутренней памяти map.\n- Ни `make`, ни `new` сами по себе не определяют heap: компилятор может оставить объект на стеке.\n\n### Дополнительное техническое объяснение\n\n`new(T)` эквивалентен выделению addressable zero value типа `T` с результатом `*T`. `make` выполняет type-specific initialization дескриптора slice, hash map или channel. Storage class выбирается escape analysis и не является частью семантики built-in функции.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\n`new` возвращает указатель на zero value любого типа. `make` запускает внутренний механизм только slice, map и channel.\n\n### Аналогия и объяснение\n\n`new` похож на выдачу пустой коробки и адреса этой коробки. `make` похож на сборку работающего контейнера: списка, таблицы или очереди. Без сборки некоторые нулевые контейнеры нельзя заполнять.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "allocation",
+    "flashcards/Go"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

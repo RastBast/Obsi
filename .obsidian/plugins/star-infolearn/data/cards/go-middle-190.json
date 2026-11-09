@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-190",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/190-union-find.md",
+  "front": "Какие инварианты поддерживает DSU и где он применяется?",
+  "back": "DSU хранит компоненты непересекающихся множеств. `Find` возвращает representative, `Union` соединяет roots. Path compression и union by rank/size дают почти константную амортизированную сложность O(α(n)).",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\nИзначально каждый элемент — собственный parent. Find идёт к root и переподключает путь. Union присоединяет меньшую/низкую tree к большей/высокой. Применения: connectivity, Kruskal MST, объединение аккаунтов.\n\nSENIOR — ТОНКОСТИ\n\n- Обычный DSU не поддерживает эффективное удаление/разделение.\n- Для rollback не применяют обычное path compression, хранят историю changes.\n- Representative не обязан быть минимальным элементом.\n- Dynamic connectivity с deletions требует более сложных offline/online алгоритмов.\n\n### Дополнительное техническое объяснение\n\nDisjoint-set forest maintains parent/rank arrays. Path compression flattens find paths, union-by-rank bounds height; aggregate sequence complexity is inverse-Ackermann amortized.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nУ каждой группы есть корень; Find находит его, Union соединяет два корня.\n\n### Аналогия и объяснение\n\nКаждая компания имеет главного представителя. При слиянии один руководитель начинает подчиняться другому, а сотрудники запоминают короткий путь к новому главному.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "graph",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

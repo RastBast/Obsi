@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-107",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Алгоритмы/107-topological-sort.md",
+  "front": "Когда порядок существует и чем алгоритм Кана отличается от DFS-подхода?",
+  "back": "Топологический порядок существует только для DAG и ставит каждую зависимость раньше зависимого узла. Алгоритм Кана берёт вершины с indegree=0 и уменьшает indegree соседей. Если обработано меньше V, есть цикл. DFS использует postorder и состояния для cycle detection.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n- Построить indegree за O(V+E).\n- Queue нулевых indegree определяет один из возможных порядков.\n- Несколько готовых вершин означают, что порядок не уникален.\n- Применения: build graph, миграции, учебные prerequisites, job scheduling.\n\nSENIOR — ТОНКОСТИ\n\n- Для детерминированного минимального порядка вместо queue используют heap, увеличивая стоимость.\n- Strongly connected components показывают группы циклических зависимостей.\n- Dynamic graph требует переоценки порядка/инкрементальных алгоритмов.\n- Рёбра должны иметь ясное направление: dependency→dependent или наоборот.\n\n### Дополнительное техническое объяснение\n\nKahn algorithm iteratively removes zero-indegree vertices, preserving partial order in DAG. Processed count ниже V доказывает directed cycle. Complexity O(V+E), либо O((V+E) log V) с ordered frontier.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nБерём всё без зависимостей, удаляем его рёбра и повторяем. Остаток означает цикл.\n\n### Аналогия и объяснение\n\nСначала выполняем задачи, которым ничего не нужно. После их завершения некоторые другие задачи становятся свободными. Если остались задачи, а свободных нет, они ждут друг друга по кругу.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "algorithms",
+    "graph",
+    "flashcards/Алгоритмы"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}

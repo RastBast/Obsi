@@ -1,0 +1,31 @@
+{
+  "id": "go-middle-041",
+  "type": "short_answer",
+  "sourceFile": "Golang-Middle-Interview/Cards/Сети/41-http-server-timeouts-shutdown.md",
+  "front": "Почему не стоит ограничиваться `http.ListenAndServe`, какие timeouts нужны серверу и как корректно завершить обработку запросов?",
+  "back": "Создают `http.Server` с явными timeouts и limits, запускают его, по сигналу перестают принимать новые соединения и вызывают `Shutdown(ctx)`, который ждёт активные обработчики до deadline. Handler должен уважать `r.Context()`.",
+  "explanation": "MIDDLE — РАЗВЁРНУТЫЙ ОТВЕТ\n\n```go\nsrv := &http.Server{\n    Addr:              \":8080\",\n    Handler:           mux,\n    ReadHeaderTimeout: 5 * time.Second,\n    ReadTimeout:       15 * time.Second,\n    WriteTimeout:      30 * time.Second,\n    IdleTimeout:       60 * time.Second,\n}\n\nserveErr := make(chan error, 1)\ngo func() {\n    serveErr <- srv.ListenAndServe()\n}()\n\nselect {\ncase <-sig:\n    ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)\n    defer cancel()\n    if err := srv.Shutdown(ctx); err != nil { return err }\ncase err := <-serveErr:\n    if !errors.Is(err, http.ErrServerClosed) { return err }\n}\n```\n\nНа request body ставят разумный лимит (`http.MaxBytesReader`), проверяют методы/content type, закрывают ресурсы. Ошибки handler переводят в единый безопасный ответ.\n\nSENIOR — ТОНКОСТИ\n\nTimeouts защищают разные фазы и должны соответствовать streaming/API. Слишком жёсткий `WriteTimeout` может ломать долгие stream; защита slowloris обычно начинается с `ReadHeaderTimeout` и ограничения заголовков. За reverse proxy нужно согласовать deadline всех hop, иначе нижний сервис продолжит работу после ухода клиента.\n\n`Shutdown` закрывает listeners и idle connections, затем ждёт активные. Он не ждёт произвольные фоновые goroutine и не всегда автоматически управляет hijacked/WebSocket connections; их регистрируют и закрывают отдельно. После истечения deadline применяют `Close` по принятой политике.\n\nОркестрация readiness важна: сначала снять instance из балансировки/вернуть not-ready, дать propagation delay при необходимости, затем drain. Liveness не должна падать слишком рано и провоцировать жёсткое убийство до завершения.\n\nHandler не должен запускать неуправляемую работу после ответа. Request context отменяется при disconnect/завершении, поэтому долгоживущая задача должна быть передана надёжной очереди с собственным lifecycle, а не просто detached goroutine.\n\nRecovery middleware логирует stack и возвращает 500, но не раскрывает внутренности. Также нужны TLS/proxy header policy, лимиты, observability и защита административных endpoints.\n\n### Дополнительное техническое объяснение\n\nСоздают `http.Server` с явными timeouts и limits, запускают его, по сигналу перестают принимать новые соединения и вызывают `Shutdown(ctx)`, который ждёт активные обработчики до deadline. Handler должен уважать `r.Context()`.\n\nTimeouts защищают разные фазы и должны соответствовать streaming/API. Слишком жёсткий `WriteTimeout` может ломать долгие stream; защита slowloris обычно начинается с `ReadHeaderTimeout` и ограничения заголовков. За reverse proxy нужно согласовать deadline всех hop, иначе нижний сервис продолжит работу после ухода клиента.\n\n`Shutdown` закрывает listeners и idle connections, затем ждёт активные. Он не ждёт произвольные фоновые goroutine и не всегда автоматически управляет hijacked/WebSocket connections; их регистрируют и закрывают отдельно. После истечения deadline применяют `Close` по принятой политике.\n\nЕСЛИ ЗАБЫЛ / ПРОСТЫМИ СЛОВАМИ\n\nProduction server — это не только handler: **timeouts, лимиты, signal, readiness, `Shutdown` с deadline и context внутри запросов**. Graceful означает перестать принимать и ограниченно дождаться текущих.\n\n### Аналогия и объяснение\n\nProduction server — это не только handler: **timeouts, лимиты, signal, readiness, `Shutdown` с deadline и context внутри запросов**. Graceful означает перестать принимать и ограниченно дождаться текущих.\n\nПредставь запрос как посылку, проходящую через несколько узлов. На каждом участке она может задержаться, потеряться или быть обработана повторно. Поэтому сетевой код обязан ограничивать ожидание, проверять результат и безопасно переживать частичные сбои.",
+  "tags": [
+    "go",
+    "interview",
+    "middle",
+    "http",
+    "backend",
+    "flashcards/Сети"
+  ],
+  "difficulty": 3,
+  "fsrsState": {
+    "state": "new",
+    "difficulty": 0,
+    "stability": 0,
+    "retrievability": 0,
+    "reps": 0,
+    "lapses": 0,
+    "lastReview": null,
+    "nextReview": 1794182400000,
+    "scheduledDays": 0,
+    "elapsedDays": 0
+  },
+  "createdAt": 1794182400000,
+  "updatedAt": 1794182400000
+}
