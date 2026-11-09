@@ -3,6 +3,8 @@ tags: [go, interview, middle, modules, tooling, flashcards/Go]
 topic: Go modules
 ---
 
+Что задают `go.mod` и `go.sum`, чем module отличается от package, для чего нужны `internal`, `vendor` и `go work`?::Module — версионируемая коллекция packages с путём из `go.mod`; package — единица компиляции в каталоге. `go.sum` фиксирует криптографические суммы загруженных модулей. `internal` ограничивает импорт, `vendor` хранит копии зависимостей, `go work` связывает локальные модули без постоянных `replace`.
+
 # Как Go управляет модулями и зависимостями?
 
 ## Вопрос

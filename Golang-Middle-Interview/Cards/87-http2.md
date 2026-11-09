@@ -3,6 +3,8 @@ tags: [go, interview, middle, network, http2, flashcards/Сети]
 topic: HTTP/2
 ---
 
+Как streams, frames и HPACK меняют работу по сравнению с HTTP/1.1 и где остаётся head-of-line blocking?::HTTP/2 делит одно соединение на независимые logical streams из frames, сжимает headers и позволяет multiplexing. Это убирает application HOL между HTTP-запросами, но потеря TCP packet задерживает весь byte stream на transport layer.
+
 # Что даёт HTTP/2 multiplexing?
 
 ## Вопрос

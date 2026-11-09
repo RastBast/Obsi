@@ -3,6 +3,8 @@ tags: [go, interview, middle, errgroup, semaphore, flashcards/Рантайм]
 topic: errgroup и semaphore
 ---
 
+Как запустить несколько связанных задач, отменить остальные при ошибке и ограничить параллелизм?::`errgroup.WithContext` связывает группу goroutine: возвращает первую ненулевую ошибку и отменяет context группы. `SetLimit` или weighted semaphore ограничивает активную работу. Нужно по-прежнему правильно передавать context и не допускать блокирующих send вне отмены.
+
 # Когда использовать errgroup и semaphore?
 
 ## Вопрос

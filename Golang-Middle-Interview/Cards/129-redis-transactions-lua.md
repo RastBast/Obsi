@@ -3,6 +3,8 @@ tags: [go, interview, middle, redis, transactions, flashcards/Redis]
 topic: MULTI, WATCH и Lua
 ---
 
+Чем MULTI/EXEC, WATCH и server-side Lua/function отличаются и дают ли они rollback?::MULTI ставит команды в очередь и EXEC выполняет их последовательно без вклинивания других clients, но rollback как в SQL нет. WATCH реализует optimistic check: EXEC отменяется, если watched key изменился. Lua script выполняется атомарно относительно других команд и подходит read-modify-write.
+
 # Как выполнять атомарную логику в Redis?
 
 ## Вопрос

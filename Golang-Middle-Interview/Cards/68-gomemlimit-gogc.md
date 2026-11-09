@@ -3,6 +3,8 @@ tags: [go, interview, middle, runtime, gc, flashcards/Рантайм]
 topic: GOMEMLIMIT и GOGC
 ---
 
+Что регулируют `GOGC` и `GOMEMLIMIT`, почему memory limit мягкий и как избежать GC thrashing?::`GOGC` задаёт целевой относительный рост heap между циклами GC. `GOMEMLIMIT` задаёт мягкую цель памяти, управляемой runtime. Слишком низкая цель заставляет GC работать почти непрерывно и снижает throughput; настройки выбирают по live heap, RSS и latency.
+
 # Как настраивать GOMEMLIMIT и GOGC?
 
 ## Вопрос

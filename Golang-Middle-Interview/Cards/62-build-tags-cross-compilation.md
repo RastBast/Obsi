@@ -3,6 +3,8 @@ tags: [go, interview, middle, build, flashcards/Go]
 topic: Build constraints и cross compilation
 ---
 
+Как ограничить файл платформой или тегом, что задают `GOOS` и `GOARCH` и какие ограничения добавляет cgo?::Build constraints `//go:build` и суффиксы файлов выбирают исходники для конкретной сборки. `GOOS` задаёт ОС, `GOARCH` — архитектуру. Pure Go обычно легко кросс-компилируется; cgo требует подходящий C toolchain и совместимые библиотеки.
+
 # Как работают build tags и кросс-компиляция?
 
 ## Вопрос

@@ -3,6 +3,8 @@ tags: [go, interview, middle, context, concurrency, flashcards/Go]
 topic: context.Context
 ---
 
+Для чего нужен `context.Context`, как его передавать, где вызывать cancel и какие данные нельзя класть в context?::Context переносит дедлайн, сигнал отмены и request-scoped значения через цепочку вызовов. Его передают первым параметром, не хранят в структуре без особой причины и не передают `nil`. Создатель cancellable context обязан вызвать `cancel`.
+
 # Как правильно использовать context.Context?
 
 ## Вопрос

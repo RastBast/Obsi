@@ -3,6 +3,8 @@ tags: [go, interview, middle, postgresql, pagination, flashcards/БД]
 topic: Keyset pagination
 ---
 
+Почему большой OFFSET медленный и нестабилен при изменениях, как построить cursor для `(created_at,id)`?::OFFSET заставляет БД найти и отбросить предыдущие строки, а concurrent inserts/deletes сдвигают страницы. Keyset продолжает после последнего sort key: `WHERE (created_at,id) < ($1,$2) ORDER BY ... LIMIT n`, используя composite index.
+
 # Чем keyset pagination лучше OFFSET?
 
 ## Вопрос

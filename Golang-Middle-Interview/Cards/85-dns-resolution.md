@@ -3,6 +3,8 @@ tags: [go, interview, middle, network, dns, flashcards/Сети]
 topic: DNS
 ---
 
+Что происходит при разрешении имени, что означает TTL и почему DNS может быть причиной редких timeout?::Resolver ищет записи через cache и DNS servers, следуя delegation/recursive resolution. TTL задаёт срок кеширования ответа, включая иногда отрицательный. DNS использует UDP и TCP, а modern environments могут добавлять DoH/DoT и service discovery.
+
 # Как работает DNS resolution и caching?
 
 ## Вопрос

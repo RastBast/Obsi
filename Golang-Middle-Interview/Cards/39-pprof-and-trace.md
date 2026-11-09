@@ -3,6 +3,8 @@ tags: [go, interview, middle, pprof, trace, flashcards/Go]
 topic: Профилирование
 ---
 
+Чем отличаются CPU, heap, allocs, goroutine, mutex и block profiles, и когда нужен runtime trace?::CPU profile показывает, где тратится процессорное время; heap — живую память; allocs — накопленные аллокации; goroutine — стеки; mutex/block — ожидание синхронизации. Trace показывает временную картину scheduler, GC и событий. Сначала воспроизводят проблему, затем выбирают профиль под симптом.
+
 # Как искать CPU, memory и concurrency bottleneck?
 
 ## Вопрос

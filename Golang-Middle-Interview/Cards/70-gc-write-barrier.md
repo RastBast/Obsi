@@ -3,6 +3,8 @@ tags: [go, interview, middle, runtime, gc, flashcards/Рантайм]
 topic: Write barrier
 ---
 
+Что может пойти не так, если программа меняет указатели во время concurrent mark, и как write barrier сохраняет корректность?::Пока GC маркирует граф, приложение продолжает менять ссылки. Write barrier сообщает runtime о релевантных pointer writes и поддерживает инвариант маркировки, чтобы достижимый объект не оказался ошибочно белым и не был освобождён.
+
 # Зачем GC нужен write barrier?
 
 ## Вопрос

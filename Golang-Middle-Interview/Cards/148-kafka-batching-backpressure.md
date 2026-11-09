@@ -3,6 +3,8 @@ tags: [go, interview, middle, kafka, performance, flashcards/Kafka]
 topic: Batching и backpressure Kafka
 ---
 
+Что настраивают batch size/linger/compression и как consumer ограничивает in-flight обработку?::Producer собирает records в batches на partition; больший batch и небольшой linger улучшают compression/network efficiency ценой latency и памяти. Consumer fetch тоже получает batches. Processing concurrency должна быть bounded, а fetch/pause согласованы с max poll и commit frontier.
+
 # Как batching и compression влияют на Kafka throughput?
 
 ## Вопрос

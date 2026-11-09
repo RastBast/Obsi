@@ -3,6 +3,8 @@ tags: [go, interview, middle, kafka, schema, flashcards/Kafka]
 topic: Schema evolution
 ---
 
+Что означают backward/forward compatibility и почему producer/consumer обновляют независимо?::Backward compatibility позволяет новому reader читать старые данные, forward — старому reader читать новые. При rolling deploy одновременно живут разные версии, поэтому добавляют optional/default fields, не переиспользуют field IDs и проверяют schema registry compatibility.
+
 # Как безопасно менять schema Kafka-событий?
 
 ## Вопрос

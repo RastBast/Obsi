@@ -3,6 +3,8 @@ tags: [go, interview, middle, runtime, netpoll, flashcards/Рантайм]
 topic: Network poller
 ---
 
+Что делает runtime network poller и почему блокирующий вызов `Read` не обязательно блокирует OS thread?::Для поддерживаемых неблокирующих сетевых descriptor runtime регистрирует интерес в OS poller и паркует goroutine. Когда fd готов, poller делает goroutine runnable. API остаётся синхронным, а thread может исполнять другую работу.
+
 # Как Go обслуживает много сетевых соединений без потока на каждое ожидание?
 
 ## Вопрос

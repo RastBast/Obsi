@@ -3,6 +3,8 @@ tags: [go, interview, middle, encoding, flashcards/Go]
 topic: Binary encoding и endian
 ---
 
+Что такое little-endian и big-endian, почему нельзя отправлять память структуры как wire format и как помогает `encoding/binary`?::Endianness задаёт порядок байтов многобайтового числа. Wire format должен явно определить порядок, размеры и поля. Прямое копирование памяти структуры непереносимо из-за padding, архитектуры, указателей и layout; используют `binary.ByteOrder` или специализированный протокол.
+
 # Как работать с бинарными форматами и endianness?
 
 ## Вопрос

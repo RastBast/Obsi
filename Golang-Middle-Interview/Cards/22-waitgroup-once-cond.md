@@ -3,6 +3,8 @@ tags: [go, interview, middle, sync, concurrency, flashcards/Рантайм]
 topic: WaitGroup, Once и Cond
 ---
 
+Какие задачи решают `sync.WaitGroup`, `sync.Once` и `sync.Cond`, и какие ошибки часто допускают при их использовании?::`WaitGroup` ждёт завершения набора задач, `Once` выполняет функцию ровно один раз, `Cond` позволяет ждать изменения условия под lock. Они не передают ошибки и результаты сами по себе и не должны копироваться после использования.
+
 # Для чего нужны WaitGroup, Once и Cond?
 
 ## Вопрос

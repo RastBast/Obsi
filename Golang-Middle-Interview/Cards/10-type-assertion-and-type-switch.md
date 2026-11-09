@@ -3,6 +3,8 @@ tags: [go, interview, middle, interfaces, flashcards/Go]
 topic: Type assertion и type switch
 ---
 
+Как извлечь конкретное значение из интерфейса, чем отличаются формы `x.(T)` и `v, ok := x.(T)`, и когда использовать type switch?::Type assertion проверяет динамический тип интерфейса или реализацию другого интерфейса. Однозначная форма при неуспехе паникует; comma-ok возвращает zero value и `false`. Type switch удобно обрабатывает несколько типов.
+
 # Как работают type assertion и type switch?
 
 ## Вопрос

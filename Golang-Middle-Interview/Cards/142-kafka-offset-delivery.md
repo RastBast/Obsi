@@ -3,6 +3,8 @@ tags: [go, interview, middle, kafka, delivery, flashcards/Kafka]
 topic: Offset и delivery semantics
 ---
 
+Когда commit-ить consumer offset относительно side effect и почему обычная обработка чаще at-least-once?::Commit до обработки рискует потерять событие при crash — at-most-once. Обработка, затем commit может повторить side effect после crash между шагами — at-least-once. Exactly-once требует атомарно связать output и consumed offsets в поддерживаемой системе либо сделать side effect идемпотентным.
+
 # Чем at-most-once, at-least-once и exactly-once отличаются?
 
 ## Вопрос

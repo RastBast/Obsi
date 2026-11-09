@@ -3,6 +3,8 @@ tags: [go, interview, middle, postgresql, index, flashcards/БД]
 topic: B-tree индекс PostgreSQL
 ---
 
+Для каких условий подходит B-tree, почему индекс ускоряет чтение ценой записи и что такое index-only scan?::B-tree подходит для equality, range, ordering и prefix части совместимого порядка. Индекс хранит ключи и ссылки на heap tuples, увеличивает WAL/запись/место. Index-only scan может вернуть данные из индекса, если нужные columns покрыты и visibility map подтверждает видимость.
+
 # Когда PostgreSQL использует B-tree индекс?
 
 ## Вопрос

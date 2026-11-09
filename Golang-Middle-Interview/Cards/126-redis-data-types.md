@@ -3,6 +3,8 @@ tags: [go, interview, middle, redis, flashcards/Redis]
 topic: Типы данных Redis
 ---
 
+Когда использовать string, hash, list, set, sorted set, bitmap и HyperLogLog?::String хранит bytes/counter, hash — поля объекта, list — ordered deque, set — уникальные элементы, sorted set — элементы с score и range/rank. Bitmap компактно хранит boolean positions, HyperLogLog оценивает cardinality с ошибкой. Выбор определяется операциями, а не названием сущности.
+
 # Какие структуры данных есть в Redis?
 
 ## Вопрос

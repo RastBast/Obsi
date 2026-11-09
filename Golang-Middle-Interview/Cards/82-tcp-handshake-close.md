@@ -3,6 +3,8 @@ tags: [go, interview, middle, network, tcp, flashcards/Сети]
 topic: TCP handshake и закрытие
 ---
 
+Что происходит в three-way handshake, зачем sequence numbers и почему после закрытия бывает TIME_WAIT?::Клиент отправляет SYN, сервер SYN-ACK, клиент ACK; стороны согласуют начальные sequence numbers и параметры. Закрытие обычно независимо в каждую сторону через FIN/ACK. TIME_WAIT удерживает tuple, чтобы старые сегменты не попали в новое соединение и финальный ACK можно было повторить.
+
 # Как устанавливается и закрывается TCP-соединение?
 
 ## Вопрос

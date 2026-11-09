@@ -3,6 +3,8 @@ tags: [go, interview, middle, runtime, metrics, flashcards/Рантайм]
 topic: runtime/metrics и GODEBUG
 ---
 
+Что предоставляет `runtime/metrics`, когда использовать `GODEBUG` и почему внутренние имена/форматы нужно привязывать к версии?::`runtime/metrics` даёт документированные process-wide метрики scheduler, GC, heap и memory classes. `GODEBUG` включает диагностические или совместимые режимы runtime. Флаги и детали меняются между версиями, поэтому их применяют временно и проверяют по документации toolchain.
+
 # Как наблюдать и диагностировать runtime Go?
 
 ## Вопрос

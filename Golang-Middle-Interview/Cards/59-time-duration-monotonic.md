@@ -3,6 +3,8 @@ tags: [go, interview, middle, time, flashcards/Go]
 topic: Время и monotonic clock
 ---
 
+Чем wall clock отличается от monotonic clock, как сравнивать `time.Time` и почему нельзя хранить Duration в неоднозначном int?::Wall clock показывает календарное время и может прыгать из-за синхронизации; monotonic clock измеряет прошедший интервал. `time.Now` обычно несёт monotonic-компонент внутри процесса, а `Sub`/`Since` используют её. `time.Duration` хранит наносекунды и требует явных единиц.
+
 # Как корректно работать со временем и Duration?
 
 ## Вопрос

@@ -3,6 +3,8 @@ tags: [go, interview, middle, redis, operations, flashcards/Redis]
 topic: Hot keys и big keys
 ---
 
+Как один популярный или огромный key влияет на latency, cluster и replication?::Hot key концентрирует запросы на одном shard/core и создаёт bottleneck. Big key занимает много памяти и делает операции, удаление, replication и migration долгими. Их находят latency/memory tooling и исправляют sharding, local cache, redesign и постепенным unlink/delete.
+
 # Чем опасны hot key и big key?
 
 ## Вопрос

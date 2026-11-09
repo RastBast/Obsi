@@ -3,6 +3,8 @@ tags: [go, interview, middle, runtime, atomic, flashcards/Рантайм]
 topic: atomic.Value и snapshots
 ---
 
+Как реализовать lock-free reads конфигурации и какие требования `atomic.Value` предъявляет к типам и мутации?::Writer строит новый независимый immutable объект и атомарно публикует его через `Store`; readers получают целый snapshot через `Load`. Все Store должны использовать один concrete type, а опубликованный объект нельзя менять без отдельной синхронизации.
+
 # Как публиковать immutable snapshot через atomic.Value?
 
 ## Вопрос

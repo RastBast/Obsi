@@ -3,6 +3,8 @@ tags: [go, interview, middle, benchmarks, performance, flashcards/Go]
 topic: Benchmark
 ---
 
+Как устроен `testing.B`, что означают `ns/op`, `B/op`, `allocs/op` и как избежать измерения setup вместо целевого кода?::Benchmark многократно выполняет операцию, а harness подбирает число итераций. Setup выносят из измеряемого участка или используют timer control. `ReportAllocs` показывает память. Результаты сравнивают статистически в одинаковой среде, не по одному запуску.
+
 # Как писать корректные benchmark в Go?
 
 ## Вопрос

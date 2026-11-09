@@ -3,6 +3,8 @@ tags: [go, interview, middle, kafka, consumer, flashcards/Kafka]
 topic: Consumer groups и rebalance
 ---
 
+Почему один partition назначается одному consumer внутри group и что происходит при rebalance?::Consumers с одинаковым group ID совместно делят partitions; один partition в момент времени принадлежит одному member группы. При входе/выходе, изменении topic или timeout coordinator выполняет rebalance и меняет assignments. Consumers должны остановить старую работу и корректно commit-ить/передать состояние.
+
 # Как consumer group распределяет partitions?
 
 ## Вопрос

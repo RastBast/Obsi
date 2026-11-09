@@ -3,6 +3,8 @@ tags: [go, interview, middle, kafka, observability, flashcards/Kafka]
 topic: Kafka lag и capacity
 ---
 
+Почему lag в records недостаточен, какие метрики нужны producer, broker и consumer и как оценить время отставания?::Lag — разница log end offset и committed/processed offset по partition. Он показывает backlog records, но не их возраст/стоимость. Нужны oldest event age, consume/produce rate, processing latency/errors, rebalance, ISR, disk/network и under-replicated partitions.
+
 # Как мониторить Kafka consumer lag и здоровье pipeline?
 
 ## Вопрос

@@ -3,6 +3,8 @@ tags: [go, interview, middle, cache, distributed-systems, flashcards/Redis]
 topic: Cache и cache stampede
 ---
 
+Что такое cache-aside, какие проблемы создают TTL и eviction, и как предотвратить одновременную загрузку одного отсутствующего ключа?::В cache-aside код сначала читает cache, при miss загружает источник и записывает результат. Stampede — много параллельных miss одного ключа; его уменьшают singleflight/request coalescing, jitter TTL, stale-while-revalidate и ограничением concurrency.
+
 # Как спроектировать cache и защититься от stampede?
 
 ## Вопрос

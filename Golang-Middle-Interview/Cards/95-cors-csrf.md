@@ -3,6 +3,8 @@ tags: [go, interview, middle, network, security, flashcards/Сети]
 topic: CORS и CSRF
 ---
 
+Что ограничивает browser same-origin policy, зачем preflight и почему CORS не защищает сервер от CSRF?::CORS разрешает browser JavaScript читать cross-origin response по явной политике сервера. CSRF заставляет browser отправить аутентифицированный запрос на чужой сайт, обычно с cookies. Защита CSRF — SameSite cookies, token и Origin/Referer validation; CORS решает другую задачу.
+
 # Чем CORS отличается от CSRF?
 
 ## Вопрос

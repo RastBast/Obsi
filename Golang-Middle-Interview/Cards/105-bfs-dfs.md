@@ -3,6 +3,8 @@ tags: [go, interview, middle, algorithms, graph, flashcards/Алгоритмы]
 topic: BFS и DFS
 ---
 
+Какие структуры данных используют обходы, какова сложность и когда BFS находит кратчайший путь?::BFS идёт слоями через queue и находит кратчайшее число рёбер в невзвешенном графе. DFS идёт в глубину через recursion/stack и удобен для components, cycles и topological algorithms. Оба работают за O(V+E) при adjacency list.
+
 # Чем BFS отличается от DFS?
 
 ## Вопрос

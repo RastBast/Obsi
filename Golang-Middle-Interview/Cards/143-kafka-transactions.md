@@ -3,6 +3,8 @@ tags: [go, interview, middle, kafka, transactions, flashcards/Kafka]
 topic: Kafka transactions
 ---
 
+Что может атомарно записать transactional producer и как fencing защищает от старого экземпляра?::Producer с `transactional.id` может атомарно записать records в несколько partitions и offsets consumer group. Broker использует producer epoch для fencing старого producer. Consumers с `read_committed` скрывают aborted и ещё не завершённые transactional records.
+
 # Как работают Kafka transactions и read_committed?
 
 ## Вопрос

@@ -3,6 +3,8 @@ tags: [go, interview, middle, postgresql, constraints, flashcards/БД]
 topic: Constraints
 ---
 
+Чем PRIMARY KEY, UNIQUE, FOREIGN KEY, CHECK и NOT NULL отличаются и почему проверки только в Go недостаточно?::Constraints атомарно защищают данные для всех writers. PK идентифицирует строку, UNIQUE запрещает дубликаты, FK поддерживает ссылочную целостность, CHECK проверяет выражение строки, NOT NULL запрещает null. Проверка «сначала SELECT, потом INSERT» имеет race.
+
 # Почему инварианты нужно закреплять constraints в БД?
 
 ## Вопрос

@@ -4,4 +4,4 @@
 
 ## Наборы карточек
 
-- [150 вопросов для собеседования Go Middle](Golang-Middle-Interview/README.md)
+- [200 вопросов для собеседования Go Middle](Golang-Middle-Interview/README.md)

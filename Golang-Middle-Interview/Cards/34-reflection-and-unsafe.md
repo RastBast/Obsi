@@ -3,6 +3,8 @@ tags: [go, interview, middle, reflection, unsafe, flashcards/Рантайм]
 topic: reflect и unsafe
 ---
 
+Какие задачи решает reflection, чем `reflect.Type` отличается от `reflect.Value` и какие гарантии теряются при использовании `unsafe`?::Reflection позволяет во время выполнения исследовать типы и значения; нужна для сериализаторов, DI/framework-кода и generic tooling. `unsafe` обходит систему типов и часть гарантий GC/переносимости. В прикладном коде сначала предпочитают статические типы, generics и code generation.
+
 # Когда оправданы reflect и unsafe?
 
 ## Вопрос

@@ -3,6 +3,8 @@ tags: [go, interview, middle, generics, flashcards/Go]
 topic: Дженерики
 ---
 
+Что такое type parameter и constraint, зачем нужен `comparable`, что означает `~T` и когда generics лучше интерфейса?::Type parameter задаёт семейство типов на этапе компиляции, constraint ограничивает допустимые операции. `any` допускает любой тип, `comparable` — типы, поддерживающие `==`/`!=` и ключи map. `~int` включает типы с underlying type `int`.
+
 # Как работают generics и constraints в Go?
 
 ## Вопрос

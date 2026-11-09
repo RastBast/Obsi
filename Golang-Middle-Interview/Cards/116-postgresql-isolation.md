@@ -3,6 +3,8 @@ tags: [go, interview, middle, postgresql, transactions, flashcards/БД]
 topic: Isolation levels PostgreSQL
 ---
 
+Чем Read Committed, Repeatable Read и Serializable отличаются по snapshot и аномалиям?::В PostgreSQL Read Committed берёт новый snapshot на каждый statement. Repeatable Read использует snapshot транзакции и предотвращает non-repeatable reads, но бизнес-конфликты всё ещё возможны. Serializable применяет SSI и может отменить transaction с serialization failure, которую нужно повторить.
+
 # Как PostgreSQL реализует isolation levels?
 
 ## Вопрос

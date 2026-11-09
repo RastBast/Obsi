@@ -3,6 +3,8 @@ tags: [go, interview, middle, network, tcp, flashcards/Сети]
 topic: Flow control и congestion control
 ---
 
+Какие окна ограничивают отправителя TCP и почему медленный consumer создаёт backpressure?::Flow control защищает receiver: advertised receive window ограничивает непрочитанные байты. Congestion control защищает сеть: congestion window меняется по потерям/RTT/алгоритму. Реально отправитель ограничен минимумом этих окон и доступными данными.
+
 # Чем flow control отличается от congestion control?
 
 ## Вопрос

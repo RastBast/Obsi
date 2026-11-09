@@ -3,6 +3,8 @@ tags: [go, interview, middle, network, quic, flashcards/Сети]
 topic: HTTP/3 и QUIC
 ---
 
+Как QUIC уменьшает head-of-line blocking и что дают connection IDs и встроенный TLS?::QUIC работает поверх UDP, реализует надёжные независимые streams, congestion control и TLS 1.3 в одном transport. Потеря packet одного stream не блокирует delivery других streams. Connection ID позволяет переживать смену IP/порта, например переход Wi‑Fi→mobile.
+
 # Чем HTTP/3 поверх QUIC отличается от HTTP/2 поверх TCP?
 
 ## Вопрос

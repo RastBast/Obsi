@@ -3,6 +3,8 @@ tags: [go, interview, middle, redis, cache, flashcards/Redis]
 topic: Cache consistency
 ---
 
+Какие окна рассогласования есть у cache-aside, delete-on-write и write-through?::В cache-aside read miss загружает БД и пишет cache; write обычно commit-ит БД и удаляет cache. Между шагами и при гонках возможны stale values. Write-through обновляет cache и БД, но создаёт dual-write failure. Абсолютной атомарности без общего протокола нет.
+
 # Как согласовывать Redis cache с БД?
 
 ## Вопрос

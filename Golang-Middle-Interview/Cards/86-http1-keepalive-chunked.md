@@ -3,6 +3,8 @@ tags: [go, interview, middle, network, http, flashcards/Сети]
 topic: HTTP/1.1
 ---
 
+Для чего нужны Content-Length, chunked encoding и keep-alive, и почему непрочитанный body мешает connection reuse?::HTTP/1.1 держит TCP-соединение открытым по умолчанию. Граница body задаётся Content-Length, chunked transfer coding, правилами метода/status или закрытием соединения. Клиент должен корректно дочитать/закрыть body, чтобы parser мог начать следующий response на том же stream.
+
 # Как HTTP/1.1 определяет границы body и переиспользует соединения?
 
 ## Вопрос

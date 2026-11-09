@@ -3,6 +3,8 @@ tags: [go, interview, middle, sql, database, flashcards/БД]
 topic: database/sql
 ---
 
+Что представляет собой `sql.DB`, как настраивать pool и какие правила нужны для `Rows`, `Row`, prepared statements и context?::`sql.DB` — конкурентно-безопасный handle и пул соединений, а не одно соединение. Его создают один раз и переиспользуют. Настраивают max open/idle и lifetime по БД/нагрузке. `Rows` закрывают, ошибки итерации проверяют, запросы выполняют с context.
+
 # Как работает пул соединений database/sql?
 
 ## Вопрос

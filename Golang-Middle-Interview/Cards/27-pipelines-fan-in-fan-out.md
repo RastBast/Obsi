@@ -3,6 +3,8 @@ tags: [go, interview, middle, pipelines, channels, flashcards/Рантайм]
 topic: Pipeline, fan-in и fan-out
 ---
 
+Как строятся конвейеры на каналах, как распараллелить этап и как избежать зависания при досрочном завершении consumer?::Pipeline передаёт поток через стадии; fan-out даёт нескольким workers читать общий вход, fan-in объединяет несколько выходов. Каждая стадия должна закрывать свой output после завершения и уметь прекратить send/receive по context, иначе ранний consumer оставит producers заблокированными.
+
 # Что такое pipeline, fan-out и fan-in?
 
 ## Вопрос

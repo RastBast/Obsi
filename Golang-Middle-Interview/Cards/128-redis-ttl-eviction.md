@@ -3,6 +3,8 @@ tags: [go, interview, middle, redis, cache, flashcards/Redis]
 topic: TTL и eviction Redis
 ---
 
+Как Redis удаляет просроченные keys и что происходит при достижении maxmemory?::Expiration удаляет key после заданного TTL логически через lazy check и active sampling. Eviction срабатывает при maxmemory и выбирает key по политике: noeviction, LRU/LFU/random/TTL среди всех или volatile keys. Это разные механизмы.
+
 # Чем expiration отличается от eviction?
 
 ## Вопрос

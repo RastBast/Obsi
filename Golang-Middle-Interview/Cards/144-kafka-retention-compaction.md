@@ -3,6 +3,8 @@ tags: [go, interview, middle, kafka, storage, flashcards/Kafka]
 topic: Retention и compaction
 ---
 
+Когда записи удаляются и как tombstone влияет на compacted topic?::Delete retention удаляет старые log segments по времени/размеру независимо от keys. Compaction старается сохранить последнее значение каждого key, позволяя восстановить current state, но не обещает немедленно удалить предыдущие версии. Null value с key — tombstone для удаления состояния.
+
 # Чем time/size retention отличается от log compaction?
 
 ## Вопрос

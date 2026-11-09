@@ -3,6 +3,8 @@ tags: [go, interview, middle, kafka, replication, flashcards/Kafka]
 topic: ISR и replication Kafka
 ---
 
+Как replication factor, ISR и min.insync.replicas влияют на durability и availability?::Leader partition принимает produce/fetch, followers копируют log. ISR — replicas, достаточно синхронные с leader. При `acks=all` запись подтверждается по правилам ISR; `min.insync.replicas` запрещает запись, если надёжных копий слишком мало, жертвуя availability ради durability.
+
 # Что такое leader, follower и ISR?
 
 ## Вопрос

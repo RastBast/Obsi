@@ -3,6 +3,8 @@ tags: [go, interview, middle, network, ip, flashcards/Сети]
 topic: IP, subnet и NAT
 ---
 
+Как читать CIDR, зачем default gateway и как NAT влияет на соединения сервисов?::CIDR `/n` задаёт число бит network prefix; адреса с общим prefix относятся к сети по правилам маршрутизации. Gateway пересылает packets в другие сети. NAT переписывает адрес/порт и хранит state mapping, позволяя множеству private hosts использовать внешний адрес.
+
 # Что такое subnet, CIDR и NAT?
 
 ## Вопрос

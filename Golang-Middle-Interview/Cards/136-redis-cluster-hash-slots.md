@@ -3,6 +3,8 @@ tags: [go, interview, middle, redis, cluster, flashcards/Redis]
 topic: Redis Cluster
 ---
 
+Что такое hash slots, MOVED/ASK redirects и hash tags для multi-key операций?::Cluster делит keyspace на 16384 hash slots и назначает slots primary nodes. Client вычисляет slot и маршрутизирует команду; при изменении topology получает MOVED/ASK и обновляет mapping. Multi-key atomic operations требуют keys одного slot; `{tag}` заставляет общий hash fragment.
+
 # Как Redis Cluster распределяет keys?
 
 ## Вопрос

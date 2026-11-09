@@ -3,6 +3,8 @@ tags: [go, interview, middle, redis, distributed-lock, flashcards/Redis]
 topic: Distributed lock Redis
 ---
 
+Почему `SET key token NX PX ttl` и проверяемое удаление лучше SETNX+DEL, и какие проблемы остаются?::Lock создают атомарным SET с уникальным owner token и TTL. Освобождают Lua-операцией «удали, только если token мой», чтобы старый owner не удалил новый lock. Но истёкший owner может продолжать работу; fencing token на защищаемом ресурсе отвергает устаревшие операции.
+
 # Как реализовать lock в Redis и зачем fencing token?
 
 ## Вопрос

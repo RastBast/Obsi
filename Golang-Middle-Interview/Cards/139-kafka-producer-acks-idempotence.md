@@ -3,6 +3,8 @@ tags: [go, interview, middle, kafka, producer, flashcards/Kafka]
 topic: Kafka producer
 ---
 
+Чем отличаются `acks=0/1/all`, зачем idempotence и почему retry может создать duplicate?::`acks=0` не ждёт подтверждения, `acks=1` ждёт leader, `acks=all` — требуемые in-sync replicas. При потерянном ack producer повторяет record и без idempotence может записать duplicate. Idempotent producer использует producer ID и sequence numbers для дедупликации в рамках сессии/partition.
+
 # Как acks и idempotent producer влияют на надёжность?
 
 ## Вопрос

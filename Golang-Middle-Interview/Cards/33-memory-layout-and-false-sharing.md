@@ -3,6 +3,8 @@ tags: [go, interview, middle, memory, performance, flashcards/Рантайм]
 topic: Layout, alignment и cache
 ---
 
+Что такое alignment и padding, почему порядок полей меняет размер структуры и что такое false sharing?::Поля выравниваются по требованиям типа, между ними компилятор вставляет padding. Перестановка полей может уменьшить размер. False sharing возникает, когда разные goroutine изменяют независимые данные в одной cache line и вызывают лишнюю когерентность CPU.
+
 # Как layout структуры влияет на память и производительность?
 
 ## Вопрос

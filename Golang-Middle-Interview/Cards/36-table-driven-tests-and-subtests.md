@@ -3,6 +3,8 @@ tags: [go, interview, middle, testing, flashcards/Go]
 topic: Table-driven tests
 ---
 
+Почему в Go популярны табличные тесты, как использовать `t.Run`, `t.Helper`, `t.Cleanup` и параллельные subtests без гонок?::Таблица отделяет сценарии от общей логики проверки, `t.Run` даёт именованные изолированные subtests. Helpers улучшают место ошибки, Cleanup гарантирует уборку. Для `t.Parallel` тестовые данные и внешние ресурсы должны быть независимыми.
+
 # Как писать table-driven tests и subtests?
 
 ## Вопрос

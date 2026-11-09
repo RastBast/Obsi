@@ -3,6 +3,8 @@ tags: [go, interview, middle, redis, messaging, flashcards/Redis]
 topic: Pub/Sub и Streams
 ---
 
+Какие гарантии хранения, replay и consumer state дают эти механизмы?::Pub/Sub доставляет сообщение только текущим подписчикам и не хранит backlog; отключённый consumer пропускает события. Streams хранят ordered entries, позволяют читать с ID, replay и consumer groups с pending state. Для надёжной обработки Streams подходят лучше.
+
 # Чем Redis Pub/Sub отличается от Streams?
 
 ## Вопрос

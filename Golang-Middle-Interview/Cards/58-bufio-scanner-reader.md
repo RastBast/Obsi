@@ -3,6 +3,8 @@ tags: [go, interview, middle, io, flashcards/Go]
 topic: bufio.Scanner и Reader
 ---
 
+Какие ограничения есть у Scanner, как увеличить размер token и почему ошибки проверяют после цикла?::`Scanner` удобен для последовательных token по SplitFunc, но имеет максимальный размер token и прекращает работу при его превышении. Для больших строк, точного контроля буфера или сохранения delimiters используют `bufio.Reader`. После `Scan()` проверяют `Err()`.
+
 # Когда использовать bufio.Scanner, а когда bufio.Reader?
 
 ## Вопрос

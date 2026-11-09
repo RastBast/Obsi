@@ -3,6 +3,8 @@ tags: [go, interview, middle, redis, sentinel, flashcards/Redis]
 topic: Replication и Sentinel
 ---
 
+Что делает replica, как Sentinel выбирает новый primary и какие consistency риски остаются?::Replica асинхронно копирует command stream primary и может обслуживать stale reads. Sentinel instances наблюдают topology, достигают quorum о недоступности, выбирают replica, повышают её и сообщают clients новый primary. Failover не делает систему строго согласованной.
+
 # Как Redis replication и Sentinel обеспечивают failover?
 
 ## Вопрос

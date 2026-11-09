@@ -3,6 +3,8 @@ tags: [go, interview, middle, algorithms, cache, flashcards/Алгоритмы]
 topic: LRU cache
 ---
 
+Какие структуры нужны для Get/Put O(1), что происходит при eviction и какие проблемы появляются в concurrent cache?::LRU сочетает hash map key→node и doubly linked list по давности. Get на hit переносит node в начало, Put добавляет/обновляет, при переполнении удаляется хвост из списка и map. Все операции ожидаемо O(1).
+
 # Как реализовать LRU cache за O(1)?
 
 ## Вопрос

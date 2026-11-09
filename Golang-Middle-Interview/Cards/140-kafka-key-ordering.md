@@ -3,6 +3,8 @@ tags: [go, interview, middle, kafka, partitioning, flashcards/Kafka]
 topic: Ключи и порядок Kafka
 ---
 
+Как сохранить порядок событий одной сущности и что случится при добавлении partitions?::Producer partitioner обычно хеширует key, поэтому одинаковый key попадает в одну partition и сохраняет её order. Records без key распределяются для balance. При увеличении числа partitions mapping hash modulo меняется, и будущие события key могут перейти в другую partition.
+
 # Как key влияет на partition и порядок сообщений?
 
 ## Вопрос

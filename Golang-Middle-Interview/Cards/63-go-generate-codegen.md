@@ -3,6 +3,8 @@ tags: [go, interview, middle, tooling, flashcards/Go]
 topic: go generate и code generation
 ---
 
+Когда генерация кода лучше reflection или ручного boilerplate, что гарантирует `go generate` и нужно ли коммитить результат?::`go generate` запускает команды из директив `//go:generate`; он не выполняется автоматически при `go build` или `go test`. Генерация переносит часть работы в build-time и сохраняет статическую типизацию. Политика репозитория должна фиксировать версии инструмента и судьбу generated files.
+
 # Для чего нужен go generate?
 
 ## Вопрос

@@ -3,6 +3,8 @@ tags: [go, interview, middle, network, tls, flashcards/Сети]
 topic: TLS
 ---
 
+Как клиент проверяет сервер, откуда берутся session keys и почему шифрование без проверки сертификата опасно?::Handshake согласует версию/алгоритмы, сервер предъявляет certificate chain и доказывает владение private key, стороны получают общие session keys через key exchange. Клиент проверяет hostname, сроки и доверенную цепочку. Без проверки возможна MITM-атака.
+
 # Что происходит в TLS handshake?
 
 ## Вопрос

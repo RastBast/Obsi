@@ -3,6 +3,8 @@ tags: [go, interview, middle, postgresql, pooling, flashcards/БД]
 topic: PgBouncer и pooling
 ---
 
+Что даёт PgBouncer и какие session features ломаются в transaction pooling?::PgBouncer мультиплексирует client connections на меньшее число PostgreSQL backends. Session pooling закрепляет backend на всю сессию; transaction pooling — только на transaction; statement — на statement и сильно ограничивает семантику. Transaction mode повышает reuse, но session state не гарантирован.
+
 # Чем session, transaction и statement pooling отличаются?
 
 ## Вопрос

@@ -3,6 +3,8 @@ tags: [go, interview, middle, runtime, concurrency, flashcards/Рантайм]
 topic: Livelock и starvation
 ---
 
+Как программа может активно работать, но не продвигаться, и как отсутствие fairness создаёт starvation?::При deadlock участники заблокированы. При livelock они меняют состояние и повторяют действия, но взаимно мешают прогрессу. Starvation означает, что конкретный участник долго не получает ресурс, хотя система в целом работает.
+
 # Чем livelock и starvation отличаются от deadlock?
 
 ## Вопрос

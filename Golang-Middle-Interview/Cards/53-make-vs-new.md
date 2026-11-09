@@ -3,6 +3,8 @@ tags: [go, interview, middle, allocation, flashcards/Go]
 topic: make и new
 ---
 
+Что возвращают `new(T)` и `make`, для каких типов применяется `make` и гарантируют ли они heap allocation?::`new(T)` создаёт нулевое значение `T` и возвращает `*T`. `make` инициализирует внутреннюю runtime-структуру slice, map или channel и возвращает само значение, а не указатель на него. Размещение на stack или heap определяет escape analysis.
+
 # Чем make отличается от new?
 
 ## Вопрос

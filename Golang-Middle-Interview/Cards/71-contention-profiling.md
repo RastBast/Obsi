@@ -3,6 +3,8 @@ tags: [go, interview, middle, runtime, profiling, flashcards/Рантайм]
 topic: Профилирование contention
 ---
 
+Чем mutex profile отличается от block profile и как интерпретировать высокое время ожидания?::Mutex profile показывает время ожидания contended locks, обычно при освобождении владельцем. Block profile шире и включает ожидание каналов, select, mutex и других примитивов. Профиль показывает место симптома; исправление требует понять защищаемый инвариант и нагрузку.
+
 # Как найти lock contention и блокировки goroutine?
 
 ## Вопрос

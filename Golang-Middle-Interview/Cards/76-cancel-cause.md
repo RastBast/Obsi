@@ -3,6 +3,8 @@ tags: [go, interview, middle, runtime, context, flashcards/Рантайм]
 topic: Причина отмены context
 ---
 
+Чем причина отмены отличается от `ctx.Err()` и как не потерять первичную ошибку группы задач?::`WithCancelCause` позволяет отменить context с конкретной ошибкой; `context.Cause(ctx)` возвращает её, а `ctx.Err()` остаётся общей категорией canceled/deadline. Это помогает диагностике, но результат операции всё равно должен возвращаться обычным `error`.
+
 # Когда использовать context.WithCancelCause?
 
 ## Вопрос

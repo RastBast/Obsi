@@ -3,6 +3,8 @@ tags: [go, interview, middle, postgresql, locks, flashcards/БД]
 topic: Locks и deadlocks PostgreSQL
 ---
 
+Чем row lock отличается от table lock, что показывает `pg_locks` и как уменьшить deadlock?::SQL-команды автоматически берут table-level modes, а updates/`FOR UPDATE` — row locks. Несовместимые modes ждут. Deadlock возникает при цикле ожидания; PostgreSQL обнаруживает его и отменяет одну transaction. Единый порядок обновлений и короткие transaction снижают риск.
+
 # Какие блокировки есть в PostgreSQL и как возникают deadlocks?
 
 ## Вопрос

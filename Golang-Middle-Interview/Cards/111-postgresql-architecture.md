@@ -3,6 +3,8 @@ tags: [go, interview, middle, postgresql, flashcards/БД]
 topic: Архитектура PostgreSQL
 ---
 
+Что делают client backend processes, shared buffers, WAL writer, checkpointer и autovacuum?::PostgreSQL обычно создаёт отдельный backend process на connection. Процессы используют shared memory и shared buffers. WAL фиксирует изменения до data pages; checkpointer сбрасывает dirty pages, background writer сглаживает запись, autovacuum очищает/анализирует версии строк.
+
 # Как в общих чертах устроен PostgreSQL?
 
 ## Вопрос

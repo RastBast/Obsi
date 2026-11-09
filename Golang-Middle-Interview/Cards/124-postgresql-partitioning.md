@@ -3,6 +3,8 @@ tags: [go, interview, middle, postgresql, partitioning, flashcards/БД]
 topic: Partitioning
 ---
 
+Чем range/list/hash partitioning помогают и почему partitioning не является автоматическим ускорителем?::Partitioning делит logical table на physical partitions по ключу. Оно упрощает удаление/архивирование диапазонов, pruning и обслуживание очень больших таблиц. Плохой ключ или слишком много partitions увеличивают planning, indexes и operational complexity.
+
 # Когда таблицу стоит партиционировать?
 
 ## Вопрос

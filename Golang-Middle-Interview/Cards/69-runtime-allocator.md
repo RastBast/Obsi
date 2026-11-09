@@ -3,6 +3,8 @@ tags: [go, interview, middle, runtime, memory, flashcards/Рантайм]
 topic: Аллокатор памяти
 ---
 
+Почему мелкие allocations не обращаются к ОС каждый раз и что дают size classes, spans и per-P caches?::Runtime получает крупные регионы памяти и раздаёт объекты по size classes. Локальные per-P caches уменьшают locks для частых мелких allocations, spans группируют страницы под класс размеров. Точные структуры — implementation detail.
+
 # Как в общих чертах устроен аллокатор Go?
 
 ## Вопрос

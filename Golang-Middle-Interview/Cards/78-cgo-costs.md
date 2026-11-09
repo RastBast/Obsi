@@ -3,6 +3,8 @@ tags: [go, interview, middle, runtime, cgo, flashcards/Рантайм]
 topic: cgo
 ---
 
+Почему вызов C из Go сложнее обычной функции, какие ограничения есть у указателей и как cgo влияет на сборку?::Cgo пересекает runtime/ABI boundary, имеет overhead вызова, усложняет scheduler, GC и обработку panic/signals. C-код не может произвольно хранить Go pointers после вызова. Сборке нужны C toolchain и platform libraries, что ухудшает cross compilation.
+
 # Какие издержки и риски добавляет cgo?
 
 ## Вопрос

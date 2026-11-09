@@ -3,6 +3,8 @@ tags: [go, interview, middle, postgresql, transactions, flashcards/БД]
 topic: Savepoint
 ---
 
+Как частично откатить transaction и почему после SQL-ошибки PostgreSQL требует rollback?::Savepoint отмечает точку внутри transaction. `ROLLBACK TO` отменяет изменения после неё, не завершая всю transaction; `RELEASE` удаляет savepoint. В PostgreSQL ошибка переводит transaction в aborted state до rollback всей transaction или к savepoint.
+
 # Для чего нужны SAVEPOINT и ROLLBACK TO?
 
 ## Вопрос

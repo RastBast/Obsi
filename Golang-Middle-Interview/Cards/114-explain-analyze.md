@@ -3,6 +3,8 @@ tags: [go, interview, middle, postgresql, performance, flashcards/БД]
 topic: EXPLAIN ANALYZE
 ---
 
+Чем estimated cost/rows отличаются от actual time/rows и какие признаки у плохого плана?::`EXPLAIN` показывает оценённый план, `EXPLAIN ANALYZE` реально выполняет запрос и добавляет actual metrics. Сравнивают estimated vs actual rows, loops, node time, buffers, sort spill и выбранные join/scan. Большая ошибка cardinality часто приводит к неверному плану.
+
 # Как читать EXPLAIN ANALYZE?
 
 ## Вопрос

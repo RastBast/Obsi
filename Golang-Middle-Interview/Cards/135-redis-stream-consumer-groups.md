@@ -3,6 +3,8 @@ tags: [go, interview, middle, redis, streams, flashcards/Redis]
 topic: Consumer groups Redis Streams
 ---
 
+Что означают `>`, PEL, ACK и claim, и как восстановить сообщения умершего consumer?::Group хранит last-delivered ID и pending entries list. Чтение с `>` получает новые entries и назначает их consumer. После успешной обработки вызывают ACK. Если consumer умер, idle pending entries просматривают/claim-ят другому consumer и обрабатывают повторно.
+
 # Как работают consumer groups Redis Streams?
 
 ## Вопрос

@@ -3,6 +3,8 @@ tags: [go, interview, middle, postgresql, joins, flashcards/БД]
 topic: Алгоритмы JOIN
 ---
 
+Когда planner выбирает каждый алгоритм и как indexes/work_mem влияют на стоимость?::Nested loop берёт строки outer и ищет inner, хорош для маленького outer и index lookup. Hash join строит hash table одной стороны для equality и эффективен на больших неотсортированных наборах. Merge join идёт по двум отсортированным входам и полезен при готовом порядке/range-like merge conditions.
+
 # Чем nested loop, hash join и merge join отличаются?
 
 ## Вопрос

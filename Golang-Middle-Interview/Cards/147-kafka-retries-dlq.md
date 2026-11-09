@@ -3,6 +3,8 @@ tags: [go, interview, middle, kafka, retry, flashcards/Kafka]
 topic: Retry и DLQ Kafka
 ---
 
+Чем transient error отличается от poison message и как не заблокировать partition навсегда?::Transient error повторяют с bounded attempts/backoff. Poison message после лимита отправляют в DLQ/parking topic с исходным payload и диагностикой. Немедленный retry в tight loop блокирует partition и перегружает dependency. Выбор retry topic влияет на порядок.
+
 # Как обрабатывать ошибки consumer: retry topic или DLQ?
 
 ## Вопрос

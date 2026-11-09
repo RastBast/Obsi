@@ -3,6 +3,8 @@ tags: [go, interview, middle, algorithms, hash, flashcards/Алгоритмы]
 topic: Хеш-таблица и коллизии
 ---
 
+Почему разные ключи могут иметь один hash, что такое load factor и как separate chaining отличается от open addressing?::Hash сжимает большое пространство ключей в конечное число позиций, поэтому коллизии неизбежны. Таблица хранит и проверяет сам ключ. Chaining размещает конфликтующие entries в связанных buckets; open addressing ищет другой slot по probe sequence. Рост снижает load factor.
+
 # Как хеш-таблица обрабатывает коллизии?
 
 ## Вопрос

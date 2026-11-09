@@ -3,6 +3,8 @@ tags: [go, interview, middle, kafka, flashcards/Kafka]
 topic: Архитектура Kafka
 ---
 
+Как partitioning даёт масштабирование и какую границу порядка гарантирует Kafka?::Topic разделён на ordered partitions, размещённые на brokers. Record получает offset внутри partition. Producer выбирает partition, consumers читают log. Порядок гарантирован только внутри одной partition, не между всем topic. Число partitions ограничивает параллелизм consumer group.
+
 # Что такое topic, partition, broker и record в Kafka?
 
 ## Вопрос

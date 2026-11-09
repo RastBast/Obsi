@@ -3,6 +3,8 @@ tags: [go, interview, middle, redis, performance, flashcards/Redis]
 topic: Redis pipelining
 ---
 
+Как pipelining уменьшает RTT, сохраняется ли порядок ответов и гарантирует ли он атомарность?::Pipeline отправляет несколько команд без ожидания каждого ответа, сокращая сетевые round trips. Redis возвращает ответы в порядке команд. Pipeline сам по себе не атомарен: команды других clients могут выполняться между ними; MULTI/Lua решают атомарность.
+
 # Чем pipeline отличается от transaction?
 
 ## Вопрос

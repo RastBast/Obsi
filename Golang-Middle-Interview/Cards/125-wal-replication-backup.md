@@ -3,6 +3,8 @@ tags: [go, interview, middle, postgresql, wal, flashcards/БД]
 topic: WAL, replication и backup
 ---
 
+Чем physical replication отличается от logical, что такое replication slot и почему replica не является backup?::WAL описывает изменения страниц/транзакций для crash recovery. Physical replica воспроизводит WAL кластера, logical декодирует изменения таблиц для выбранных публикаций. Slot удерживает WAL до consumer. Backup плюс архив WAL позволяет PITR. Реплика повторит ошибочное удаление, поэтому не заменяет независимый backup.
+
 # Как WAL связан с replication и point-in-time recovery?
 
 ## Вопрос

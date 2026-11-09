@@ -3,6 +3,8 @@ tags: [go, interview, middle, runtime, deadlock, flashcards/Рантайм]
 topic: Deadlock
 ---
 
+Когда runtime сообщает `all goroutines are asleep`, почему не каждый deadlock обнаруживается и как искать цикл ожидания?::Deadlock — цикл или вечное ожидание, при котором нужное событие не произойдёт. Runtime паникует, если не осталось runnable goroutine и нет ожидаемых событий, но сервер с живым network poller или одной активной goroutine может зависнуть частично без глобальной panic.
+
 # Как диагностировать deadlock в Go?
 
 ## Вопрос

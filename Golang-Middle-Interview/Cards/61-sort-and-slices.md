@@ -3,6 +3,8 @@ tags: [go, interview, middle, sorting, flashcards/Go]
 topic: Сортировка
 ---
 
+Чем отличаются `sort.Interface`, `sort.Slice`, функции пакета `slices` и стабильная сортировка?::Современный generic-пакет `slices` сортирует ordered values или принимает comparator. Старый `sort.Interface` требует Len/Less/Swap. Обычная сортировка не обязана сохранять порядок равных элементов; стабильная сохраняет.
+
 # Как сортировать данные в Go?
 
 ## Вопрос

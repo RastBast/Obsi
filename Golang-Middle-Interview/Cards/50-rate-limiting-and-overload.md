@@ -3,6 +3,8 @@ tags: [go, interview, middle, rate-limit, backend, flashcards/Сети]
 topic: Rate limiting и overload protection
 ---
 
+Чем token bucket отличается от semaphore, где ставить rate limit и какие ответы/метрики нужны при перегрузке?::Token bucket ограничивает скорость во времени и допускает burst; semaphore ограничивает число одновременных операций. Rate limit применяют по осмысленному ключу и на нужной границе, возвращают явный отказ (`429`/`503`) с retry hints вместо неограниченной очереди.
+
 # Как реализовать rate limiting и защиту от перегрузки?
 
 ## Вопрос

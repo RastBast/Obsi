@@ -3,6 +3,8 @@ tags: [go, interview, middle, algorithms, flashcards/Алгоритмы]
 topic: Stack, queue и deque
 ---
 
+Какие свойства LIFO/FIFO нужны и почему очередь на slice может удерживать память?::Stack работает LIFO и легко реализуется append/pop конца slice. Queue работает FIFO; удаление `q=q[1:]` O(1), но backing array и ссылки в хвосте могут удерживаться. Deque поддерживает оба конца, обычно через ring buffer.
+
 # Как реализовать stack, queue и deque?
 
 ## Вопрос

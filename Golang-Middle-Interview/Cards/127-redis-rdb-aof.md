@@ -3,6 +3,8 @@ tags: [go, interview, middle, redis, persistence, flashcards/Redis]
 topic: RDB и AOF
 ---
 
+Какие компромиссы durability, recovery и I/O дают снимки и журнал команд?::RDB периодически сохраняет компактный snapshot: быстро восстанавливается, но теряет изменения после снимка. AOF записывает mutating commands и в зависимости от fsync policy теряет меньше, но журнал/восстановление дороже; rewrite сжимает историю. Их можно комбинировать.
+
 # Чем RDB отличается от AOF?
 
 ## Вопрос

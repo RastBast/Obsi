@@ -3,6 +3,8 @@ tags: [go, interview, middle, network, proxy, flashcards/Сети]
 topic: Load balancer и reverse proxy
 ---
 
+На каком уровне они принимают решения, как выполняются health checks и что происходит с client IP/TLS?::L4 балансирует соединения по адресам/портам, не разбирая HTTP. L7 proxy завершает прикладной протокол и маршрутизирует по host/path/header. TLS может завершаться на proxy или проходить passthrough. Health check должен отражать готовность backend, а не только живой процесс.
+
 # Чем L4 load balancer отличается от L7 reverse proxy?
 
 ## Вопрос

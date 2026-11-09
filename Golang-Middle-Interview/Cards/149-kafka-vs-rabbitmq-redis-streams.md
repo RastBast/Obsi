@@ -3,6 +3,8 @@ tags: [go, interview, middle, kafka, architecture, flashcards/Kafka]
 topic: Выбор брокера
 ---
 
+Как log, queue routing и in-memory stream модели отличаются по replay, throughput и operations?::Kafka — распределённый durable log с retention/replay и partition scalability. RabbitMQ — message broker с гибкой routing, per-message queue/ack и удобной task distribution. Redis Streams — более простой persistent stream рядом с Redis. Выбор делают по гарантиям и эксплуатации, не по популярности.
+
 # Когда выбирать Kafka, RabbitMQ или Redis Streams?
 
 ## Вопрос

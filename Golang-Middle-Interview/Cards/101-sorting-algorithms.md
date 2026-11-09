@@ -3,6 +3,8 @@ tags: [go, interview, middle, algorithms, sorting, flashcards/Алгоритмы
 topic: Алгоритмы сортировки
 ---
 
+Какие у них сложности, память, стабильность и worst-case свойства?::Quicksort обычно быстрый и cache-friendly, average O(n log n), worst O(n²) без защит. Mergesort стабилен и O(n log n), но для массива обычно требует O(n) памяти. Heapsort O(n log n) worst-case и O(1) extra, но хуже locality/константы.
+
 # Сравните quicksort, mergesort и heapsort
 
 ## Вопрос

@@ -3,6 +3,8 @@ tags: [go, interview, middle, interfaces, embedding, flashcards/Go]
 topic: Method set и embedding
 ---
 
+Какие методы принадлежат `T` и `*T`, что происходит при встраивании типа и является ли embedding наследованием?::Method set `T` содержит методы с receiver `T`; method set `*T` — методы с receiver `T` и `*T`. Встраивание продвигает методы встроенного поля, но это композиция, а не наследование и не подтипирование.
+
 # Как method set и embedding влияют на реализацию интерфейсов?
 
 ## Вопрос

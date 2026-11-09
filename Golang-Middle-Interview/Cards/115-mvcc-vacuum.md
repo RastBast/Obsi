@@ -3,6 +3,8 @@ tags: [go, interview, middle, postgresql, mvcc, flashcards/БД]
 topic: MVCC и VACUUM
 ---
 
+Почему UPDATE создаёт новую версию строки, что такое dead tuples и transaction ID wraparound?::MVCC хранит версии tuples с метаданными видимости. UPDATE обычно создаёт новую версию, DELETE помечает старую недоступной будущим snapshots. VACUUM освобождает место для повторного использования, обновляет visibility map и предотвращает опасный wraparound transaction IDs.
+
 # Зачем PostgreSQL нужны VACUUM и autovacuum?
 
 ## Вопрос

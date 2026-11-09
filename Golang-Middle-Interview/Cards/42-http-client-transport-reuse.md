@@ -3,6 +3,8 @@ tags: [go, interview, middle, http, client, flashcards/Сети]
 topic: HTTP client
 ---
 
+Почему `http.Client` нужно переиспользовать, какие timeouts задавать и зачем читать/закрывать response body?::`Client` и особенно `Transport` предназначены для переиспользования: они держат connection pool. У запроса должен быть deadline/context. `resp.Body` всегда закрывают; для повторного использования соединения body обычно дочитывают до EOF, если это разумно и ограничено.
+
 # Как правильно использовать http.Client?
 
 ## Вопрос

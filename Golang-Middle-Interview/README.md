@@ -1,27 +1,36 @@
-# 150 карточек для собеседования Go Middle
+# 200 карточек для собеседования Go Middle
 
-Коллекция состоит из **7 колод**. Каждая карточка содержит краткий ответ, ответ уровня middle, senior-тонкости и два финальных объяснения: простыми словами и техническими терминами.
+Коллекция состоит из **9 колод** и совместима с плагином Obsidian **Spaced Repetition** (`st3v3nmw/obsidian-spaced-repetition`) с настройками разделителей по умолчанию.
 
-Во всех карточках используется тег `#go` и один тег колоды вида `#flashcards/Название`.
+## Формат Spaced Repetition
+
+В каждой заметке есть:
+
+- YAML-тег колоды вида `#flashcards/Название`;
+- отдельная однострочная карточка `Вопрос::Краткий ответ`;
+- ниже — полный конспект с ответом middle, senior-тонкостями и объяснениями простыми и техническими словами.
+
+Дополнительная настройка разделителей не нужна: `::` — стандартный разделитель однострочной карточки. После первого повторения плагин самостоятельно добавит scheduling-комментарий к строке карточки.
 
 ## Колоды
 
-- [`#flashcards/Go`](#go) — 38 карточек
-- [`#flashcards/Сети`](#сети) — 21 карточка
-- [`#flashcards/Алгоритмы`](#алгоритмы) — 15 карточек
-- [`#flashcards/БД`](#бд) — 17 карточек
-- [`#flashcards/Рантайм`](#рантайм) — 33 карточки
-- [`#flashcards/Redis`](#redis) — 13 карточек
-- [`#flashcards/Kafka`](#kafka) — 13 карточек
+- [`#flashcards/Go`](#go) — 41 карточка
+- [`#flashcards/Docker`](#docker) — 15 карточек
+- [`#flashcards/Kubernetes`](#kubernetes) — 15 карточек
+- [`#flashcards/Сети`](#сети) — 24 карточки
+- [`#flashcards/Алгоритмы`](#алгоритмы) — 18 карточек
+- [`#flashcards/БД`](#бд) — 20 карточек
+- [`#flashcards/Рантайм`](#рантайм) — 36 карточек
+- [`#flashcards/Redis`](#redis) — 15 карточек
+- [`#flashcards/Kafka`](#kafka) — 16 карточек
 
 ## Как учить
 
-- Сначала ответь вслух, не открывая карточку.
-- Сверься с кратким ответом и уложись в 30–40 секунд.
-- Расскажи middle-версию за 2–3 минуты с примером.
-- Senior-раздел оставь для уточняющих вопросов.
-- В конце прочитай простое объяснение, затем повтори ту же мысль техническими терминами.
-- Ставь галочку после двух правильных ответов в разные дни.
+1. Установи и включи плагин **Spaced Repetition**.
+2. Выполни команду **Review flashcards from all notes** или выбери конкретную колоду.
+3. Сначала ответь вслух, затем нажми показ ответа.
+4. Краткий ответ оценивай в плагине; полный разбор открывай в исходной заметке.
+5. Не редактируй служебные scheduling-комментарии, которые добавит плагин.
 
 ## Go
 
@@ -65,6 +74,49 @@
 - [ ] [063. Для чего нужен go generate?](Cards/63-go-generate-codegen.md)
 - [ ] [064. Как работать с бинарными форматами и endianness?](Cards/64-binary-encoding-endianness.md)
 - [ ] [065. Какие изменения Go-пакета ломают совместимость?](Cards/65-api-compatibility.md)
+- [ ] [181. Чем type alias отличается от нового defined type?](Cards/181-type-alias-defined-type.md)
+- [ ] [182. Как работает go:embed?](Cards/182-go-embed.md)
+- [ ] [183. Как построить lifecycle Go-сервиса через signal.NotifyContext?](Cards/183-signal-notify-context.md)
+
+## Docker
+
+Тег колоды: `#flashcards/Docker`
+
+- [ ] [151. Чем Docker image отличается от container?](Cards/151-docker-image-container.md)
+- [ ] [152. Как Dockerfile формирует слои и build cache?](Cards/152-dockerfile-layers-cache.md)
+- [ ] [153. Зачем нужен multi-stage Docker build?](Cards/153-docker-multistage.md)
+- [ ] [154. Чем ENTRYPOINT отличается от CMD?](Cards/154-entrypoint-cmd.md)
+- [ ] [155. Чем COPY отличается от ADD и зачем .dockerignore?](Cards/155-copy-add-dockerignore.md)
+- [ ] [156. Как работает Docker bridge network и публикация портов?](Cards/156-docker-networking.md)
+- [ ] [157. Чем Docker volume отличается от bind mount и tmpfs?](Cards/157-docker-storage.md)
+- [ ] [158. Как namespaces и cgroups создают container?](Cards/158-namespaces-cgroups.md)
+- [ ] [159. Как передавать секреты в Docker build безопасно?](Cards/159-buildkit-secrets-cache.md)
+- [ ] [160. Как уменьшить привилегии Docker container?](Cards/160-docker-security.md)
+- [ ] [161. Чем Docker HEALTHCHECK отличается от restart policy?](Cards/161-docker-health-restart.md)
+- [ ] [162. Почему PID 1 в container требует особого внимания?](Cards/162-docker-pid1-signals.md)
+- [ ] [163. Гарантирует ли depends_on готовность сервиса?](Cards/163-docker-compose-readiness.md)
+- [ ] [164. Чем Docker tag отличается от digest?](Cards/164-registry-tags-digests.md)
+- [ ] [165. Как ограничивать ресурсы и собирать логи container?](Cards/165-docker-resource-limits-logs.md)
+
+## Kubernetes
+
+Тег колоды: `#flashcards/Kubernetes`
+
+- [ ] [166. Что такое Pod в Kubernetes?](Cards/166-kubernetes-pod.md)
+- [ ] [167. Как Deployment обновляет Pods?](Cards/167-deployment-rollout.md)
+- [ ] [168. Как Kubernetes Service направляет трафик к Pods?](Cards/168-kubernetes-service-dns.md)
+- [ ] [169. Чем ConfigMap отличается от Secret?](Cards/169-configmap-secret.md)
+- [ ] [170. Чем resource request отличается от limit?](Cards/170-requests-limits-qos.md)
+- [ ] [171. Чем startup, readiness и liveness probes отличаются?](Cards/171-kubernetes-probes.md)
+- [ ] [172. Как Kubernetes завершает Pod?](Cards/172-kubernetes-termination.md)
+- [ ] [173. Как управлять размещением Pods?](Cards/173-kubernetes-scheduling.md)
+- [ ] [174. Чем PV отличается от PVC и StorageClass?](Cards/174-pv-pvc-storageclass.md)
+- [ ] [175. Что делает Ingress и чем Gateway API его дополняет?](Cards/175-ingress-gateway.md)
+- [ ] [176. Чем HPA, VPA и Cluster Autoscaler отличаются?](Cards/176-kubernetes-autoscaling.md)
+- [ ] [177. Чем Job отличается от CronJob и Deployment?](Cards/177-jobs-cronjobs.md)
+- [ ] [178. Как ограничить права workload в Kubernetes?](Cards/178-rbac-security-context.md)
+- [ ] [179. Что ограничивает Kubernetes NetworkPolicy?](Cards/179-network-policy.md)
+- [ ] [180. Чем StatefulSet и DaemonSet отличаются от Deployment?](Cards/180-statefulset-daemonset.md)
 
 ## Сети
 
@@ -91,6 +143,9 @@
 - [ ] [093. Когда выбирать gRPC, а когда HTTP/JSON API?](Cards/93-grpc-vs-rest.md)
 - [ ] [094. Чем WebSocket отличается от SSE и long polling?](Cards/94-websocket-sse.md)
 - [ ] [095. Чем CORS отличается от CSRF?](Cards/95-cors-csrf.md)
+- [ ] [187. Почему большой connection pool может ухудшить latency?](Cards/187-connection-pool-queueing.md)
+- [ ] [188. Как работает circuit breaker?](Cards/188-circuit-breaker.md)
+- [ ] [189. Как DNS-based service discovery переживает смену endpoints?](Cards/189-service-discovery-dns.md)
 
 ## Алгоритмы
 
@@ -111,6 +166,9 @@
 - [ ] [108. Как распознать задачу на динамическое программирование?](Cards/108-dynamic-programming.md)
 - [ ] [109. Когда применять two pointers и sliding window?](Cards/109-two-pointers-sliding-window.md)
 - [ ] [110. Как реализовать LRU cache за O(1)?](Cards/110-lru-cache.md)
+- [ ] [190. Как работает Union-Find?](Cards/190-union-find.md)
+- [ ] [191. Что такое trie и когда оно лучше hash map?](Cards/191-trie.md)
+- [ ] [192. Зачем нужен consistent hashing?](Cards/192-consistent-hashing.md)
 
 ## БД
 
@@ -133,6 +191,9 @@
 - [ ] [123. Чем session, transaction и statement pooling отличаются?](Cards/123-pgbouncer-pooling.md)
 - [ ] [124. Когда таблицу стоит партиционировать?](Cards/124-postgresql-partitioning.md)
 - [ ] [125. Как WAL связан с replication и point-in-time recovery?](Cards/125-wal-replication-backup.md)
+- [ ] [193. Когда использовать JSONB и GIN индекс в PostgreSQL?](Cards/193-postgresql-jsonb-gin.md)
+- [ ] [194. Чем window function отличается от GROUP BY?](Cards/194-cte-window-functions.md)
+- [ ] [195. Как transactional outbox решает dual write БД и брокера?](Cards/195-transactional-outbox.md)
 
 ## Рантайм
 
@@ -171,6 +232,9 @@
 - [ ] [078. Какие издержки и риски добавляет cgo?](Cards/78-cgo-costs.md)
 - [ ] [079. Почему нельзя полагаться на finalizer для закрытия ресурсов?](Cards/79-finalizers-cleanup.md)
 - [ ] [080. Как наблюдать и диагностировать runtime Go?](Cards/80-runtime-metrics-godebug.md)
+- [ ] [184. Что такое GC assist?](Cards/184-gc-assist.md)
+- [ ] [185. Как CPU quota container влияет на GOMAXPROCS?](Cards/185-container-cpu-gomaxprocs.md)
+- [ ] [186. Почему RSS процесса может быть больше Go heap?](Cards/186-heap-rss-fragmentation.md)
 
 ## Redis
 
@@ -189,6 +253,8 @@
 - [ ] [135. Как работают consumer groups Redis Streams?](Cards/135-redis-stream-consumer-groups.md)
 - [ ] [136. Как Redis Cluster распределяет keys?](Cards/136-redis-cluster-hash-slots.md)
 - [ ] [137. Как Redis replication и Sentinel обеспечивают failover?](Cards/137-redis-sentinel-replication.md)
+- [ ] [196. Как реализовать rate limiter в Redis?](Cards/196-redis-rate-limiter.md)
+- [ ] [197. Как Bloom filter защищает БД от запросов несуществующих ключей?](Cards/197-bloom-filter-cache-penetration.md)
 
 ## Kafka
 
@@ -207,11 +273,13 @@
 - [ ] [148. Как batching и compression влияют на Kafka throughput?](Cards/148-kafka-batching-backpressure.md)
 - [ ] [149. Когда выбирать Kafka, RabbitMQ или Redis Streams?](Cards/149-kafka-vs-rabbitmq-redis-streams.md)
 - [ ] [150. Как мониторить Kafka consumer lag и здоровье pipeline?](Cards/150-kafka-lag-observability.md)
+- [ ] [198. Чем CDC-публикация outbox отличается от polling?](Cards/198-kafka-outbox-cdc.md)
+- [ ] [199. Как безопасно переносить Kafka partitions между brokers?](Cards/199-kafka-partition-reassignment.md)
+- [ ] [200. Как распараллелить Kafka consumer в Go и корректно commit-ить offsets?](Cards/200-kafka-go-consumer-parallelism.md)
 
 ## Режим повторения
 
-1. **Новые карточки:** 5 в день.
-2. **Первое повторение:** на следующий день.
-3. **Второе повторение:** через 3 дня.
-4. **Третье повторение:** через 7 дней.
-5. **Контроль:** случайно выбери по 2 карточки из каждой колоды и ответь без подсказки.
+- Добавляй по 5–10 новых карточек в день.
+- Оценивай воспоминание честно, до чтения полного конспекта.
+- Сложные карточки пересказывай сначала простыми словами, затем техническими терминами.
+- Раз в неделю проходи cram-режим по одной выбранной колоде.

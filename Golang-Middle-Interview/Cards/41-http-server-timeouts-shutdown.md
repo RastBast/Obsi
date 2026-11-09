@@ -3,6 +3,8 @@ tags: [go, interview, middle, http, backend, flashcards/Сети]
 topic: HTTP server
 ---
 
+Почему не стоит ограничиваться `http.ListenAndServe`, какие timeouts нужны серверу и как корректно завершить обработку запросов?::Создают `http.Server` с явными timeouts и limits, запускают его, по сигналу перестают принимать новые соединения и вызывают `Shutdown(ctx)`, который ждёт активные обработчики до deadline. Handler должен уважать `r.Context()`.
+
 # Как настроить production HTTP server и graceful shutdown?
 
 ## Вопрос

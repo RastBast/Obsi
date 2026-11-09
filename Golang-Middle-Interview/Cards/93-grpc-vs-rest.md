@@ -3,6 +3,8 @@ tags: [go, interview, middle, network, grpc, flashcards/Сети]
 topic: gRPC и REST
 ---
 
+Какие преимущества дают protobuf, HTTP/2 streams и code generation, и где REST проще?::gRPC даёт строгую schema, generated clients, компактный protobuf и unary/streaming RPC поверх HTTP/2. Он удобен для внутренних typed сервисов. HTTP/JSON проще для браузеров, ручной отладки, публичных API и широкого tooling. Выбор зависит от потребителей и контракта.
+
 # Когда выбирать gRPC, а когда HTTP/JSON API?
 
 ## Вопрос

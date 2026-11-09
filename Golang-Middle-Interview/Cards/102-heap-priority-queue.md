@@ -3,6 +3,8 @@ tags: [go, interview, middle, algorithms, heap, flashcards/Алгоритмы]
 topic: Heap и priority queue
 ---
 
+Как представить heap в массиве, каковы сложности Push/Pop/Peek и где она применяется?::Binary min-heap хранит минимум в корне и поддерживает parent≤children. В массиве дети i находятся около `2i+1` и `2i+2`. Peek O(1), Push и Pop O(log n), построение heap из n элементов bottom-up O(n).
+
 # Как работает бинарная куча?
 
 ## Вопрос

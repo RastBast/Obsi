@@ -3,6 +3,8 @@ tags: [go, interview, middle, network, websocket, flashcards/Сети]
 topic: WebSocket, SSE и long polling
 ---
 
+Как выбрать транспорт для server push и какие lifecycle-проблемы появляются у долгих соединений?::WebSocket даёт двунаправленные message frames после HTTP upgrade. SSE — однонаправленный текстовый stream server→browser с автоматическим reconnect. Long polling использует обычные запросы, которые сервер держит до события. Выбор зависит от направления, частоты и инфраструктуры.
+
 # Чем WebSocket отличается от SSE и long polling?
 
 ## Вопрос
