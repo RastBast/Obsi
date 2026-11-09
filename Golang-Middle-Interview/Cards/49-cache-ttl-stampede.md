@@ -1,5 +1,5 @@
 ---
-tags: [golang, interview, middle, cache, distributed-systems]
+tags: [go, interview, middle, cache, distributed-systems, flashcards/Redis]
 topic: Cache и cache stampede
 ---
 
@@ -42,3 +42,17 @@ Hit ratio сам по себе недостаточен: маленький пр
 ## Если забыл: что это, зачем и где нужно
 
 Cache — обмен свежести и сложности на latency/load. На собеседовании назови **TTL + eviction + invalidation + stampede + observability**. Для stampede: singleflight, jitter и bounded refresh.
+
+## Подробное объяснение простыми словами
+
+Cache — обмен свежести и сложности на latency/load. На собеседовании назови **TTL + eviction + invalidation + stampede + observability**. Для stampede: singleflight, jitter и bounded refresh.
+
+Представь Redis как очень быстрый общий блокнот в памяти. Он ускоряет доступ, но записи могут устаревать, исчезать или одновременно обновляться несколькими процессами. Поэтому важны срок жизни, ограничение памяти и точный источник истины.
+
+## Подробное объяснение техническими терминами
+
+В cache-aside код сначала читает cache, при miss загружает источник и записывает результат. Stampede — много параллельных miss одного ключа; его уменьшают singleflight/request coalescing, jitter TTL, stale-while-revalidate и ограничением concurrency.
+
+«Cache invalidation» зависит от модели согласованности. Delete-on-write оставляет окно между DB commit и удалением cache; write-through тоже имеет частичный отказ. CDC/event invalidation уменьшает окно, но события могут задержаться/дублироваться. Версия записи или monotonic timestamp помогает не применить старое событие после нового.
+
+Одинаковый TTL у большого числа ключей создаёт synchronized expiry; добавляют jitter. Stale-while-revalidate отдаёт старое значение в допустимом окне и обновляет в фоне, но background refresh должен иметь lifecycle, limit и защиту от вечной устарелости.

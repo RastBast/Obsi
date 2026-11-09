@@ -1,5 +1,5 @@
 ---
-tags: [golang, interview, middle, pprof, trace]
+tags: [go, interview, middle, pprof, trace, flashcards/Go]
 topic: Профилирование
 ---
 
@@ -41,3 +41,17 @@ Mutex/block profiling имеет overhead и sampling rates; их включаю
 ## Если забыл: что это, зачем и где нужно
 
 Подбирай профиль по вопросу: **CPU — где считаем; heap — что живёт; allocs — что создаём; block/mutex — где ждём; goroutine — кто висит; trace — когда всё происходило**.
+
+## Подробное объяснение простыми словами
+
+Подбирай профиль по вопросу: **CPU — где считаем; heap — что живёт; allocs — что создаём; block/mutex — где ждём; goroutine — кто висит; trace — когда всё происходило**.
+
+Представь, что это одно из правил языка и стандартной библиотеки: оно задаёт, как программа хранит данные или выполняет действие. Понимание правила помогает не угадывать поведение кода, а заранее предсказывать результат, находить ошибки и выбирать более простой API.
+
+## Подробное объяснение техническими терминами
+
+CPU profile показывает, где тратится процессорное время; heap — живую память; allocs — накопленные аллокации; goroutine — стеки; mutex/block — ожидание синхронизации. Trace показывает временную картину scheduler, GC и событий. Сначала воспроизводят проблему, затем выбирают профиль под симптом.
+
+Симптом определяет инструмент: высокий CPU → CPU profile; растущий RSS → heap + runtime/system memory + GC metrics; высокая latency при низком CPU → block/mutex/goroutine/trace; scheduler/GC pauses → trace и runtime metrics.
+
+Heap profile семплируется и не равен RSS. RSS включает stacks, runtime metadata, mapped memory, cgo и память, ещё не возвращённую OS. «В heap profile мало, RSS много» не противоречие.

@@ -1,5 +1,5 @@
 ---
-tags: [golang, interview, middle, http, backend]
+tags: [go, interview, middle, http, backend, flashcards/Сети]
 topic: HTTP server
 ---
 
@@ -57,3 +57,17 @@ Recovery middleware логирует stack и возвращает 500, но н�
 ## Если забыл: что это, зачем и где нужно
 
 Production server — это не только handler: **timeouts, лимиты, signal, readiness, `Shutdown` с deadline и context внутри запросов**. Graceful означает перестать принимать и ограниченно дождаться текущих.
+
+## Подробное объяснение простыми словами
+
+Production server — это не только handler: **timeouts, лимиты, signal, readiness, `Shutdown` с deadline и context внутри запросов**. Graceful означает перестать принимать и ограниченно дождаться текущих.
+
+Представь запрос как посылку, проходящую через несколько узлов. На каждом участке она может задержаться, потеряться или быть обработана повторно. Поэтому сетевой код обязан ограничивать ожидание, проверять результат и безопасно переживать частичные сбои.
+
+## Подробное объяснение техническими терминами
+
+Создают `http.Server` с явными timeouts и limits, запускают его, по сигналу перестают принимать новые соединения и вызывают `Shutdown(ctx)`, который ждёт активные обработчики до deadline. Handler должен уважать `r.Context()`.
+
+Timeouts защищают разные фазы и должны соответствовать streaming/API. Слишком жёсткий `WriteTimeout` может ломать долгие stream; защита slowloris обычно начинается с `ReadHeaderTimeout` и ограничения заголовков. За reverse proxy нужно согласовать deadline всех hop, иначе нижний сервис продолжит работу после ухода клиента.
+
+`Shutdown` закрывает listeners и idle connections, затем ждёт активные. Он не ждёт произвольные фоновые goroutine и не всегда автоматически управляет hijacked/WebSocket connections; их регистрируют и закрывают отдельно. После истечения deadline применяют `Close` по принятой политике.
