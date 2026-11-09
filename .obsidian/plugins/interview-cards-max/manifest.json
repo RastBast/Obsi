@@ -1,0 +1,10 @@
+{
+  "id": "interview-cards-max",
+  "name": "Карточки собеседования MAX",
+  "version": "1.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "Русскоязычная замена Star InfoLearn: 9 колод, FSRS, серия 🔥, прогресс, «Не знаю ответ», полный показ заметки и пометка ответов после показа.",
+  "author": "RastBast",
+  "authorUrl": "https://github.com/RastBast/Obsi",
+  "isDesktopOnly": false
+}

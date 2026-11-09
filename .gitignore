@@ -5,11 +5,20 @@
 
 .obsidian/plugins/*
 !.obsidian/plugins/star-infolearn/
+!.obsidian/plugins/interview-cards-max/
+
+# Legacy Star InfoLearn export (kept for compatibility, not used by Cards MAX)
 .obsidian/plugins/star-infolearn/*
 !.obsidian/plugins/star-infolearn/data/
 .obsidian/plugins/star-infolearn/data/*
 !.obsidian/plugins/star-infolearn/data/cards/
 !.obsidian/plugins/star-infolearn/data/cards/*.json
+
+# Local Cards MAX plugin: ship source + built files, ignore runtime state and deps
+.obsidian/plugins/interview-cards-max/node_modules/
+.obsidian/plugins/interview-cards-max/data.json
+.obsidian/plugins/interview-cards-max/*.tsbuildinfo
+.obsidian/plugins/interview-cards-max/.DS_Store
 
 .obsidian/snippets/*
 !.obsidian/snippets/star-infolearn-go-middle.css

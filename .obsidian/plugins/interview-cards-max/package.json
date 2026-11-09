@@ -1,0 +1,19 @@
+{
+  "name": "interview-cards-max",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Русскоязычный плагин Obsidian для интервальных карточек собеседований Go.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "node esbuild.config.mjs",
+    "check": "npm run typecheck && npm run build"
+  },
+  "dependencies": {
+    "ts-fsrs": "4.5.1"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "obsidian": "1.14.4",
+    "typescript": "5.9.3"
+  }
+}
