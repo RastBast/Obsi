@@ -2,7 +2,12 @@ import { State } from 'ts-fsrs';
 
 export const PLUGIN_ID = 'interview-cards-max';
 export const VIEW_TYPE = 'interview-cards-max-view';
-export const DEFAULT_CARDS_PATH = 'Golang-Middle-Interview/Cards';
+/** Активная папка с карточками в корне vault. Сюда пользователь кладёт свои заметки. */
+export const DEFAULT_CARDS_PATH = 'Карточки';
+/** Старая папка: оставлена как fallback, чтобы карточки не пропали у существующих vault. */
+export const LEGACY_CARDS_PATH = 'Golang-Middle-Interview/Cards';
+/** Дополнительные корни: объединяются с активной папкой, дубли по тексту вопроса убираются. */
+export const CANDIDATE_CARD_ROOTS = [DEFAULT_CARDS_PATH, LEGACY_CARDS_PATH] as const;
 export const HISTORY_LIMIT = 240;
 export const FEED_IMPRESSION_LIMIT = 6000;
 export const DEFAULT_FEED_CYCLE_SIZE = 20;
@@ -493,10 +498,8 @@ export function normalizeData(raw: unknown): PluginData {
     streak,
     daily,
     history,
-    selectedDeck:
-      typeof r.selectedDeck === 'string' && DECK_ORDER.includes(r.selectedDeck as DeckName)
-        ? r.selectedDeck
-        : null,
+    // Разрешаем произвольные темы-папки, а не только 9 встроенных.
+    selectedDeck: typeof r.selectedDeck === 'string' && r.selectedDeck.trim() ? r.selectedDeck : null,
     selectedFilter,
     feed: normalizeFeed(r.feed),
   };

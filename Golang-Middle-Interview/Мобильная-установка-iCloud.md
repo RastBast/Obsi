@@ -14,7 +14,7 @@
 
 ## Важно: в iCloud должны лежать не только плагин, но и карточки
 
-Плагин читает заметки по пути `Golang-Middle-Interview/Cards` **относительно корня vault**. Если в iCloud-vault скопировать только `.obsidian/plugins/interview-cards-max/`, лента откроется пустой. Нужны обе папки:
+Плагин читает заметки из папки **`Карточки/`** в корне vault. Если в iCloud-vault скопировать только `.obsidian/plugins/interview-cards-max/`, лента откроется пустой. Нужны обе папки:
 
 ```text
 <ваш iCloud-vault>/
@@ -25,8 +25,11 @@
 │           ├── main.js
 │           ├── styles.css
 │           └── data.json          ← создаётся сам, не копируем
-└── Golang-Middle-Interview/
-    └── Cards/                     ← 220 заметок в 9 колодах
+└── Карточки/                       ← только карточки
+    ├── README.md                   ← служебная, не карточка
+    ├── Go/                         ← 43 .md
+    ├── Docker/                     ← 17 .md
+    └── …                           ← ещё 7 тем
 ```
 
 ## Самый быстрый способ: скрипт
@@ -52,7 +55,7 @@ cd .obsidian/plugins/interview-cards-max/scripts
 
 1. копирует `manifest.json`, `main.js`, `styles.css`, `README.md` и лицензию;
 2. **не трогает `data.json`**, чтобы не стереть прогресс, лайки и комментарии;
-3. если `Golang-Middle-Interview/Cards` ещё нет в vault — копирует и 220 заметок;
+3. если папки `Карточки/` ещё нет в vault — копирует её целиком: 220 заметок и 9 тем;
 4. не копирует `src/`, `node_modules/`, `package*.json` — они нужны только для разработки.
 
 Путь можно передать любому vault, главное чтобы именно его открывал Obsidian на iPhone. Если не знаешь путь: на iPhone открой **Настройки → О хранилище / Vault**, либо на Mac щёлни по vault в Obsidian правой кнопкой и выбери «Показать в Finder».
@@ -61,7 +64,7 @@ cd .obsidian/plugins/interview-cards-max/scripts
 
 1. На Mac открой папку iCloud-vault в Finder.
 2. Скопируй туда `.obsidian/plugins/interview-cards-max/` из этого репозитория.
-3. Скопируй туда `Golang-Middle-Interview/Cards/` со всеми 220 Markdown-заметками.
+3. Скопируй туда папку `Карточки/` со всеми 9 темами и 220 Markdown-заметками.
 4. Дождись значка синхронизации iCloud.
 5. На iPhone открой **тот же vault** в Obsidian.
 6. **Настройки → Сторонние плагины** → включи **«Карточки собеседования MAX»**. Если плагин не появился, перезапусти Obsidian и проверь, что выключен «Безопасный режим».
@@ -81,7 +84,7 @@ cd .obsidian/plugins/interview-cards-max/scripts
 |---|---|
 | Плагин нет в списке | Имя папки ровно `interview-cards-max`, внутри есть `manifest.json`, iCloud досинхронизирован, Obsidian перезапущен |
 | «Desktop only» | В `manifest.json` должно быть `"isDesktopOnly": false` |
-| Лента пустая | В корне vault есть `Golang-Middle-Interview/Cards/`; в настройках плагина путь `Golang-Middle-Interview/Cards` |
+| Лента пустая | В корне vault есть `Карточки/<Тема>/*.md`; в настройках плагина путь `Карточки` |
 | Кнопки не нажимаются | Обнови Obsidian Mobile; проверь, что скопирован свежий `styles.css` |
 | Свайп не работает | Проверь, что жест начинается на карточке, а не на кнопке/ссылке/поле комментария |
 | Прогресс не перенёсся | `data.json` должен лежать в `.obsidian/plugins/interview-cards-max/` того же vault |

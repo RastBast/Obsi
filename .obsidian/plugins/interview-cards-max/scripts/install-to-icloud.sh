@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Копирует готовый локальный плагин «Карточки MAX» и 220 заметок в vault,
-# который синхронизируется через iCloud и открывается в Obsidian на iPhone.
+# Копирует готовый локальный плагин «Карточки MAX» и папку «Карточки»
+# (220 заметок, 9 тем) в vault, который синхронизируется через iCloud
+# и открывается в Obsidian на iPhone.
 #
 # Запускать на Mac/ПК, где доступна папка iCloud-хранилища:
 #   ./install-to-icloud.sh "/путь/к/вашему/vault"
@@ -46,20 +47,20 @@ for file in manifest.json main.js styles.css README.md LICENSE-ts-fsrs.txt; do
   fi
 done
 
-# Плагин читает карточки по пути Golang-Middle-Interview/Cards относительно корня vault.
-CARDS_SRC="$REPO_ROOT/Golang-Middle-Interview/Cards"
-CARDS_DST="$TARGET/Golang-Middle-Interview/Cards"
+# Активная папка карточек лежит в корне vault: «Карточки/<Тема>/*.md».
+CARDS_SRC="$REPO_ROOT/Карточки"
+CARDS_DST="$TARGET/Карточки"
 if [[ -d "$CARDS_SRC" ]]; then
   if [[ -d "$CARDS_DST" ]]; then
-    echo "Карточки уже есть в vault — оставляю как есть: $CARDS_DST"
+    echo "Папка «Карточки» уже есть — обновляю только служебный README, заметки не трогаю."
+    cp "$CARDS_SRC/README.md" "$CARDS_DST/README.md" 2>/dev/null || true
   else
-    mkdir -p "$TARGET/Golang-Middle-Interview"
     cp -R "$CARDS_SRC" "$CARDS_DST"
-    echo "Скопировано 220 заметок: $CARDS_DST"
+    echo "Скопирована папка «Карточки» с 220 заметками и 9 темами: $CARDS_DST"
   fi
 else
   echo "Внимание: в репозитории не найден $CARDS_SRC" >&2
-  echo "Скопируй папку Cards в $CARDS_DST вручную, иначе лента будет пустой." >&2
+  echo "Скопируй папку «Карточки» в корень vault вручную, иначе лента будет пустой." >&2
 fi
 
 echo

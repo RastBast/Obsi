@@ -627,6 +627,8 @@ export class CardsMaxView extends ItemView {
     });
     shuffle.addEventListener('click', () => this.plugin.regenerateFeed(true));
 
+    this.renderFeedTopics(root, feed.deck);
+
     if (!card || !impression) {
       root.createDiv({
         cls: 'icm-empty',
@@ -673,6 +675,7 @@ export class CardsMaxView extends ItemView {
     this.renderFeedCommentButton(rail, comments.length);
     this.renderFeedActionButton(rail, 'skip-forward', '⏭', 'Свайп', 'Пропустить без решения', () => this.plugin.skipFeed());
     this.renderFeedActionButton(rail, 'pencil', '✍️', 'Решить', 'Открыть ответ и оценки', () => this.startFeedSolve(card.id));
+    this.renderFeedActionButton(rail, 'file-text', '📝', 'Заметка', 'Открыть исходную заметку в Obsidian', () => this.openNote(card));
     this.renderFeedActionButton(rail, 'chevron-up', '⬆', 'Далее', 'Следующая без решения (свайп вверх)', () => this.plugin.skipFeed());
     this.renderFeedActionButton(rail, 'chevron-down', '⬇', 'Назад', 'Предыдущая карточка (свайп вниз)', () => this.plugin.prevFeed());
 
@@ -685,6 +688,23 @@ export class CardsMaxView extends ItemView {
 
     if (this.feedCommentsOpen) {
       this.renderFeedComments(root, card, impression, comments);
+    }
+  }
+
+  /** Разделение по темам прямо в ленте: те же папки, что и в хранилище. */
+  private renderFeedTopics(parent: HTMLElement, activeDeck: string | null): void {
+    const row = parent.createDiv({ cls: 'icm-feed-topics' });
+    const makeChip = (label: string, deck: string | null): void => {
+      const btn = row.createEl('button', {
+        cls: `icm-feed-topic-chip${activeDeck === deck ? ' is-active' : ''}`,
+        text: label,
+        attr: { type: 'button', title: deck ? `Тема «${deck}»` : 'Все темы' },
+      });
+      btn.addEventListener('click', () => void this.plugin.setSelectedDeck(deck));
+    };
+    makeChip('Все темы', null);
+    for (const name of this.plugin.getDeckNames()) {
+      makeChip(name, name);
     }
   }
 

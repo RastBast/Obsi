@@ -1,5 +1,5 @@
 import type { App, TFile } from 'obsidian';
-import { DECK_ORDER, deckRank, type DeckName } from './types';
+import { deckRank } from './types';
 
 export interface CardNote {
   id: string;
@@ -27,8 +27,10 @@ function stripFrontmatter(raw: string): string {
 }
 
 function normalizeTags(raw: unknown): string[] {
-  if (Array.isArray(raw)) return raw.map((x) => String(x).trim()).filter(Boolean);
-  if (typeof raw === 'string') return raw.split(/[,\s]+/).map((x) => x.trim()).filter(Boolean);
+  const clean = (value: unknown): string =>
+    String(value).trim().replace(/^\[|\]$/g, '').trim();
+  if (Array.isArray(raw)) return raw.map(clean).filter(Boolean);
+  if (typeof raw === 'string') return raw.split(/[,\s]+/).map(clean).filter(Boolean);
   return [];
 }
 
@@ -36,11 +38,27 @@ function questionKeyOf(question: string): string {
   return question.replace(/\s+/g, ' ').trim().toLocaleLowerCase('ru');
 }
 
+/**
+ * Заметка со служебным флагом остаётся обычной заметкой Obsidian,
+ * но не превращается в карточку (например, README папки).
+ */
+function isIgnored(fm: Record<string, unknown>): boolean {
+  const flag = fm.icmIgnore ?? fm['icm-ignore'];
+  if (flag === true || (typeof flag === 'string' && flag.trim().toLowerCase() === 'true')) return true;
+  const cardFlag = fm.card;
+  if (cardFlag === false || (typeof cardFlag === 'string' && cardFlag.trim().toLowerCase() === 'false')) {
+    return true;
+  }
+  return normalizeTags(fm.tags).includes('icm-ignore');
+}
+
+/** Тема = имя подпапки внутри родительской папки карточек. */
 function deckFromPath(file: TFile, rootPath: string): string {
   const prefix = `${rootPath.replace(/^\/+|\/+$/g, '')}/`;
   const rel = file.path.startsWith(prefix) ? file.path.slice(prefix.length) : file.path;
-  const folder = rel.split('/')[0] ?? '';
-  return DECK_ORDER.includes(folder as DeckName) ? folder : folder || 'Без колоды';
+  const parts = rel.split('/');
+  const folder = parts.length > 1 ? parts[0] : '';
+  return folder || 'Без темы';
 }
 
 function orderFromFile(file: TFile): number {
@@ -97,6 +115,11 @@ function pickSection(sections: Record<string, string>, exact: string, prefix = '
   return '';
 }
 
+function firstParagraph(body: string): string {
+  const parts = body.split(/\n\s*\n/);
+  return (parts.find((part) => part.trim()) ?? '').trim();
+}
+
 export function buildExplanationMarkdown(card: CardNote): string {
   const parts: string[] = [];
   const add = (heading: string, body: string): void => {
@@ -106,24 +129,28 @@ export function buildExplanationMarkdown(card: CardNote): string {
   add('Развёрнутый ответ мидла', card.middle);
   add('Развёрнутый ответ сеньора: все тонкости', card.senior);
   add('Если забыл / Простыми словами', card.simple);
+  if (!parts.length) parts.push(card.fullMarkdown);
   return parts.join('\n\n---\n\n');
 }
 
-async function parseCard(app: App, file: TFile, rootPath: string): Promise<CardNote> {
+async function parseCard(app: App, file: TFile, rootPath: string): Promise<CardNote | null> {
   const raw = await app.vault.cachedRead(file);
   const fullMarkdown = stripFrontmatter(raw);
-  const parsed = parseSections(fullMarkdown);
   const cache = app.metadataCache.getFileCache(file);
   const fm = (cache?.frontmatter ?? {}) as Record<string, unknown>;
+  if (isIgnored(fm)) return null;
 
-  const declaredDeck = typeof fm.deck === 'string' ? fm.deck.trim() : '';
-  const deck = declaredDeck && DECK_ORDER.includes(declaredDeck as DeckName)
-    ? declaredDeck
-    : deckFromPath(file, rootPath);
-
+  const parsed = parseSections(fullMarkdown);
+  const body = fullMarkdown.trim();
   const title = parsed.title || file.basename;
-  const question = pickSection(parsed.sections, 'Вопрос') || title;
-  const shortAnswer = pickSection(parsed.sections, 'Краткий ответ');
+  const hasSections = Object.keys(parsed.sections).length > 0;
+
+  // Структурированные 220 карточек читаем как раньше.
+  // Любая другая заметка тоже становится карточкой: вопрос = первый абзац/заголовок,
+  // ответ = всё содержимое заметки. Так можно просто «закинуть» свои заметки в папку.
+  const question = pickSection(parsed.sections, 'Вопрос') || firstParagraph(body) || title;
+  const shortAnswer =
+    pickSection(parsed.sections, 'Краткий ответ') || (hasSections ? '' : body);
   const middle = pickSection(parsed.sections, 'Развёрнутый ответ мидла');
   const senior = pickSection(
     parsed.sections,
@@ -132,6 +159,8 @@ async function parseCard(app: App, file: TFile, rootPath: string): Promise<CardN
   );
   const simple = pickSection(parsed.sections, 'Если забыл / Простыми словами');
 
+  const declaredDeck = typeof fm.deck === 'string' ? fm.deck.trim() : '';
+  const deck = declaredDeck || deckFromPath(file, rootPath);
   const tags = normalizeTags(fm.tags);
   const topic = typeof fm.topic === 'string' ? fm.topic.trim() : '';
 
@@ -160,7 +189,8 @@ export async function loadCards(app: App, rootPath: string): Promise<CardNote[]>
   const cards: CardNote[] = [];
   for (const file of files) {
     try {
-      cards.push(await parseCard(app, file, rootPath));
+      const card = await parseCard(app, file, rootPath);
+      if (card) cards.push(card);
     } catch (error) {
       console.error(`[Карточки MAX] Не удалось разобрать ${file.path}`, error);
     }

@@ -32,6 +32,9 @@
   font: inherit;
   color: inherit;
   cursor: pointer;
+  max-width: 100%;
+  /* Obsidian задаёт button white-space: nowrap — из-за этого текст колод «вылетал» */
+  white-space: normal;
 }
 
 .icm-root button:disabled {
@@ -277,6 +280,8 @@
 
 .icm-progress-section,
 .icm-section {
+  min-width: 0;
+  overflow: hidden;
   border: 1px solid var(--icm-border);
   border-radius: 12px;
   padding: 12px;
@@ -313,7 +318,7 @@
 
 .icm-progress-fill {
   height: 100%;
-  min-width: 2px;
+  min-width: 0; /* при 0% не рисуется лишняя точка */
   border-radius: 99px;
   background: linear-gradient(90deg, var(--color-blue), var(--icm-accent), var(--color-purple));
   transition: width 260ms ease;
@@ -329,8 +334,11 @@
 /* Decks */
 .icm-deck-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  grid-auto-rows: minmax(84px, auto);
+  align-items: stretch;
   gap: 8px;
+  min-width: 0;
 }
 
 .icm-deck-btn {
@@ -340,7 +348,13 @@
   align-items: flex-start;
   gap: 9px;
   width: 100%;
+  max-width: 100%;
+  height: auto; /* сбрасываем возможную фиксированную высоту button из темы Obsidian */
   min-width: 0;
+  min-height: 84px;
+  line-height: normal;
+  overflow: hidden;
+  white-space: normal;
   padding: 10px;
   text-align: left;
   border: 1px solid var(--icm-border);
@@ -384,18 +398,21 @@
 
 .icm-deck-icon svg { width: 16px; height: 16px; }
 
-.icm-deck-body { min-width: 0; flex: 1; }
+.icm-deck-body { min-width: 0; flex: 1; overflow: hidden; }
 
 .icm-deck-name {
   font-size: 12px;
   font-weight: 800;
+  white-space: normal;
   overflow-wrap: anywhere;
 }
 
 .icm-deck-meta {
   margin-top: 2px;
-  font-size: 10px;
+  font-size: 9px;
+  line-height: 1.35;
   color: var(--icm-muted);
+  white-space: normal;
   overflow-wrap: anywhere;
 }
 
@@ -1019,6 +1036,39 @@
   font-variant-numeric: tabular-nums;
 }
 
+.icm-feed-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.icm-feed-topic-chip {
+  flex: 0 1 auto;
+  max-width: 100%;
+  padding: 4px 9px;
+  border: 1px solid var(--icm-border);
+  border-radius: 99px;
+  background: var(--icm-panel);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.icm-feed-topic-chip:hover {
+  background: var(--icm-hover);
+  border-color: var(--icm-accent);
+}
+
+.icm-feed-topic-chip.is-active {
+  background: var(--icm-accent);
+  border-color: var(--icm-accent);
+  color: var(--icm-on-accent);
+}
+
 .icm-feed-stage {
   display: flex;
   flex-wrap: wrap;
@@ -1355,6 +1405,16 @@
   }
 
   .icm-deck-grid {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
+
+  .icm-feed-topics {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 3px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .icm-feed-topics::-webkit-scrollbar { display: none; }
 }

@@ -16,9 +16,11 @@ import { loadCards, type CardNote } from './cards';
 import { createEmptyProgress, gradeCard, RATING_AGAIN } from './scheduler';
 import { isDue, isMastered, isPassed } from './status';
 import {
+  CANDIDATE_CARD_ROOTS,
   DEFAULT_CARDS_PATH,
   DEFAULT_FEED_CYCLE_SIZE,
   DECK_ORDER,
+  LEGACY_CARDS_PATH,
   FEED_IMPRESSION_LIMIT,
   HISTORY_LIMIT,
   PLUGIN_ID,
@@ -165,10 +167,38 @@ export class CardsMaxPlugin extends Plugin {
     this.refreshAllViews();
   }
 
+  private cardRoots(): string[] {
+    return [...new Set([this.settings.cardsPath.trim(), ...CANDIDATE_CARD_ROOTS])].filter(Boolean);
+  }
+
   async refreshCards(showNotice = true): Promise<void> {
-    this.cards = await loadCards(this.app, this.settings.cardsPath);
+    // Объединяем активную папку «Карточки» и совместимые корни.
+    // Так можно просто закинуть свои заметки в «Карточки/<Тема>/» —
+    // они добавятся к 220 базовым, а случайные копии не задвоятся.
+    const byPath = new Map<string, CardNote>();
+    for (const root of this.cardRoots()) {
+      for (const card of await loadCards(this.app, root)) {
+        if (!byPath.has(card.id)) byPath.set(card.id, card);
+      }
+    }
+    const seenQuestions = new Set<string>();
+    const merged: CardNote[] = [];
+    for (const card of byPath.values()) {
+      if (seenQuestions.has(card.questionKey)) continue;
+      seenQuestions.add(card.questionKey);
+      merged.push(card);
+    }
+    merged.sort((a, b) => {
+      const dr = deckRank(a.deck) - deckRank(b.deck);
+      if (dr !== 0) return dr;
+      if (a.order !== b.order) return a.order - b.order;
+      return a.path.localeCompare(b.path, 'ru');
+    });
+    this.cards = merged;
     if (!this.cards.length) {
-      new Notice(`«Карточки MAX»: по пути ${this.settings.cardsPath} карточки не найдены`);
+      new Notice(
+        `«Карточки MAX»: карточки не найдены. Положи .md-заметки в «${DEFAULT_CARDS_PATH}/<Тема>/»`,
+      );
     } else if (showNotice) {
       new Notice(`«Карточки MAX»: загружено ${cardsWord(this.cards.length)}`);
     }
@@ -177,8 +207,8 @@ export class CardsMaxPlugin extends Plugin {
   }
 
   private registerVaultEvents(): void {
-    const prefix = (): string => `${this.settings.cardsPath.replace(/^\/+|\/+$/g, '')}/`;
-    const relevant = (path: string): boolean => path.startsWith(prefix());
+    const relevant = (path: string): boolean =>
+      this.cardRoots().some((root) => path.startsWith(`${root.replace(/^\/+|\/+$/g, '')}/`));
     const handler = (file: TAbstractFile): void => {
       if (relevant(file.path)) this.scheduleRefresh();
     };
@@ -321,10 +351,23 @@ export class CardsMaxPlugin extends Plugin {
   }
 
   async setSelectedDeck(deck: string | null): Promise<void> {
-    this.data.selectedDeck = deck && DECK_ORDER.includes(deck as (typeof DECK_ORDER)[number]) ? deck : null;
+    const known =
+      deck &&
+      (DECK_ORDER.includes(deck as (typeof DECK_ORDER)[number]) ||
+        this.cards.some((card) => card.deck === deck));
+    this.data.selectedDeck = known ? deck : null;
     await this.save();
     this.regenerateFeed(true);
     this.refreshAllViews();
+  }
+
+  /** 9 встроенных тем + любые пользовательские папки внутри «Карточки/». */
+  getDeckNames(): string[] {
+    const names: string[] = [...DECK_ORDER];
+    for (const card of this.cards) {
+      if (!names.includes(card.deck)) names.push(card.deck);
+    }
+    return names;
   }
 
   async setSelectedFilter(filter: FilterKey): Promise<void> {
@@ -428,7 +471,9 @@ export class CardsMaxPlugin extends Plugin {
   }
 
   getDeckStats(): DeckStats[] {
-    return DECK_ORDER.map((name) => this.statsFor(this.cards.filter((card) => card.deck === name), name));
+    return this.getDeckNames().map((name) =>
+      this.statsFor(this.cards.filter((card) => card.deck === name), name),
+    );
   }
 
   getFeedStats(): { likes: number; comments: number; skips: number; cycle: number } {
@@ -527,9 +572,17 @@ export class CardsMaxPlugin extends Plugin {
 
     if (order.length === 0 || deckChanged || incrementCycle) {
       if (incrementCycle || deckChanged) feed.cycle += 1;
-      order = this.buildFeedOrder(deck);
+      let nextDeck = deck;
+      let built = this.buildFeedOrder(nextDeck);
+      // Тему удалили/переименовали — не оставляем пустую ленту.
+      if (!built.length && nextDeck !== null) {
+        nextDeck = null;
+        built = this.buildFeedOrder(null);
+        this.data.selectedDeck = null;
+      }
+      order = built;
       feed.index = 0;
-      feed.deck = deck;
+      feed.deck = nextDeck;
     }
 
     feed.order = this.dedupeFeedOrder(order);
@@ -887,7 +940,10 @@ class CardsMaxSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Путь к карточкам')
-      .setDesc('Папка с Markdown-заметками внутри vault.')
+      .setDesc(
+        `Папка с Markdown-заметками внутри vault. По умолчанию «${DEFAULT_CARDS_PATH}»: тема = подпапка, каждая .md-заметка = карточка. ` +
+          `Если папка пуста, проверяется «${LEGACY_CARDS_PATH}».`,
+      )
       .addText((text) =>
         text
           .setPlaceholder(DEFAULT_CARDS_PATH)

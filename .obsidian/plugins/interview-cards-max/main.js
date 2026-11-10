@@ -530,7 +530,9 @@ var tt = (r) => new V(r || {});
 
 // src/types.ts
 var VIEW_TYPE = "interview-cards-max-view";
-var DEFAULT_CARDS_PATH = "Golang-Middle-Interview/Cards";
+var DEFAULT_CARDS_PATH = "\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438";
+var LEGACY_CARDS_PATH = "Golang-Middle-Interview/Cards";
+var CANDIDATE_CARD_ROOTS = [DEFAULT_CARDS_PATH, LEGACY_CARDS_PATH];
 var HISTORY_LIMIT = 240;
 var FEED_IMPRESSION_LIMIT = 6e3;
 var DEFAULT_FEED_CYCLE_SIZE = 20;
@@ -789,7 +791,8 @@ function normalizeData(raw) {
     streak,
     daily,
     history,
-    selectedDeck: typeof r.selectedDeck === "string" && DECK_ORDER.includes(r.selectedDeck) ? r.selectedDeck : null,
+    // Разрешаем произвольные темы-папки, а не только 9 встроенных.
+    selectedDeck: typeof r.selectedDeck === "string" && r.selectedDeck.trim() ? r.selectedDeck : null,
     selectedFilter,
     feed: normalizeFeed(r.feed)
   };
@@ -804,18 +807,29 @@ function stripFrontmatter(raw) {
   return raw.replace(/^\uFEFF/, "").replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, "").trim();
 }
 function normalizeTags(raw) {
-  if (Array.isArray(raw)) return raw.map((x) => String(x).trim()).filter(Boolean);
-  if (typeof raw === "string") return raw.split(/[,\s]+/).map((x) => x.trim()).filter(Boolean);
+  const clean = (value) => String(value).trim().replace(/^\[|\]$/g, "").trim();
+  if (Array.isArray(raw)) return raw.map(clean).filter(Boolean);
+  if (typeof raw === "string") return raw.split(/[,\s]+/).map(clean).filter(Boolean);
   return [];
 }
 function questionKeyOf(question) {
   return question.replace(/\s+/g, " ").trim().toLocaleLowerCase("ru");
 }
+function isIgnored(fm) {
+  const flag = fm.icmIgnore ?? fm["icm-ignore"];
+  if (flag === true || typeof flag === "string" && flag.trim().toLowerCase() === "true") return true;
+  const cardFlag = fm.card;
+  if (cardFlag === false || typeof cardFlag === "string" && cardFlag.trim().toLowerCase() === "false") {
+    return true;
+  }
+  return normalizeTags(fm.tags).includes("icm-ignore");
+}
 function deckFromPath(file, rootPath) {
   const prefix = `${rootPath.replace(/^\/+|\/+$/g, "")}/`;
   const rel = file.path.startsWith(prefix) ? file.path.slice(prefix.length) : file.path;
-  const folder = rel.split("/")[0] ?? "";
-  return DECK_ORDER.includes(folder) ? folder : folder || "\u0411\u0435\u0437 \u043A\u043E\u043B\u043E\u0434\u044B";
+  const parts = rel.split("/");
+  const folder = parts.length > 1 ? parts[0] : "";
+  return folder || "\u0411\u0435\u0437 \u0442\u0435\u043C\u044B";
 }
 function orderFromFile(file) {
   const m = file.basename.match(/^(\d+)/);
@@ -861,6 +875,10 @@ function pickSection(sections, exact, prefix = "") {
   }
   return "";
 }
+function firstParagraph(body) {
+  const parts = body.split(/\n\s*\n/);
+  return (parts.find((part) => part.trim()) ?? "").trim();
+}
 function buildExplanationMarkdown(card) {
   const parts = [];
   const add = (heading, body) => {
@@ -872,19 +890,21 @@ ${body.trim()}`);
   add("\u0420\u0430\u0437\u0432\u0451\u0440\u043D\u0443\u0442\u044B\u0439 \u043E\u0442\u0432\u0435\u0442 \u043C\u0438\u0434\u043B\u0430", card.middle);
   add("\u0420\u0430\u0437\u0432\u0451\u0440\u043D\u0443\u0442\u044B\u0439 \u043E\u0442\u0432\u0435\u0442 \u0441\u0435\u043D\u044C\u043E\u0440\u0430: \u0432\u0441\u0435 \u0442\u043E\u043D\u043A\u043E\u0441\u0442\u0438", card.senior);
   add("\u0415\u0441\u043B\u0438 \u0437\u0430\u0431\u044B\u043B / \u041F\u0440\u043E\u0441\u0442\u044B\u043C\u0438 \u0441\u043B\u043E\u0432\u0430\u043C\u0438", card.simple);
+  if (!parts.length) parts.push(card.fullMarkdown);
   return parts.join("\n\n---\n\n");
 }
 async function parseCard(app, file, rootPath) {
   const raw = await app.vault.cachedRead(file);
   const fullMarkdown = stripFrontmatter(raw);
-  const parsed = parseSections(fullMarkdown);
   const cache = app.metadataCache.getFileCache(file);
   const fm = cache?.frontmatter ?? {};
-  const declaredDeck = typeof fm.deck === "string" ? fm.deck.trim() : "";
-  const deck = declaredDeck && DECK_ORDER.includes(declaredDeck) ? declaredDeck : deckFromPath(file, rootPath);
+  if (isIgnored(fm)) return null;
+  const parsed = parseSections(fullMarkdown);
+  const body = fullMarkdown.trim();
   const title = parsed.title || file.basename;
-  const question = pickSection(parsed.sections, "\u0412\u043E\u043F\u0440\u043E\u0441") || title;
-  const shortAnswer = pickSection(parsed.sections, "\u041A\u0440\u0430\u0442\u043A\u0438\u0439 \u043E\u0442\u0432\u0435\u0442");
+  const hasSections = Object.keys(parsed.sections).length > 0;
+  const question = pickSection(parsed.sections, "\u0412\u043E\u043F\u0440\u043E\u0441") || firstParagraph(body) || title;
+  const shortAnswer = pickSection(parsed.sections, "\u041A\u0440\u0430\u0442\u043A\u0438\u0439 \u043E\u0442\u0432\u0435\u0442") || (hasSections ? "" : body);
   const middle = pickSection(parsed.sections, "\u0420\u0430\u0437\u0432\u0451\u0440\u043D\u0443\u0442\u044B\u0439 \u043E\u0442\u0432\u0435\u0442 \u043C\u0438\u0434\u043B\u0430");
   const senior = pickSection(
     parsed.sections,
@@ -892,6 +912,8 @@ async function parseCard(app, file, rootPath) {
     "\u0420\u0430\u0437\u0432\u0451\u0440\u043D\u0443\u0442\u044B\u0439 \u043E\u0442\u0432\u0435\u0442 \u0441\u0435\u043D\u044C\u043E\u0440\u0430"
   );
   const simple = pickSection(parsed.sections, "\u0415\u0441\u043B\u0438 \u0437\u0430\u0431\u044B\u043B / \u041F\u0440\u043E\u0441\u0442\u044B\u043C\u0438 \u0441\u043B\u043E\u0432\u0430\u043C\u0438");
+  const declaredDeck = typeof fm.deck === "string" ? fm.deck.trim() : "";
+  const deck = declaredDeck || deckFromPath(file, rootPath);
   const tags = normalizeTags(fm.tags);
   const topic = typeof fm.topic === "string" ? fm.topic.trim() : "";
   return {
@@ -918,7 +940,8 @@ async function loadCards(app, rootPath) {
   const cards = [];
   for (const file of files) {
     try {
-      cards.push(await parseCard(app, file, rootPath));
+      const card = await parseCard(app, file, rootPath);
+      if (card) cards.push(card);
     } catch (error) {
       console.error(`[\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX] \u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0440\u0430\u0437\u043E\u0431\u0440\u0430\u0442\u044C ${file.path}`, error);
     }
@@ -1603,6 +1626,7 @@ var CardsMaxView = class extends import_obsidian.ItemView {
       attr: { type: "button" }
     });
     shuffle.addEventListener("click", () => this.plugin.regenerateFeed(true));
+    this.renderFeedTopics(root, feed.deck);
     if (!card || !impression) {
       root.createDiv({
         cls: "icm-empty",
@@ -1644,6 +1668,7 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     this.renderFeedCommentButton(rail, comments.length);
     this.renderFeedActionButton(rail, "skip-forward", "\u23ED", "\u0421\u0432\u0430\u0439\u043F", "\u041F\u0440\u043E\u043F\u0443\u0441\u0442\u0438\u0442\u044C \u0431\u0435\u0437 \u0440\u0435\u0448\u0435\u043D\u0438\u044F", () => this.plugin.skipFeed());
     this.renderFeedActionButton(rail, "pencil", "\u270D\uFE0F", "\u0420\u0435\u0448\u0438\u0442\u044C", "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043E\u0442\u0432\u0435\u0442 \u0438 \u043E\u0446\u0435\u043D\u043A\u0438", () => this.startFeedSolve(card.id));
+    this.renderFeedActionButton(rail, "file-text", "\u{1F4DD}", "\u0417\u0430\u043C\u0435\u0442\u043A\u0430", "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0438\u0441\u0445\u043E\u0434\u043D\u0443\u044E \u0437\u0430\u043C\u0435\u0442\u043A\u0443 \u0432 Obsidian", () => this.openNote(card));
     this.renderFeedActionButton(rail, "chevron-up", "\u2B06", "\u0414\u0430\u043B\u0435\u0435", "\u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0430\u044F \u0431\u0435\u0437 \u0440\u0435\u0448\u0435\u043D\u0438\u044F (\u0441\u0432\u0430\u0439\u043F \u0432\u0432\u0435\u0440\u0445)", () => this.plugin.skipFeed());
     this.renderFeedActionButton(rail, "chevron-down", "\u2B07", "\u041D\u0430\u0437\u0430\u0434", "\u041F\u0440\u0435\u0434\u044B\u0434\u0443\u0449\u0430\u044F \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0430 (\u0441\u0432\u0430\u0439\u043F \u0432\u043D\u0438\u0437)", () => this.plugin.prevFeed());
     root.createDiv({
@@ -1652,6 +1677,22 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     });
     if (this.feedCommentsOpen) {
       this.renderFeedComments(root, card, impression, comments);
+    }
+  }
+  /** Разделение по темам прямо в ленте: те же папки, что и в хранилище. */
+  renderFeedTopics(parent, activeDeck) {
+    const row = parent.createDiv({ cls: "icm-feed-topics" });
+    const makeChip = (label, deck) => {
+      const btn = row.createEl("button", {
+        cls: `icm-feed-topic-chip${activeDeck === deck ? " is-active" : ""}`,
+        text: label,
+        attr: { type: "button", title: deck ? `\u0422\u0435\u043C\u0430 \xAB${deck}\xBB` : "\u0412\u0441\u0435 \u0442\u0435\u043C\u044B" }
+      });
+      btn.addEventListener("click", () => void this.plugin.setSelectedDeck(deck));
+    };
+    makeChip("\u0412\u0441\u0435 \u0442\u0435\u043C\u044B", null);
+    for (const name of this.plugin.getDeckNames()) {
+      makeChip(name, name);
     }
   }
   renderFeedLikeButton(parent, impression, total) {
@@ -2171,10 +2212,34 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     if (key === "showStreakInStatusBar") this.updateStatusBar();
     this.refreshAllViews();
   }
+  cardRoots() {
+    return [.../* @__PURE__ */ new Set([this.settings.cardsPath.trim(), ...CANDIDATE_CARD_ROOTS])].filter(Boolean);
+  }
   async refreshCards(showNotice = true) {
-    this.cards = await loadCards(this.app, this.settings.cardsPath);
+    const byPath = /* @__PURE__ */ new Map();
+    for (const root of this.cardRoots()) {
+      for (const card of await loadCards(this.app, root)) {
+        if (!byPath.has(card.id)) byPath.set(card.id, card);
+      }
+    }
+    const seenQuestions = /* @__PURE__ */ new Set();
+    const merged = [];
+    for (const card of byPath.values()) {
+      if (seenQuestions.has(card.questionKey)) continue;
+      seenQuestions.add(card.questionKey);
+      merged.push(card);
+    }
+    merged.sort((a, b) => {
+      const dr = deckRank(a.deck) - deckRank(b.deck);
+      if (dr !== 0) return dr;
+      if (a.order !== b.order) return a.order - b.order;
+      return a.path.localeCompare(b.path, "ru");
+    });
+    this.cards = merged;
     if (!this.cards.length) {
-      new import_obsidian2.Notice(`\xAB\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX\xBB: \u043F\u043E \u043F\u0443\u0442\u0438 ${this.settings.cardsPath} \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B`);
+      new import_obsidian2.Notice(
+        `\xAB\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX\xBB: \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B. \u041F\u043E\u043B\u043E\u0436\u0438 .md-\u0437\u0430\u043C\u0435\u0442\u043A\u0438 \u0432 \xAB${DEFAULT_CARDS_PATH}/<\u0422\u0435\u043C\u0430>/\xBB`
+      );
     } else if (showNotice) {
       new import_obsidian2.Notice(`\xAB\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX\xBB: \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D\u043E ${cardsWord(this.cards.length)}`);
     }
@@ -2182,8 +2247,7 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     this.refreshAllViews();
   }
   registerVaultEvents() {
-    const prefix = () => `${this.settings.cardsPath.replace(/^\/+|\/+$/g, "")}/`;
-    const relevant = (path) => path.startsWith(prefix());
+    const relevant = (path) => this.cardRoots().some((root) => path.startsWith(`${root.replace(/^\/+|\/+$/g, "")}/`));
     const handler = (file) => {
       if (relevant(file.path)) this.scheduleRefresh();
     };
@@ -2306,10 +2370,19 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     return this.data.selectedFilter;
   }
   async setSelectedDeck(deck) {
-    this.data.selectedDeck = deck && DECK_ORDER.includes(deck) ? deck : null;
+    const known = deck && (DECK_ORDER.includes(deck) || this.cards.some((card) => card.deck === deck));
+    this.data.selectedDeck = known ? deck : null;
     await this.save();
     this.regenerateFeed(true);
     this.refreshAllViews();
+  }
+  /** 9 встроенных тем + любые пользовательские папки внутри «Карточки/». */
+  getDeckNames() {
+    const names = [...DECK_ORDER];
+    for (const card of this.cards) {
+      if (!names.includes(card.deck)) names.push(card.deck);
+    }
+    return names;
   }
   async setSelectedFilter(filter) {
     this.data.selectedFilter = filter;
@@ -2397,7 +2470,9 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     };
   }
   getDeckStats() {
-    return DECK_ORDER.map((name) => this.statsFor(this.cards.filter((card) => card.deck === name), name));
+    return this.getDeckNames().map(
+      (name) => this.statsFor(this.cards.filter((card) => card.deck === name), name)
+    );
   }
   getFeedStats() {
     const impressions = Object.values(this.data.feed.impressions);
@@ -2478,9 +2553,16 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     const deckChanged = feed.deck !== deck;
     if (order.length === 0 || deckChanged || incrementCycle) {
       if (incrementCycle || deckChanged) feed.cycle += 1;
-      order = this.buildFeedOrder(deck);
+      let nextDeck = deck;
+      let built = this.buildFeedOrder(nextDeck);
+      if (!built.length && nextDeck !== null) {
+        nextDeck = null;
+        built = this.buildFeedOrder(null);
+        this.data.selectedDeck = null;
+      }
+      order = built;
       feed.index = 0;
-      feed.deck = deck;
+      feed.deck = nextDeck;
     }
     feed.order = this.dedupeFeedOrder(order);
     if (feed.index >= feed.order.length) feed.index = Math.max(0, feed.order.length - 1);
@@ -2792,7 +2874,9 @@ var CardsMaxSettingTab = class extends import_obsidian2.PluginSettingTab {
       cls: "setting-item-description",
       text: "\u0420\u0443\u0441\u0441\u043A\u043E\u044F\u0437\u044B\u0447\u043D\u044B\u0435 \u043A\u043E\u043B\u043E\u0434\u044B, FSRS, \u0441\u0435\u0440\u0438\u044F, \u043B\u0435\u043D\u0442\u0430 \u0422\u0422 \u0438 \u0447\u0435\u0441\u0442\u043D\u0430\u044F \u043F\u043E\u043C\u0435\u0442\u043A\u0430 \u043E\u0442\u0432\u0435\u0442\u043E\u0432 \u043F\u043E\u0441\u043B\u0435 \u043F\u043E\u043A\u0430\u0437\u0430."
     });
-    new import_obsidian2.Setting(containerEl).setName("\u041F\u0443\u0442\u044C \u043A \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0430\u043C").setDesc("\u041F\u0430\u043F\u043A\u0430 \u0441 Markdown-\u0437\u0430\u043C\u0435\u0442\u043A\u0430\u043C\u0438 \u0432\u043D\u0443\u0442\u0440\u0438 vault.").addText(
+    new import_obsidian2.Setting(containerEl).setName("\u041F\u0443\u0442\u044C \u043A \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0430\u043C").setDesc(
+      `\u041F\u0430\u043F\u043A\u0430 \u0441 Markdown-\u0437\u0430\u043C\u0435\u0442\u043A\u0430\u043C\u0438 \u0432\u043D\u0443\u0442\u0440\u0438 vault. \u041F\u043E \u0443\u043C\u043E\u043B\u0447\u0430\u043D\u0438\u044E \xAB${DEFAULT_CARDS_PATH}\xBB: \u0442\u0435\u043C\u0430 = \u043F\u043E\u0434\u043F\u0430\u043F\u043A\u0430, \u043A\u0430\u0436\u0434\u0430\u044F .md-\u0437\u0430\u043C\u0435\u0442\u043A\u0430 = \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0430. \u0415\u0441\u043B\u0438 \u043F\u0430\u043F\u043A\u0430 \u043F\u0443\u0441\u0442\u0430, \u043F\u0440\u043E\u0432\u0435\u0440\u044F\u0435\u0442\u0441\u044F \xAB${LEGACY_CARDS_PATH}\xBB.`
+    ).addText(
       (text) => text.setPlaceholder(DEFAULT_CARDS_PATH).setValue(this.plugin.settings.cardsPath).onChange((value) => {
         void this.plugin.setSetting("cardsPath", value.trim() || DEFAULT_CARDS_PATH);
       })
