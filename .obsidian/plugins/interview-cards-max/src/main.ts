@@ -2,6 +2,7 @@ import {
   App,
   Modal,
   Notice,
+  Platform,
   Plugin,
   PluginSettingTab,
   Setting,
@@ -234,16 +235,16 @@ export class CardsMaxPlugin extends Plugin {
 
   async activateView(): Promise<void> {
     const existing = this.app.workspace.getLeavesOfType(VIEW_TYPE)[0];
-    let leaf: WorkspaceLeaf;
-    if (existing) {
-      leaf = existing;
-    } else {
-      const right = this.app.workspace.getRightLeaf(false);
-      if (!right) {
-        new Notice('Не удалось открыть правую боковую панель');
+    let leaf: WorkspaceLeaf | null = existing ?? null;
+    if (!leaf) {
+      // На iOS правый sidedock может отсутствовать: открываем панель в основном листе.
+      leaf = Platform.isMobile
+        ? this.app.workspace.getLeaf(false)
+        : this.app.workspace.getRightLeaf(false);
+      if (!leaf) {
+        new Notice('Не удалось открыть панель «Карточек MAX»');
         return;
       }
-      leaf = right;
       await leaf.setViewState({ type: VIEW_TYPE, active: true });
     }
     this.app.workspace.revealLeaf(leaf);

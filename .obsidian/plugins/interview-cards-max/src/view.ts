@@ -3,6 +3,7 @@ import {
   MarkdownRenderer,
   Menu,
   Notice,
+  Platform,
   TFile,
   WorkspaceLeaf,
   setIcon,
@@ -290,7 +291,11 @@ export class CardsMaxView extends ItemView {
           new Notice(`Карточки MAX · ${cardsWord(this.plugin.cards.length)} · 9 колод · FSRS · лента ТТ`),
         ),
     );
-    menu.showAtMouseEvent(evt);
+    if (Platform.isMobile) {
+      menu.showAtPosition({ x: evt.clientX, y: evt.clientY });
+    } else {
+      menu.showAtMouseEvent(evt);
+    }
   }
 
   private updateReviewBadges(): void {
@@ -673,7 +678,9 @@ export class CardsMaxView extends ItemView {
 
     root.createDiv({
       cls: 'icm-feed-hint',
-      text: 'Свайп вверх/влево — пропустить · вниз — назад · вправо — лайк. Клавиши: ↓/↑, L, C, Enter, Esc.',
+      text: Platform.isMobile
+        ? 'Свайп вверх/влево — пропустить · вниз — назад · вправо — лайк. Кнопки действий под карточкой: лайк, комментарий, свайп, решить.'
+        : 'Свайп вверх/влево — пропустить · вниз — назад · вправо — лайк. Клавиши: ↓/↑, L, C, Enter, Esc.',
     });
 
     if (this.feedCommentsOpen) {
@@ -730,31 +737,65 @@ export class CardsMaxView extends ItemView {
     btn.addEventListener('click', onClick);
   }
 
-  private attachSwipe(cardEl: HTMLElement): void {
-    cardEl.addEventListener('pointerdown', (evt) => {
-      const target = evt.target as HTMLElement;
-      if (target.closest('button, textarea, input, a, .icm-feed-comments')) return;
-      this.pointerStart = { x: evt.clientX, y: evt.clientY };
-    });
-    cardEl.addEventListener('pointerup', (evt) => {
-      const start = this.pointerStart;
-      this.pointerStart = null;
-      if (!start) return;
-      const dx = evt.clientX - start.x;
-      const dy = evt.clientY - start.y;
-      if (Math.max(Math.abs(dx), Math.abs(dy)) < 55) return;
-      if (Math.abs(dy) > Math.abs(dx)) {
-        if (dy < 0) this.plugin.skipFeed();
-        else this.plugin.prevFeed();
-      } else {
-        if (dx < 0) this.plugin.skipFeed();
-        else {
-          const liked = this.plugin.toggleFeedLike();
-          new Notice(liked ? '❤️ Лайк в этом проходе' : 'Лайк этого прохода убран');
-        }
+  private handleSwipe(dx: number, dy: number): void {
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 55) return;
+    if (Math.abs(dy) > Math.abs(dx)) {
+      if (dy < 0) this.plugin.skipFeed();
+      else this.plugin.prevFeed();
+    } else {
+      if (dx < 0) this.plugin.skipFeed();
+      else {
+        const liked = this.plugin.toggleFeedLike();
+        new Notice(liked ? '❤️ Лайк в этом проходе' : 'Лайк этого прохода убран');
       }
-    });
-    cardEl.addEventListener('pointercancel', () => {
+    }
+  }
+
+  private attachSwipe(cardEl: HTMLElement): void {
+    const ignored = (target: EventTarget | null): boolean => {
+      const el = target as Element | null;
+      return Boolean(el?.closest('button, textarea, input, a, .icm-feed-comments'));
+    };
+
+    if (typeof PointerEvent !== 'undefined') {
+      cardEl.addEventListener('pointerdown', (evt) => {
+        if (ignored(evt.target)) return;
+        this.pointerStart = { x: evt.clientX, y: evt.clientY };
+      });
+      cardEl.addEventListener('pointerup', (evt) => {
+        const start = this.pointerStart;
+        this.pointerStart = null;
+        if (!start) return;
+        this.handleSwipe(evt.clientX - start.x, evt.clientY - start.y);
+      });
+      cardEl.addEventListener('pointercancel', () => {
+        this.pointerStart = null;
+      });
+      return;
+    }
+
+    // Fallback для старых WKWebView без PointerEvent.
+    cardEl.addEventListener(
+      'touchstart',
+      (evt) => {
+        if (ignored(evt.target)) return;
+        const touch = evt.touches[0];
+        if (touch) this.pointerStart = { x: touch.clientX, y: touch.clientY };
+      },
+      { passive: true },
+    );
+    cardEl.addEventListener(
+      'touchend',
+      (evt) => {
+        const start = this.pointerStart;
+        this.pointerStart = null;
+        const touch = evt.changedTouches[0];
+        if (!start || !touch) return;
+        this.handleSwipe(touch.clientX - start.x, touch.clientY - start.y);
+      },
+      { passive: true },
+    );
+    cardEl.addEventListener('touchcancel', () => {
       this.pointerStart = null;
     });
   }

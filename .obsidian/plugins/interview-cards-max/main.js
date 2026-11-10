@@ -1311,7 +1311,11 @@ var CardsMaxView = class extends import_obsidian.ItemView {
         () => new import_obsidian.Notice(`\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX \xB7 ${cardsWord(this.plugin.cards.length)} \xB7 9 \u043A\u043E\u043B\u043E\u0434 \xB7 FSRS \xB7 \u043B\u0435\u043D\u0442\u0430 \u0422\u0422`)
       )
     );
-    menu.showAtMouseEvent(evt);
+    if (import_obsidian.Platform.isMobile) {
+      menu.showAtPosition({ x: evt.clientX, y: evt.clientY });
+    } else {
+      menu.showAtMouseEvent(evt);
+    }
   }
   updateReviewBadges() {
     const rs = this.review;
@@ -1644,7 +1648,7 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     this.renderFeedActionButton(rail, "chevron-down", "\u2B07", "\u041D\u0430\u0437\u0430\u0434", "\u041F\u0440\u0435\u0434\u044B\u0434\u0443\u0449\u0430\u044F \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0430 (\u0441\u0432\u0430\u0439\u043F \u0432\u043D\u0438\u0437)", () => this.plugin.prevFeed());
     root.createDiv({
       cls: "icm-feed-hint",
-      text: "\u0421\u0432\u0430\u0439\u043F \u0432\u0432\u0435\u0440\u0445/\u0432\u043B\u0435\u0432\u043E \u2014 \u043F\u0440\u043E\u043F\u0443\u0441\u0442\u0438\u0442\u044C \xB7 \u0432\u043D\u0438\u0437 \u2014 \u043D\u0430\u0437\u0430\u0434 \xB7 \u0432\u043F\u0440\u0430\u0432\u043E \u2014 \u043B\u0430\u0439\u043A. \u041A\u043B\u0430\u0432\u0438\u0448\u0438: \u2193/\u2191, L, C, Enter, Esc."
+      text: import_obsidian.Platform.isMobile ? "\u0421\u0432\u0430\u0439\u043F \u0432\u0432\u0435\u0440\u0445/\u0432\u043B\u0435\u0432\u043E \u2014 \u043F\u0440\u043E\u043F\u0443\u0441\u0442\u0438\u0442\u044C \xB7 \u0432\u043D\u0438\u0437 \u2014 \u043D\u0430\u0437\u0430\u0434 \xB7 \u0432\u043F\u0440\u0430\u0432\u043E \u2014 \u043B\u0430\u0439\u043A. \u041A\u043D\u043E\u043F\u043A\u0438 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0439 \u043F\u043E\u0434 \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u043E\u0439: \u043B\u0430\u0439\u043A, \u043A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0439, \u0441\u0432\u0430\u0439\u043F, \u0440\u0435\u0448\u0438\u0442\u044C." : "\u0421\u0432\u0430\u0439\u043F \u0432\u0432\u0435\u0440\u0445/\u0432\u043B\u0435\u0432\u043E \u2014 \u043F\u0440\u043E\u043F\u0443\u0441\u0442\u0438\u0442\u044C \xB7 \u0432\u043D\u0438\u0437 \u2014 \u043D\u0430\u0437\u0430\u0434 \xB7 \u0432\u043F\u0440\u0430\u0432\u043E \u2014 \u043B\u0430\u0439\u043A. \u041A\u043B\u0430\u0432\u0438\u0448\u0438: \u2193/\u2191, L, C, Enter, Esc."
     });
     if (this.feedCommentsOpen) {
       this.renderFeedComments(root, card, impression, comments);
@@ -1689,31 +1693,61 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     btn.createDiv({ cls: "icm-feed-action-label", text: label });
     btn.addEventListener("click", onClick);
   }
-  attachSwipe(cardEl) {
-    cardEl.addEventListener("pointerdown", (evt) => {
-      const target = evt.target;
-      if (target.closest("button, textarea, input, a, .icm-feed-comments")) return;
-      this.pointerStart = { x: evt.clientX, y: evt.clientY };
-    });
-    cardEl.addEventListener("pointerup", (evt) => {
-      const start = this.pointerStart;
-      this.pointerStart = null;
-      if (!start) return;
-      const dx = evt.clientX - start.x;
-      const dy = evt.clientY - start.y;
-      if (Math.max(Math.abs(dx), Math.abs(dy)) < 55) return;
-      if (Math.abs(dy) > Math.abs(dx)) {
-        if (dy < 0) this.plugin.skipFeed();
-        else this.plugin.prevFeed();
-      } else {
-        if (dx < 0) this.plugin.skipFeed();
-        else {
-          const liked = this.plugin.toggleFeedLike();
-          new import_obsidian.Notice(liked ? "\u2764\uFE0F \u041B\u0430\u0439\u043A \u0432 \u044D\u0442\u043E\u043C \u043F\u0440\u043E\u0445\u043E\u0434\u0435" : "\u041B\u0430\u0439\u043A \u044D\u0442\u043E\u0433\u043E \u043F\u0440\u043E\u0445\u043E\u0434\u0430 \u0443\u0431\u0440\u0430\u043D");
-        }
+  handleSwipe(dx, dy) {
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 55) return;
+    if (Math.abs(dy) > Math.abs(dx)) {
+      if (dy < 0) this.plugin.skipFeed();
+      else this.plugin.prevFeed();
+    } else {
+      if (dx < 0) this.plugin.skipFeed();
+      else {
+        const liked = this.plugin.toggleFeedLike();
+        new import_obsidian.Notice(liked ? "\u2764\uFE0F \u041B\u0430\u0439\u043A \u0432 \u044D\u0442\u043E\u043C \u043F\u0440\u043E\u0445\u043E\u0434\u0435" : "\u041B\u0430\u0439\u043A \u044D\u0442\u043E\u0433\u043E \u043F\u0440\u043E\u0445\u043E\u0434\u0430 \u0443\u0431\u0440\u0430\u043D");
       }
-    });
-    cardEl.addEventListener("pointercancel", () => {
+    }
+  }
+  attachSwipe(cardEl) {
+    const ignored = (target) => {
+      const el = target;
+      return Boolean(el?.closest("button, textarea, input, a, .icm-feed-comments"));
+    };
+    if (typeof PointerEvent !== "undefined") {
+      cardEl.addEventListener("pointerdown", (evt) => {
+        if (ignored(evt.target)) return;
+        this.pointerStart = { x: evt.clientX, y: evt.clientY };
+      });
+      cardEl.addEventListener("pointerup", (evt) => {
+        const start = this.pointerStart;
+        this.pointerStart = null;
+        if (!start) return;
+        this.handleSwipe(evt.clientX - start.x, evt.clientY - start.y);
+      });
+      cardEl.addEventListener("pointercancel", () => {
+        this.pointerStart = null;
+      });
+      return;
+    }
+    cardEl.addEventListener(
+      "touchstart",
+      (evt) => {
+        if (ignored(evt.target)) return;
+        const touch = evt.touches[0];
+        if (touch) this.pointerStart = { x: touch.clientX, y: touch.clientY };
+      },
+      { passive: true }
+    );
+    cardEl.addEventListener(
+      "touchend",
+      (evt) => {
+        const start = this.pointerStart;
+        this.pointerStart = null;
+        const touch = evt.changedTouches[0];
+        if (!start || !touch) return;
+        this.handleSwipe(touch.clientX - start.x, touch.clientY - start.y);
+      },
+      { passive: true }
+    );
+    cardEl.addEventListener("touchcancel", () => {
       this.pointerStart = null;
     });
   }
@@ -2200,16 +2234,13 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
   }
   async activateView() {
     const existing = this.app.workspace.getLeavesOfType(VIEW_TYPE)[0];
-    let leaf;
-    if (existing) {
-      leaf = existing;
-    } else {
-      const right = this.app.workspace.getRightLeaf(false);
-      if (!right) {
-        new import_obsidian2.Notice("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0442\u043A\u0440\u044B\u0442\u044C \u043F\u0440\u0430\u0432\u0443\u044E \u0431\u043E\u043A\u043E\u0432\u0443\u044E \u043F\u0430\u043D\u0435\u043B\u044C");
+    let leaf = existing ?? null;
+    if (!leaf) {
+      leaf = import_obsidian2.Platform.isMobile ? this.app.workspace.getLeaf(false) : this.app.workspace.getRightLeaf(false);
+      if (!leaf) {
+        new import_obsidian2.Notice("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0442\u043A\u0440\u044B\u0442\u044C \u043F\u0430\u043D\u0435\u043B\u044C \xAB\u041A\u0430\u0440\u0442\u043E\u0447\u0435\u043A MAX\xBB");
         return;
       }
-      leaf = right;
       await leaf.setViewState({ type: VIEW_TYPE, active: true });
     }
     this.app.workspace.revealLeaf(leaf);
