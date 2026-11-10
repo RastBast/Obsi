@@ -167,8 +167,30 @@ export class CardsMaxPlugin extends Plugin {
     this.refreshAllViews();
   }
 
-  private cardRoots(): string[] {
-    return [...new Set([this.settings.cardsPath.trim(), ...CANDIDATE_CARD_ROOTS])].filter(Boolean);
+  /** Ищем папку «Карточки»/«Cards» на любой глубине — полезно для iCloud-vault. */
+  private discoveredCardRoots(): string[] {
+    const found = new Set<string>();
+    for (const file of this.app.vault.getMarkdownFiles()) {
+      const parts = file.path.split('/');
+      for (let i = 0; i < parts.length - 1; i += 1) {
+        const segment = parts[i];
+        if (segment === 'Карточки' || segment.toLowerCase() === 'cards') {
+          found.add(parts.slice(0, i + 1).join('/'));
+          break;
+        }
+      }
+    }
+    return [...found];
+  }
+
+  cardRoots(): string[] {
+    return [
+      ...new Set([
+        this.settings.cardsPath.trim(),
+        ...CANDIDATE_CARD_ROOTS,
+        ...this.discoveredCardRoots(),
+      ]),
+    ].filter(Boolean);
   }
 
   async refreshCards(showNotice = true): Promise<void> {
@@ -197,7 +219,8 @@ export class CardsMaxPlugin extends Plugin {
     this.cards = merged;
     if (!this.cards.length) {
       new Notice(
-        `«Карточки MAX»: карточки не найдены. Положи .md-заметки в «${DEFAULT_CARDS_PATH}/<Тема>/»`,
+        `«Карточки MAX»: 0 карточек. Проверены: ${this.cardRoots().join(', ')}. ` +
+          `Положи .md-заметки в «${DEFAULT_CARDS_PATH}/<Тема>/»`,
       );
     } else if (showNotice) {
       new Notice(`«Карточки MAX»: загружено ${cardsWord(this.cards.length)}`);
@@ -951,6 +974,17 @@ class CardsMaxSettingTab extends PluginSettingTab {
           .onChange((value) => {
             void this.plugin.setSetting('cardsPath', value.trim() || DEFAULT_CARDS_PATH);
           }),
+      );
+
+    new Setting(containerEl)
+      .setName('Диагностика карточек')
+      .setDesc(
+        `Загружено: ${cardsWord(this.plugin.cards.length)}. ` +
+          `Проверяемые папки: ${this.plugin.cardRoots().join(', ') || '—'}. ` +
+          `Папки «Карточки»/«Cards» ищутся автоматически на любой глубине vault.`,
+      )
+      .addButton((button) =>
+        button.setButtonText('Перечитать').onClick(() => void this.plugin.refreshCards()),
       );
 
     new Setting(containerEl)

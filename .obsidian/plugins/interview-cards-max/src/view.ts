@@ -478,23 +478,37 @@ export class CardsMaxView extends ItemView {
     meta: { icon: string; emoji: string; color: string } | undefined,
     deckValue: string | null,
   ): void {
-    const btn = parent.createEl('button', {
+    // Не используем <button>: глобальные стили Obsidian для button ломали flex
+    // (названия колод превращались в вертикальную строку из одной буквы).
+    const tile = parent.createDiv({
       cls: `icm-deck-btn${selected ? ' is-selected' : ''}`,
-      attr: { type: 'button' },
+      attr: {
+        role: 'button',
+        tabindex: '0',
+        'aria-label': `${label}: ${cardsWord(stats.total)}, к повторению ${stats.due}`,
+      },
     });
-    btn.style.setProperty('--icm-deck-color', meta?.color ?? 'var(--interactive-accent)');
-    const icon = btn.createDiv({ cls: 'icm-deck-icon' });
+    tile.style.setProperty('--icm-deck-color', meta?.color ?? 'var(--interactive-accent)');
+    const icon = tile.createDiv({ cls: 'icm-deck-icon' });
     setIconWithFallback(icon, meta?.icon ?? 'layers', meta?.emoji ?? '🗂️');
-    const body = btn.createDiv({ cls: 'icm-deck-body' });
+    const body = tile.createDiv({ cls: 'icm-deck-body' });
     body.createDiv({ cls: 'icm-deck-name', text: label });
     body.createDiv({
       cls: 'icm-deck-meta',
       text: `${cardsWord(stats.total)} · к повторению ${stats.due}`,
     });
-    const mini = btn.createDiv({ cls: 'icm-deck-mini' });
+    // Бейджи должны быть ВНУТРИ body, а не третьим flex-ребёнком плитки.
+    const mini = body.createDiv({ cls: 'icm-deck-mini' });
     mini.createSpan({ cls: 'icm-mini is-new', text: `новых ${stats.fresh}`, title: 'Не пройденные' });
     mini.createSpan({ cls: 'icm-mini is-passed', text: `пройдено ${stats.passed}`, title: 'Пройденные' });
-    btn.addEventListener('click', () => void this.plugin.setSelectedDeck(deckValue));
+    const activate = (): void => void this.plugin.setSelectedDeck(deckValue);
+    tile.addEventListener('click', activate);
+    tile.addEventListener('keydown', (evt: KeyboardEvent) => {
+      if (evt.key === 'Enter' || evt.key === ' ') {
+        evt.preventDefault();
+        activate();
+      }
+    });
   }
 
   private renderFiltersAndCards(parent: HTMLElement): void {

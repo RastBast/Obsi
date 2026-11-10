@@ -1488,23 +1488,34 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     }
   }
   createDeckButton(parent, label, stats, selected, meta, deckValue) {
-    const btn = parent.createEl("button", {
+    const tile = parent.createDiv({
       cls: `icm-deck-btn${selected ? " is-selected" : ""}`,
-      attr: { type: "button" }
+      attr: {
+        role: "button",
+        tabindex: "0",
+        "aria-label": `${label}: ${cardsWord(stats.total)}, \u043A \u043F\u043E\u0432\u0442\u043E\u0440\u0435\u043D\u0438\u044E ${stats.due}`
+      }
     });
-    btn.style.setProperty("--icm-deck-color", meta?.color ?? "var(--interactive-accent)");
-    const icon = btn.createDiv({ cls: "icm-deck-icon" });
+    tile.style.setProperty("--icm-deck-color", meta?.color ?? "var(--interactive-accent)");
+    const icon = tile.createDiv({ cls: "icm-deck-icon" });
     setIconWithFallback(icon, meta?.icon ?? "layers", meta?.emoji ?? "\u{1F5C2}\uFE0F");
-    const body = btn.createDiv({ cls: "icm-deck-body" });
+    const body = tile.createDiv({ cls: "icm-deck-body" });
     body.createDiv({ cls: "icm-deck-name", text: label });
     body.createDiv({
       cls: "icm-deck-meta",
       text: `${cardsWord(stats.total)} \xB7 \u043A \u043F\u043E\u0432\u0442\u043E\u0440\u0435\u043D\u0438\u044E ${stats.due}`
     });
-    const mini = btn.createDiv({ cls: "icm-deck-mini" });
+    const mini = body.createDiv({ cls: "icm-deck-mini" });
     mini.createSpan({ cls: "icm-mini is-new", text: `\u043D\u043E\u0432\u044B\u0445 ${stats.fresh}`, title: "\u041D\u0435 \u043F\u0440\u043E\u0439\u0434\u0435\u043D\u043D\u044B\u0435" });
     mini.createSpan({ cls: "icm-mini is-passed", text: `\u043F\u0440\u043E\u0439\u0434\u0435\u043D\u043E ${stats.passed}`, title: "\u041F\u0440\u043E\u0439\u0434\u0435\u043D\u043D\u044B\u0435" });
-    btn.addEventListener("click", () => void this.plugin.setSelectedDeck(deckValue));
+    const activate = () => void this.plugin.setSelectedDeck(deckValue);
+    tile.addEventListener("click", activate);
+    tile.addEventListener("keydown", (evt) => {
+      if (evt.key === "Enter" || evt.key === " ") {
+        evt.preventDefault();
+        activate();
+      }
+    });
   }
   renderFiltersAndCards(parent) {
     const section = parent.createDiv({ cls: "icm-section" });
@@ -2212,8 +2223,29 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     if (key === "showStreakInStatusBar") this.updateStatusBar();
     this.refreshAllViews();
   }
+  /** Ищем папку «Карточки»/«Cards» на любой глубине — полезно для iCloud-vault. */
+  discoveredCardRoots() {
+    const found = /* @__PURE__ */ new Set();
+    for (const file of this.app.vault.getMarkdownFiles()) {
+      const parts = file.path.split("/");
+      for (let i = 0; i < parts.length - 1; i += 1) {
+        const segment = parts[i];
+        if (segment === "\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438" || segment.toLowerCase() === "cards") {
+          found.add(parts.slice(0, i + 1).join("/"));
+          break;
+        }
+      }
+    }
+    return [...found];
+  }
   cardRoots() {
-    return [.../* @__PURE__ */ new Set([this.settings.cardsPath.trim(), ...CANDIDATE_CARD_ROOTS])].filter(Boolean);
+    return [
+      .../* @__PURE__ */ new Set([
+        this.settings.cardsPath.trim(),
+        ...CANDIDATE_CARD_ROOTS,
+        ...this.discoveredCardRoots()
+      ])
+    ].filter(Boolean);
   }
   async refreshCards(showNotice = true) {
     const byPath = /* @__PURE__ */ new Map();
@@ -2238,7 +2270,7 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     this.cards = merged;
     if (!this.cards.length) {
       new import_obsidian2.Notice(
-        `\xAB\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX\xBB: \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B. \u041F\u043E\u043B\u043E\u0436\u0438 .md-\u0437\u0430\u043C\u0435\u0442\u043A\u0438 \u0432 \xAB${DEFAULT_CARDS_PATH}/<\u0422\u0435\u043C\u0430>/\xBB`
+        `\xAB\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX\xBB: 0 \u043A\u0430\u0440\u0442\u043E\u0447\u0435\u043A. \u041F\u0440\u043E\u0432\u0435\u0440\u0435\u043D\u044B: ${this.cardRoots().join(", ")}. \u041F\u043E\u043B\u043E\u0436\u0438 .md-\u0437\u0430\u043C\u0435\u0442\u043A\u0438 \u0432 \xAB${DEFAULT_CARDS_PATH}/<\u0422\u0435\u043C\u0430>/\xBB`
       );
     } else if (showNotice) {
       new import_obsidian2.Notice(`\xAB\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX\xBB: \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D\u043E ${cardsWord(this.cards.length)}`);
@@ -2880,6 +2912,11 @@ var CardsMaxSettingTab = class extends import_obsidian2.PluginSettingTab {
       (text) => text.setPlaceholder(DEFAULT_CARDS_PATH).setValue(this.plugin.settings.cardsPath).onChange((value) => {
         void this.plugin.setSetting("cardsPath", value.trim() || DEFAULT_CARDS_PATH);
       })
+    );
+    new import_obsidian2.Setting(containerEl).setName("\u0414\u0438\u0430\u0433\u043D\u043E\u0441\u0442\u0438\u043A\u0430 \u043A\u0430\u0440\u0442\u043E\u0447\u0435\u043A").setDesc(
+      `\u0417\u0430\u0433\u0440\u0443\u0436\u0435\u043D\u043E: ${cardsWord(this.plugin.cards.length)}. \u041F\u0440\u043E\u0432\u0435\u0440\u044F\u0435\u043C\u044B\u0435 \u043F\u0430\u043F\u043A\u0438: ${this.plugin.cardRoots().join(", ") || "\u2014"}. \u041F\u0430\u043F\u043A\u0438 \xAB\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438\xBB/\xABCards\xBB \u0438\u0449\u0443\u0442\u0441\u044F \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438 \u043D\u0430 \u043B\u044E\u0431\u043E\u0439 \u0433\u043B\u0443\u0431\u0438\u043D\u0435 vault.`
+    ).addButton(
+      (button) => button.setButtonText("\u041F\u0435\u0440\u0435\u0447\u0438\u0442\u0430\u0442\u044C").onClick(() => void this.plugin.refreshCards())
     );
     new import_obsidian2.Setting(containerEl).setName("\u041D\u043E\u0432\u044B\u0445 \u043A\u0430\u0440\u0442\u043E\u0447\u0435\u043A \u0432 \u0434\u0435\u043D\u044C").setDesc("0 \u2014 \u0431\u0435\u0437 \u043E\u0433\u0440\u0430\u043D\u0438\u0447\u0435\u043D\u0438\u044F. \u041E\u0433\u0440\u0430\u043D\u0438\u0447\u0435\u043D\u0438\u0435 \u043D\u0435 \u0441\u043A\u0440\u044B\u0432\u0430\u0435\u0442 \u0443\u0436\u0435 \u043D\u0430\u0437\u043D\u0430\u0447\u0435\u043D\u043D\u044B\u0435 \u043F\u043E\u0432\u0442\u043E\u0440\u0435\u043D\u0438\u044F.").addText((text) => {
       text.setPlaceholder("20").setValue(String(this.plugin.settings.newPerDay)).onChange((value) => {

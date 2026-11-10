@@ -58,8 +58,20 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 4px;
+  /* iOS/iPad: инерционная прокрутка внутри панели. */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   scrollbar-width: thin;
   scrollbar-color: var(--icm-border) transparent;
+}
+
+/* КРИТИЧНО: flex-дети не должны сжиматься, иначе секции обрезаются
+   и пропадает прокрутка / кнопка «Открыть ленту». */
+.icm-dashboard > *,
+.icm-review > *,
+.icm-feed > * {
+  flex-shrink: 0;
 }
 
 .icm-dashboard::-webkit-scrollbar,
@@ -281,7 +293,6 @@
 .icm-progress-section,
 .icm-section {
   min-width: 0;
-  overflow: hidden;
   border: 1px solid var(--icm-border);
   border-radius: 12px;
   padding: 12px;
@@ -345,16 +356,19 @@
   --icm-deck-color: var(--icm-accent);
   position: relative;
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: flex-start;
   gap: 9px;
   width: 100%;
   max-width: 100%;
-  height: auto; /* сбрасываем возможную фиксированную высоту button из темы Obsidian */
+  height: auto;
   min-width: 0;
   min-height: 84px;
   line-height: normal;
   overflow: hidden;
   white-space: normal;
+  cursor: pointer;
   padding: 10px;
   text-align: left;
   border: 1px solid var(--icm-border);
@@ -367,6 +381,11 @@
   transform: translateY(-1px);
   background: var(--icm-hover);
   border-color: var(--icm-deck-color);
+}
+
+.icm-deck-btn:focus-visible {
+  outline: 2px solid var(--icm-accent);
+  outline-offset: 2px;
 }
 
 .icm-deck-btn.is-selected {
@@ -398,13 +417,18 @@
 
 .icm-deck-icon svg { width: 16px; height: 16px; }
 
-.icm-deck-body { min-width: 0; flex: 1; overflow: hidden; }
+.icm-deck-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
 
 .icm-deck-name {
   font-size: 12px;
   font-weight: 800;
   white-space: normal;
-  overflow-wrap: anywhere;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 .icm-deck-meta {
@@ -413,7 +437,8 @@
   line-height: 1.35;
   color: var(--icm-muted);
   white-space: normal;
-  overflow-wrap: anywhere;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 .icm-deck-mini {
@@ -1012,6 +1037,9 @@
   min-height: 0;
   overflow-y: auto;
   padding-right: 3px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   scrollbar-width: thin;
   scrollbar-color: var(--icm-border) transparent;
 }
