@@ -14,6 +14,9 @@ import {
   DECK_META,
   VIEW_TYPE,
   type DeckStats,
+  type FeedComment,
+  type FeedImpression,
+  type GradeRequest,
   type OverallStats,
   type ReviewHistoryEntry,
   type ReviewState,
@@ -25,6 +28,8 @@ import {
   dateKey,
   dayOffsetKey,
   daysWord,
+  feedAttemptBadges,
+  feedOutcomeLabel,
   formatDateTime,
   percent,
   ratingLabel,
@@ -39,11 +44,17 @@ function setIconWithFallback(el: HTMLElement, icon: string, fallback: string): v
 
 export class CardsMaxView extends ItemView {
   private readonly plugin: CardsMaxPlugin;
-  private mode: 'dashboard' | 'review' = 'dashboard';
+  private mode: 'dashboard' | 'review' | 'feed' = 'dashboard';
   private review: ReviewState | null = null;
   private answerBadge: HTMLElement | null = null;
   private schedulerWarning: HTMLElement | null = null;
   private answerTextarea: HTMLTextAreaElement | null = null;
+
+  private feedReturn = false;
+  private feedSolveCycle = 1;
+  private feedCommentsOpen = false;
+  private feedCommentDraft = '';
+  private pointerStart: { x: number; y: number } | null = null;
 
   constructor(leaf: WorkspaceLeaf, plugin: CardsMaxPlugin) {
     super(leaf);
@@ -67,6 +78,7 @@ export class CardsMaxView extends ItemView {
     this.contentEl.classList.add('icm-root');
     this.contentEl.style.padding = '14px';
     this.addAction('refresh-cw', 'Обновить карточки', () => void this.plugin.refreshCards());
+    this.addAction('smartphone', 'Открыть ленту ТТ', () => this.openFeed());
     this.addAction('settings', 'Настройки плагина', () => this.plugin.openSettings());
     this.addAction('more-horizontal', 'Меню панели', (evt) => this.showMenu(evt));
     this.registerDomEvent(this.contentEl, 'keydown', (evt) => this.onKeyDown(evt));
@@ -82,6 +94,10 @@ export class CardsMaxView extends ItemView {
     this.answerBadge = null;
     this.schedulerWarning = null;
     this.answerTextarea = null;
+    if (this.mode === 'feed') {
+      this.renderFeed();
+      return;
+    }
     if (this.mode === 'review' && this.review && this.plugin.getCardById(this.review.cardId)) {
       this.renderReview();
     } else {
@@ -89,6 +105,15 @@ export class CardsMaxView extends ItemView {
       this.review = null;
       this.renderDashboard();
     }
+  }
+
+  openFeed(): void {
+    this.mode = 'feed';
+    this.review = null;
+    this.feedReturn = false;
+    this.feedCommentsOpen = false;
+    this.feedCommentDraft = '';
+    this.render();
   }
 
   startReview(cardId?: string): void {
@@ -101,11 +126,22 @@ export class CardsMaxView extends ItemView {
       return;
     }
     this.review = this.makeState(card.id);
+    this.feedReturn = false;
     this.mode = 'review';
     this.render();
   }
 
-  private makeState(cardId: string): ReviewState {
+  private startFeedSolve(cardId: string): void {
+    const card = this.plugin.getCardById(cardId);
+    if (!card) return;
+    this.feedSolveCycle = this.plugin.getFeedState().cycle;
+    this.review = this.makeState(card.id, this.feedSolveCycle);
+    this.feedReturn = true;
+    this.mode = 'review';
+    this.render();
+  }
+
+  private makeState(cardId: string, feedCycle?: number): ReviewState {
     return {
       cardId,
       answer: '',
@@ -114,6 +150,7 @@ export class CardsMaxView extends ItemView {
       answerAtReveal: '',
       typedAfterReveal: false,
       fullNoteOpen: false,
+      feedCycle,
     };
   }
 
@@ -125,20 +162,37 @@ export class CardsMaxView extends ItemView {
     if (kind === 'dont-know' && this.plugin.settings.showFullNoteOnDontKnow) {
       this.review.fullNoteOpen = true;
     }
+    if (this.feedReturn) {
+      this.plugin.recordFeedHint(this.feedSolveCycle, this.review.cardId, kind, this.review.answerAtReveal);
+    }
     this.render();
   }
 
   private async grade(rating: number): Promise<void> {
     const rs = this.review;
     if (!rs || !rs.revealed) return;
-    const next = await this.plugin.grade({
+    const request: GradeRequest = {
       cardId: rs.cardId,
       answer: rs.answer,
       rating,
       revealKind: rs.revealKind,
       answerAtReveal: rs.answerAtReveal,
       typedAfterReveal: rs.typedAfterReveal,
-    });
+    };
+    if (this.feedReturn) request.feed = { cycle: this.feedSolveCycle };
+
+    const next = await this.plugin.grade(request);
+
+    if (this.feedReturn) {
+      this.feedReturn = false;
+      if (this.plugin.settings.autoNext) this.plugin.nextFeed();
+      this.mode = 'feed';
+      this.review = null;
+      this.render();
+      new Notice('Оценка сохранена · лента продолжена 🔥');
+      return;
+    }
+
     if (next && this.plugin.settings.autoNext) {
       this.review = this.makeState(next.id);
       this.render();
@@ -151,10 +205,42 @@ export class CardsMaxView extends ItemView {
   }
 
   private onKeyDown(evt: KeyboardEvent): void {
-    const rs = this.review;
-    if (!rs) return;
     const target = evt.target as HTMLElement | null;
     const inTextarea = target?.tagName === 'TEXTAREA';
+
+    if (this.mode === 'feed') {
+      if (evt.key === 'Escape' && this.feedCommentsOpen) {
+        evt.preventDefault();
+        this.feedCommentsOpen = false;
+        this.render();
+        return;
+      }
+      if (inTextarea || this.feedCommentsOpen) return;
+      const key = evt.key.toLowerCase();
+      if (evt.key === 'ArrowDown' || evt.key === ' ') {
+        evt.preventDefault();
+        this.plugin.skipFeed();
+      } else if (evt.key === 'ArrowUp') {
+        evt.preventDefault();
+        this.plugin.prevFeed();
+      } else if (key === 'l') {
+        evt.preventDefault();
+        const liked = this.plugin.toggleFeedLike();
+        new Notice(liked ? '❤️ Лайк в этом проходе' : 'Лайк этого прохода убран');
+      } else if (key === 'c') {
+        evt.preventDefault();
+        this.feedCommentsOpen = true;
+        this.render();
+      } else if (evt.key === 'Enter') {
+        evt.preventDefault();
+        const card = this.plugin.getCurrentFeedCard();
+        if (card) this.startFeedSolve(card.id);
+      }
+      return;
+    }
+
+    const rs = this.review;
+    if (!rs) return;
     if (evt.key === 'Enter' && (evt.ctrlKey || evt.metaKey)) {
       evt.preventDefault();
       if (!rs.revealed) this.reveal('answer');
@@ -177,6 +263,9 @@ export class CardsMaxView extends ItemView {
   private showMenu(evt: MouseEvent): void {
     const menu = new Menu();
     menu.addItem((item) =>
+      item.setTitle('Открыть ленту ТТ').setIcon('smartphone').onClick(() => this.openFeed()),
+    );
+    menu.addItem((item) =>
       item.setTitle('Начать повторение').setIcon('play').onClick(() => this.startReview()),
     );
     menu.addItem((item) =>
@@ -198,7 +287,7 @@ export class CardsMaxView extends ItemView {
         .setTitle('О плагине')
         .setIcon('info')
         .onClick(() =>
-          new Notice(`Карточки MAX · ${cardsWord(this.plugin.cards.length)} · 9 колод · FSRS · русский интерфейс`),
+          new Notice(`Карточки MAX · ${cardsWord(this.plugin.cards.length)} · 9 колод · FSRS · лента ТТ`),
         ),
     );
     menu.showAtMouseEvent(evt);
@@ -247,6 +336,7 @@ export class CardsMaxView extends ItemView {
     this.renderHero(root, overall, streak, studiedToday, daily, now, today);
     this.renderStats(root, overall);
     this.renderProgress(root, overall);
+    this.renderFeedTeaser(root, overall);
     this.renderDecks(root);
     this.renderFiltersAndCards(root);
     this.renderRecent(root);
@@ -264,7 +354,7 @@ export class CardsMaxView extends ItemView {
     const hero = parent.createDiv({ cls: 'icm-hero' });
     const top = hero.createDiv({ cls: 'icm-hero-top' });
     const text = top.createDiv({ cls: 'icm-hero-text' });
-    text.createDiv({ cls: 'icm-eyebrow', text: 'OBSIDIAN · FSRS · RU' });
+    text.createDiv({ cls: 'icm-eyebrow', text: 'OBSIDIAN · FSRS · ЛЕНТА · RU' });
     text.createEl('h1', { cls: 'icm-hero-title', text: 'Карточки MAX' });
     text.createDiv({
       cls: 'icm-hero-subtitle',
@@ -327,6 +417,23 @@ export class CardsMaxView extends ItemView {
       cls: 'icm-progress-caption',
       text: `Пройдено ${percent(overall.passed, overall.total)}% · «Не знаю» ${overall.dontKnow} · после показа ${overall.afterReveal}`,
     });
+  }
+
+  private renderFeedTeaser(parent: HTMLElement, overall: OverallStats): void {
+    const section = parent.createDiv({ cls: 'icm-section icm-feed-teaser' });
+    const head = section.createDiv({ cls: 'icm-section-head' });
+    head.createSpan({ cls: 'icm-section-title', text: '📱 Лента ТТ' });
+    head.createSpan({ cls: 'icm-section-meta', text: `Проход ${overall.feedCycle}` });
+    section.createDiv({
+      cls: 'icm-feed-teaser-text',
+      text: `❤️ ${overall.feedLikes} · 💬 ${overall.feedComments} · свайпов ${overall.feedSkips}. Можно свайпнуть, не решая; лайки и комментарии считаются по проходам.`,
+    });
+    const btn = section.createEl('button', {
+      cls: 'icm-primary-btn',
+      text: 'Открыть ленту',
+      attr: { type: 'button' },
+    });
+    btn.addEventListener('click', () => this.openFeed());
   }
 
   private renderDecks(parent: HTMLElement): void {
@@ -449,6 +556,10 @@ export class CardsMaxView extends ItemView {
     meta.createSpan({ cls: `icm-status-badge ${status.cls}`, text: status.label });
     meta.createSpan({ cls: 'icm-due', text: status.dueLabel });
     if (card.tags.includes('go')) meta.createSpan({ cls: 'icm-tag', text: '#go' });
+    const likes = this.plugin.getFeedLikes(card.id);
+    const comments = this.plugin.getFeedComments(card.id).length;
+    if (likes > 0) meta.createSpan({ cls: 'icm-tag is-like', text: `❤️ ${likes}` });
+    if (comments > 0) meta.createSpan({ cls: 'icm-tag', text: `💬 ${comments}` });
     if (status.flags.length) {
       const flags = row.createDiv({ cls: 'icm-card-row-flags' });
       for (const flag of status.flags.slice(0, 2)) {
@@ -480,6 +591,267 @@ export class CardsMaxView extends ItemView {
     if (log.dontKnow) right.createSpan({ cls: 'icm-flag', text: 'Не знаю' });
   }
 
+  /* ---------------------------------- Лента ---------------------------------- */
+
+  private renderFeed(): void {
+    const root = this.contentEl.createDiv({ cls: 'icm-feed' });
+    const feed = this.plugin.getFeedState();
+    const card = this.plugin.getCurrentFeedCard();
+    const impression = this.plugin.getCurrentFeedImpression();
+
+    const top = root.createDiv({ cls: 'icm-feed-top' });
+    const back = top.createEl('button', {
+      cls: 'icm-ghost-btn',
+      text: '← К колодам',
+      attr: { type: 'button' },
+    });
+    back.addEventListener('click', () => {
+      this.mode = 'dashboard';
+      this.feedCommentsOpen = false;
+      this.render();
+    });
+    top.createSpan({ cls: 'icm-feed-top-title', text: '📱 Лента' });
+    top.createSpan({
+      cls: 'icm-feed-counter',
+      text: feed.order.length ? `${feed.index + 1} / ${feed.order.length}` : 'пусто',
+    });
+    const shuffle = top.createEl('button', {
+      cls: 'icm-ghost-btn',
+      text: 'Новый проход',
+      attr: { type: 'button' },
+    });
+    shuffle.addEventListener('click', () => this.plugin.regenerateFeed(true));
+
+    if (!card || !impression) {
+      root.createDiv({
+        cls: 'icm-empty',
+        text: 'Лента пуста. Проверь путь к карточкам или выбери другую колоду.',
+      });
+      return;
+    }
+
+    const likes = this.plugin.getFeedLikes(card.id);
+    const comments = this.plugin.getFeedComments(card.id);
+
+    const stage = root.createDiv({ cls: 'icm-feed-stage' });
+    const cardEl = stage.createDiv({ cls: 'icm-feed-card' });
+    this.attachSwipe(cardEl);
+
+    cardEl.createDiv({
+      cls: 'icm-feed-eyebrow',
+      text: `ПРОХОД ${feed.cycle} · ${card.deck.toUpperCase()} · ${feed.deck ?? 'ВСЕ КОЛОДЫ'}`,
+    });
+    cardEl.createEl('h2', { cls: 'icm-feed-title', text: card.title });
+    if (card.topic) cardEl.createDiv({ cls: 'icm-feed-topic', text: card.topic });
+    const question = cardEl.createDiv({ cls: 'icm-markdown icm-feed-question' });
+    this.renderMarkdownInto(question, card.question, card.path);
+
+    const status = cardEl.createDiv({ cls: 'icm-feed-status' });
+    status.createSpan({ cls: 'icm-feed-status-item', text: `❤️ ${likes} за все проходы` });
+    status.createSpan({ cls: 'icm-feed-status-item', text: `💬 ${comments.length}` });
+    status.createSpan({
+      cls: `icm-feed-status-item ${impression.outcome === 'solved' ? 'is-ok' : ''}`,
+      text: feedOutcomeLabel(impression.outcome),
+    });
+    if (impression.liked) {
+      status.createSpan({ cls: 'icm-feed-status-item is-liked', text: 'Лайк в этом проходе ✓' });
+    }
+    if (impression.hintKind) {
+      status.createSpan({
+        cls: 'icm-feed-status-item is-warn',
+        text: impression.usedHint ? 'Только подсказка' : 'Была подсказка',
+      });
+    }
+
+    const rail = stage.createDiv({ cls: 'icm-feed-rail' });
+    this.renderFeedLikeButton(rail, impression, likes);
+    this.renderFeedCommentButton(rail, comments.length);
+    this.renderFeedActionButton(rail, 'skip-forward', '⏭', 'Свайп', 'Пропустить без решения', () => this.plugin.skipFeed());
+    this.renderFeedActionButton(rail, 'pencil', '✍️', 'Решить', 'Открыть ответ и оценки', () => this.startFeedSolve(card.id));
+    this.renderFeedActionButton(rail, 'chevron-up', '⬆', 'Далее', 'Следующая без решения (свайп вверх)', () => this.plugin.skipFeed());
+    this.renderFeedActionButton(rail, 'chevron-down', '⬇', 'Назад', 'Предыдущая карточка (свайп вниз)', () => this.plugin.prevFeed());
+
+    root.createDiv({
+      cls: 'icm-feed-hint',
+      text: 'Свайп вверх/влево — пропустить · вниз — назад · вправо — лайк. Клавиши: ↓/↑, L, C, Enter, Esc.',
+    });
+
+    if (this.feedCommentsOpen) {
+      this.renderFeedComments(root, card, impression, comments);
+    }
+  }
+
+  private renderFeedLikeButton(parent: HTMLElement, impression: FeedImpression, total: number): void {
+    const btn = parent.createEl('button', {
+      cls: `icm-feed-action is-like${impression.liked ? ' is-active' : ''}`,
+      attr: { type: 'button', title: 'Лайк за этот проход. Повторное нажатие убирает именно этот лайк.' },
+    });
+    const icon = btn.createDiv({ cls: 'icm-feed-action-icon' });
+    setIconWithFallback(icon, 'heart', impression.liked ? '❤️' : '🤍');
+    btn.createDiv({ cls: 'icm-feed-action-count', text: String(total) });
+    btn.createDiv({ cls: 'icm-feed-action-label', text: impression.liked ? 'Убрать' : 'Лайк' });
+    btn.addEventListener('click', () => {
+      const liked = this.plugin.toggleFeedLike();
+      new Notice(liked ? `❤️ Лайк добавлен · всего ${total + 1}` : `Лайк этого прохода убран · всего ${Math.max(0, total - 1)}`);
+    });
+  }
+
+  private renderFeedCommentButton(parent: HTMLElement, total: number): void {
+    const btn = parent.createEl('button', {
+      cls: `icm-feed-action${this.feedCommentsOpen ? ' is-active' : ''}`,
+      attr: { type: 'button', title: 'Комментарии: один на проход, с метаданными попытки' },
+    });
+    const icon = btn.createDiv({ cls: 'icm-feed-action-icon' });
+    setIconWithFallback(icon, 'message-circle', '💬');
+    btn.createDiv({ cls: 'icm-feed-action-count', text: String(total) });
+    btn.createDiv({ cls: 'icm-feed-action-label', text: 'Коммент' });
+    btn.addEventListener('click', () => {
+      this.feedCommentsOpen = !this.feedCommentsOpen;
+      if (!this.feedCommentsOpen) this.feedCommentDraft = '';
+      this.render();
+    });
+  }
+
+  private renderFeedActionButton(
+    parent: HTMLElement,
+    iconName: string,
+    emoji: string,
+    label: string,
+    title: string,
+    onClick: () => void,
+  ): void {
+    const btn = parent.createEl('button', {
+      cls: 'icm-feed-action',
+      attr: { type: 'button', title },
+    });
+    const icon = btn.createDiv({ cls: 'icm-feed-action-icon' });
+    setIconWithFallback(icon, iconName, emoji);
+    btn.createDiv({ cls: 'icm-feed-action-label', text: label });
+    btn.addEventListener('click', onClick);
+  }
+
+  private attachSwipe(cardEl: HTMLElement): void {
+    cardEl.addEventListener('pointerdown', (evt) => {
+      const target = evt.target as HTMLElement;
+      if (target.closest('button, textarea, input, a, .icm-feed-comments')) return;
+      this.pointerStart = { x: evt.clientX, y: evt.clientY };
+    });
+    cardEl.addEventListener('pointerup', (evt) => {
+      const start = this.pointerStart;
+      this.pointerStart = null;
+      if (!start) return;
+      const dx = evt.clientX - start.x;
+      const dy = evt.clientY - start.y;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 55) return;
+      if (Math.abs(dy) > Math.abs(dx)) {
+        if (dy < 0) this.plugin.skipFeed();
+        else this.plugin.prevFeed();
+      } else {
+        if (dx < 0) this.plugin.skipFeed();
+        else {
+          const liked = this.plugin.toggleFeedLike();
+          new Notice(liked ? '❤️ Лайк в этом проходе' : 'Лайк этого прохода убран');
+        }
+      }
+    });
+    cardEl.addEventListener('pointercancel', () => {
+      this.pointerStart = null;
+    });
+  }
+
+  private renderFeedComments(
+    parent: HTMLElement,
+    card: CardNote,
+    impression: FeedImpression,
+    comments: FeedComment[],
+  ): void {
+    const section = parent.createDiv({ cls: 'icm-feed-comments' });
+    const head = section.createDiv({ cls: 'icm-section-head' });
+    head.createSpan({ cls: 'icm-section-title', text: `Комментарии · ${comments.length}` });
+    head.createSpan({ cls: 'icm-section-meta', text: `Проход ${impression.cycle} · один комментарий на показ` });
+
+    const composer = section.createDiv({ cls: 'icm-comment-composer' });
+    const textarea = composer.createEl('textarea', {
+      cls: 'icm-textarea icm-comment-textarea',
+      attr: {
+        rows: '3',
+        placeholder: 'Что думаешь об этом вопросе? Видно, отвечал ли ты и какую оценку поставил…',
+        spellcheck: 'false',
+      },
+    }) as HTMLTextAreaElement;
+    textarea.value = this.feedCommentDraft || impression.comment?.text || '';
+    textarea.addEventListener('input', () => {
+      this.feedCommentDraft = textarea.value;
+    });
+
+    const actions = composer.createDiv({ cls: 'icm-comment-actions' });
+    const save = actions.createEl('button', {
+      cls: 'icm-primary-btn',
+      text: impression.comment ? 'Обновить комментарий' : 'Добавить комментарий',
+      attr: { type: 'button' },
+    });
+    save.addEventListener('click', () => {
+      if (this.plugin.saveFeedComment(textarea.value)) {
+        this.feedCommentDraft = '';
+        this.render();
+      } else {
+        new Notice('Комментарий пустой');
+      }
+    });
+    if (impression.comment) {
+      const remove = actions.createEl('button', {
+        cls: 'icm-ghost-btn',
+        text: 'Удалить',
+        attr: { type: 'button' },
+      });
+      remove.addEventListener('click', () => {
+        this.plugin.deleteFeedComment();
+        this.feedCommentDraft = '';
+        this.render();
+      });
+    }
+    const close = actions.createEl('button', {
+      cls: 'icm-ghost-btn',
+      text: 'Скрыть',
+      attr: { type: 'button' },
+    });
+    close.addEventListener('click', () => {
+      this.feedCommentsOpen = false;
+      this.feedCommentDraft = '';
+      this.render();
+    });
+
+    composer.createDiv({
+      cls: 'icm-comment-help',
+      text: 'В комментарии сохраняются: ответил сам / с подсказкой / не отвечал, вид подсказки и оценка Hard/Good/Easy/Again.',
+    });
+
+    const list = section.createDiv({ cls: 'icm-comment-list' });
+    if (!comments.length) {
+      list.createDiv({
+        cls: 'icm-empty',
+        text: 'Комментариев пока нет. Напиши первый — он привяжется к этому проходу ленты.',
+      });
+      return;
+    }
+    for (const comment of comments) this.renderFeedCommentItem(list, comment, card);
+  }
+
+  private renderFeedCommentItem(parent: HTMLElement, comment: FeedComment, card: CardNote): void {
+    const item = parent.createDiv({ cls: 'icm-comment-item' });
+    const top = item.createDiv({ cls: 'icm-comment-item-top' });
+    top.createSpan({ cls: 'icm-comment-cycle', text: `Проход ${comment.cycle}` });
+    top.createSpan({ cls: 'icm-comment-date', text: formatDateTime(comment.at) });
+    item.createDiv({ cls: 'icm-comment-card-title', text: truncate(card.title, 80) });
+    item.createDiv({ cls: 'icm-comment-text', text: comment.text });
+    const badges = item.createDiv({ cls: 'icm-comment-badges' });
+    for (const badge of feedAttemptBadges(comment)) {
+      badges.createSpan({ cls: 'icm-comment-badge', text: badge });
+    }
+  }
+
+  /* -------------------------------- Повторение ------------------------------- */
+
   private renderReview(): void {
     const rs = this.review;
     const card = rs ? this.plugin.getCardById(rs.cardId) : undefined;
@@ -492,18 +864,27 @@ export class CardsMaxView extends ItemView {
     const top = root.createDiv({ cls: 'icm-review-top' });
     const back = top.createEl('button', {
       cls: 'icm-ghost-btn',
-      text: '← К колодам',
+      text: this.feedReturn ? '← В ленту' : '← К колодам',
       attr: { type: 'button' },
     });
     back.addEventListener('click', () => {
-      this.mode = 'dashboard';
       this.review = null;
+      if (this.feedReturn) {
+        this.feedReturn = false;
+        this.mode = 'feed';
+      } else {
+        this.mode = 'dashboard';
+      }
       this.render();
     });
     top.createSpan({ cls: 'icm-deck-pill', text: card.deck });
     top.createSpan({
       cls: 'icm-counter',
-      text: index >= 0 ? `${index + 1} / ${queue.length}` : 'Вне очереди',
+      text: this.feedReturn
+        ? `Лента · проход ${this.feedSolveCycle}`
+        : index >= 0
+          ? `${index + 1} / ${queue.length}`
+          : 'Вне очереди',
     });
 
     const qCard = root.createDiv({ cls: 'icm-question-card' });
@@ -530,7 +911,13 @@ export class CardsMaxView extends ItemView {
     textarea.addEventListener('input', () => {
       rs.answer = textarea.value;
       if (rs.revealed) rs.typedAfterReveal = true;
+      if (this.feedReturn) {
+        this.plugin.recordFeedAnswer(this.feedSolveCycle, rs.cardId, rs.answer, rs.typedAfterReveal);
+      }
       this.updateReviewBadges();
+    });
+    textarea.addEventListener('blur', () => {
+      if (this.feedReturn) void this.plugin.save();
     });
     if (!rs.revealed) window.setTimeout(() => textarea.focus(), 0);
 
@@ -618,7 +1005,7 @@ export class CardsMaxView extends ItemView {
     rating.createDiv({ cls: 'icm-label', text: 'Насколько легко вспомнил?' });
     rating.createDiv({
       cls: 'icm-rating-hint',
-      text: 'Клавиши 1–4 · выбранная оценка сохранится в журнале',
+      text: 'Клавиши 1–4 · выбранная оценка сохранится в журнале и комментарии ленты',
     });
     const row = rating.createDiv({ cls: 'icm-rating-row' });
     for (const item of RATINGS) {

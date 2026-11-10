@@ -1,5 +1,5 @@
 import { State } from 'ts-fsrs';
-import type { CardProgress, FilterKey } from './types';
+import type { CardProgress, FilterKey, FeedComment, FeedHintKind, FeedOutcome } from './types';
 
 export interface RatingMeta {
   value: number;
@@ -129,4 +129,42 @@ export function truncate(text: string, max = 90): string {
   const clean = text.replace(/\s+/g, ' ').trim();
   if (clean.length <= max) return clean;
   return `${clean.slice(0, max - 1)}…`;
+}
+
+export function feedHintLabel(kind: FeedHintKind): string {
+  if (kind === 'dont-know') return 'Не знаю ответ';
+  if (kind === 'answer') return 'Показать ответ';
+  return 'Без подсказки';
+}
+
+export function feedOutcomeLabel(outcome: FeedOutcome): string {
+  switch (outcome) {
+    case 'skipped':
+      return 'Свайпнут';
+    case 'hint-only':
+      return 'Только подсказка';
+    case 'answered-after-reveal':
+      return 'Ответ после показа';
+    case 'solved':
+      return 'Решена';
+    case 'pending':
+    default:
+      return 'Ещё не решал';
+  }
+}
+
+export function feedAttemptBadges(comment: FeedComment): string[] {
+  const badges: string[] = [`Проход ${comment.cycle}`, feedOutcomeLabel(comment.outcome)];
+  if (comment.answeredBeforeReveal) badges.push('Ответил сам');
+  else if (comment.answered) badges.push('Ответ введён после показа');
+  else badges.push('Без ответа');
+  if (comment.usedHint) badges.push('Только подсказка');
+  if (comment.hintKind) badges.push(`Подсказка: ${feedHintLabel(comment.hintKind)}`);
+  if (comment.rating !== null) badges.push(`Оценка: ${ratingLabel(comment.rating)}`);
+  if (comment.effectiveRating !== null && comment.effectiveRating !== comment.rating) {
+    badges.push(`FSRS: ${ratingLabel(comment.effectiveRating)}`);
+  }
+  if (comment.answeredAfterReveal) badges.push('Ответ изменён после показа');
+  if (comment.skipped) badges.push('Не решал / свайп');
+  return badges;
 }

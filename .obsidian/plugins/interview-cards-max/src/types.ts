@@ -4,6 +4,8 @@ export const PLUGIN_ID = 'interview-cards-max';
 export const VIEW_TYPE = 'interview-cards-max-view';
 export const DEFAULT_CARDS_PATH = 'Golang-Middle-Interview/Cards';
 export const HISTORY_LIMIT = 240;
+export const FEED_IMPRESSION_LIMIT = 6000;
+export const DEFAULT_FEED_CYCLE_SIZE = 20;
 
 export const DECK_ORDER = [
   'Go',
@@ -38,6 +40,13 @@ export const DECK_META: Record<string, DeckMeta> = {
 };
 
 export type FilterKey = 'due' | 'new' | 'passed' | 'mastered' | 'all';
+export type FeedHintKind = 'answer' | 'dont-know' | null;
+export type FeedOutcome =
+  | 'pending'
+  | 'skipped'
+  | 'hint-only'
+  | 'answered-after-reveal'
+  | 'solved';
 
 export interface PluginSettings {
   cardsPath: string;
@@ -51,6 +60,8 @@ export interface PluginSettings {
   autoNext: boolean;
   groupByDeck: boolean;
   showStreakInStatusBar: boolean;
+  feedCycleSize: number;
+  feedShuffle: boolean;
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
@@ -65,6 +76,8 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   autoNext: true,
   groupByDeck: true,
   showStreakInStatusBar: true,
+  feedCycleSize: DEFAULT_FEED_CYCLE_SIZE,
+  feedShuffle: true,
 };
 
 /** FSRS-состояние карточки + пользовательская история. */
@@ -95,6 +108,9 @@ export interface DailyStat {
   newCards: number;
   dontKnow: number;
   afterReveal: number;
+  feedLikes: number;
+  feedComments: number;
+  feedSkips: number;
 }
 
 export interface StreakState {
@@ -116,6 +132,51 @@ export interface ReviewHistoryEntry {
   state: State;
 }
 
+/** Один комментарий привязан к одному показу карточки в ленте. */
+export interface FeedComment {
+  text: string;
+  at: number;
+  cycle: number;
+  outcome: FeedOutcome;
+  answered: boolean;
+  answeredBeforeReveal: boolean;
+  usedHint: boolean;
+  hintKind: FeedHintKind;
+  rating: number | null;
+  effectiveRating: number | null;
+  answeredAfterReveal: boolean;
+  skipped: boolean;
+}
+
+/** Один показ карточки в одном проходе ленты. */
+export interface FeedImpression {
+  key: string;
+  cardId: string;
+  deck: string;
+  title: string;
+  cycle: number;
+  at: number;
+  liked: boolean;
+  comment: FeedComment | null;
+  outcome: FeedOutcome;
+  answered: boolean;
+  answeredBeforeReveal: boolean;
+  usedHint: boolean;
+  hintKind: FeedHintKind;
+  rating: number | null;
+  effectiveRating: number | null;
+  answeredAfterReveal: boolean;
+  skipped: boolean;
+}
+
+export interface FeedData {
+  cycle: number;
+  index: number;
+  order: string[];
+  deck: string | null;
+  impressions: Record<string, FeedImpression>;
+}
+
 export interface PluginData {
   version: number;
   settings: PluginSettings;
@@ -125,25 +186,28 @@ export interface PluginData {
   history: ReviewHistoryEntry[];
   selectedDeck: string | null;
   selectedFilter: FilterKey;
+  feed: FeedData;
 }
 
 export interface ReviewState {
   cardId: string;
   answer: string;
   revealed: boolean;
-  revealKind: 'answer' | 'dont-know' | null;
+  revealKind: FeedHintKind;
   answerAtReveal: string;
   typedAfterReveal: boolean;
   fullNoteOpen: boolean;
+  feedCycle?: number;
 }
 
 export interface GradeRequest {
   cardId: string;
   answer: string;
   rating: number;
-  revealKind: 'answer' | 'dont-know' | null;
+  revealKind: FeedHintKind;
   answerAtReveal: string;
   typedAfterReveal: boolean;
+  feed?: { cycle: number };
 }
 
 export interface DeckStats {
@@ -159,6 +223,10 @@ export interface OverallStats extends DeckStats {
   name: 'Все колоды';
   dontKnow: number;
   afterReveal: number;
+  feedLikes: number;
+  feedComments: number;
+  feedSkips: number;
+  feedCycle: number;
 }
 
 export function emptyProgress(now: number): CardProgress {
@@ -184,9 +252,13 @@ export function emptyProgress(now: number): CardProgress {
   };
 }
 
+export function defaultFeed(): FeedData {
+  return { cycle: 1, index: 0, order: [], deck: null, impressions: {} };
+}
+
 export function defaultData(): PluginData {
   return {
-    version: 1,
+    version: 2,
     settings: { ...DEFAULT_SETTINGS },
     cards: {},
     streak: { current: 0, best: 0, lastDate: null },
@@ -194,6 +266,7 @@ export function defaultData(): PluginData {
     history: [],
     selectedDeck: null,
     selectedFilter: 'due',
+    feed: defaultFeed(),
   };
 }
 
@@ -233,7 +306,15 @@ function normalizeProgress(raw: unknown, now: number): CardProgress {
 }
 
 function normalizeDaily(raw: unknown): DailyStat {
-  const base: DailyStat = { reviews: 0, newCards: 0, dontKnow: 0, afterReveal: 0 };
+  const base: DailyStat = {
+    reviews: 0,
+    newCards: 0,
+    dontKnow: 0,
+    afterReveal: 0,
+    feedLikes: 0,
+    feedComments: 0,
+    feedSkips: 0,
+  };
   if (!raw || typeof raw !== 'object') return base;
   const d = raw as Partial<DailyStat>;
   return {
@@ -241,6 +322,103 @@ function normalizeDaily(raw: unknown): DailyStat {
     newCards: clampNumber(d.newCards, 0, 0, 1_000_000),
     dontKnow: clampNumber(d.dontKnow, 0, 0, 1_000_000),
     afterReveal: clampNumber(d.afterReveal, 0, 0, 1_000_000),
+    feedLikes: clampNumber(d.feedLikes, 0, 0, 1_000_000),
+    feedComments: clampNumber(d.feedComments, 0, 0, 1_000_000),
+    feedSkips: clampNumber(d.feedSkips, 0, 0, 1_000_000),
+  };
+}
+
+function normalizeFeedHintKind(raw: unknown): FeedHintKind {
+  return raw === 'answer' || raw === 'dont-know' ? raw : null;
+}
+
+function normalizeFeedOutcome(raw: unknown): FeedOutcome {
+  return raw === 'skipped' ||
+    raw === 'hint-only' ||
+    raw === 'answered-after-reveal' ||
+    raw === 'solved'
+    ? raw
+    : 'pending';
+}
+
+function normalizeFeedComment(raw: unknown): FeedComment | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const c = raw as Partial<FeedComment>;
+  const text = typeof c.text === 'string' ? c.text.trim() : '';
+  if (!text) return null;
+  return {
+    text,
+    at: clampNumber(c.at, Date.now(), 0, Number.MAX_SAFE_INTEGER),
+    cycle: clampNumber(c.cycle, 1, 1, 1_000_000),
+    outcome: normalizeFeedOutcome(c.outcome),
+    answered: Boolean(c.answered),
+    answeredBeforeReveal: Boolean(c.answeredBeforeReveal),
+    usedHint: Boolean(c.usedHint),
+    hintKind: normalizeFeedHintKind(c.hintKind),
+    rating: typeof c.rating === 'number' ? c.rating : null,
+    effectiveRating: typeof c.effectiveRating === 'number' ? c.effectiveRating : null,
+    answeredAfterReveal: Boolean(c.answeredAfterReveal),
+    skipped: Boolean(c.skipped),
+  };
+}
+
+function normalizeFeedImpression(raw: unknown): FeedImpression | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const p = raw as Partial<FeedImpression>;
+  const cardId = typeof p.cardId === 'string' ? p.cardId : '';
+  if (!cardId) return null;
+  const cycle = clampNumber(p.cycle, 1, 1, 1_000_000);
+  // Ключ показа всегда вычисляется из цикла и карточки: в data.json нельзя
+  // создать два разных impression для одного и того же вопроса в одном проходе.
+  const key = `${cycle}:${cardId}`;
+  return {
+    key,
+    cardId,
+    deck: typeof p.deck === 'string' ? p.deck : '',
+    title: typeof p.title === 'string' ? p.title : cardId,
+    cycle,
+    at: clampNumber(p.at, Date.now(), 0, Number.MAX_SAFE_INTEGER),
+    liked: Boolean(p.liked),
+    comment: normalizeFeedComment(p.comment),
+    outcome: normalizeFeedOutcome(p.outcome),
+    answered: Boolean(p.answered),
+    answeredBeforeReveal: Boolean(p.answeredBeforeReveal),
+    usedHint: Boolean(p.usedHint),
+    hintKind: normalizeFeedHintKind(p.hintKind),
+    rating: typeof p.rating === 'number' ? p.rating : null,
+    effectiveRating: typeof p.effectiveRating === 'number' ? p.effectiveRating : null,
+    answeredAfterReveal: Boolean(p.answeredAfterReveal),
+    skipped: Boolean(p.skipped),
+  };
+}
+
+function normalizeFeed(raw: unknown): FeedData {
+  const base = defaultFeed();
+  if (!raw || typeof raw !== 'object') return base;
+  const f = raw as Partial<FeedData>;
+  const order = Array.isArray(f.order)
+    ? f.order.filter((x): x is string => typeof x === 'string')
+    : [];
+  const impressions: Record<string, FeedImpression> = {};
+  if (f.impressions && typeof f.impressions === 'object') {
+    for (const value of Object.values(f.impressions)) {
+      const normalized = normalizeFeedImpression(value);
+      if (normalized) impressions[normalized.key] = normalized;
+    }
+    const keys = Object.keys(impressions);
+    if (keys.length > FEED_IMPRESSION_LIMIT) {
+      keys
+        .sort((a, b) => impressions[b].at - impressions[a].at)
+        .slice(FEED_IMPRESSION_LIMIT)
+        .forEach((key) => delete impressions[key]);
+    }
+  }
+  return {
+    cycle: clampNumber(f.cycle, 1, 1, 1_000_000),
+    index: clampNumber(f.index, 0, 0, Math.max(0, order.length - 1)),
+    order,
+    deck: typeof f.deck === 'string' ? f.deck : null,
+    impressions,
   };
 }
 
@@ -270,6 +448,8 @@ export function normalizeData(raw: unknown): PluginData {
     groupByDeck: typeof s.groupByDeck === 'boolean' ? s.groupByDeck : base.settings.groupByDeck,
     showStreakInStatusBar:
       typeof s.showStreakInStatusBar === 'boolean' ? s.showStreakInStatusBar : base.settings.showStreakInStatusBar,
+    feedCycleSize: clampNumber(s.feedCycleSize, base.settings.feedCycleSize, 0, 1000),
+    feedShuffle: typeof s.feedShuffle === 'boolean' ? s.feedShuffle : base.settings.feedShuffle,
   };
 
   const cards: Record<string, CardProgress> = {};
@@ -307,14 +487,18 @@ export function normalizeData(raw: unknown): PluginData {
       : 'due';
 
   return {
-    version: 1,
+    version: 2,
     settings,
     cards,
     streak,
     daily,
     history,
-    selectedDeck: typeof r.selectedDeck === 'string' ? r.selectedDeck : null,
+    selectedDeck:
+      typeof r.selectedDeck === 'string' && DECK_ORDER.includes(r.selectedDeck as DeckName)
+        ? r.selectedDeck
+        : null,
     selectedFilter,
+    feed: normalizeFeed(r.feed),
   };
 }
 

@@ -7,6 +7,7 @@ export interface CardNote {
   file: TFile;
   title: string;
   question: string;
+  questionKey: string;
   shortAnswer: string;
   middle: string;
   senior: string;
@@ -29,6 +30,10 @@ function normalizeTags(raw: unknown): string[] {
   if (Array.isArray(raw)) return raw.map((x) => String(x).trim()).filter(Boolean);
   if (typeof raw === 'string') return raw.split(/[,\s]+/).map((x) => x.trim()).filter(Boolean);
   return [];
+}
+
+function questionKeyOf(question: string): string {
+  return question.replace(/\s+/g, ' ').trim().toLocaleLowerCase('ru');
 }
 
 function deckFromPath(file: TFile, rootPath: string): string {
@@ -136,6 +141,7 @@ async function parseCard(app: App, file: TFile, rootPath: string): Promise<CardN
     file,
     title,
     question,
+    questionKey: questionKeyOf(question),
     shortAnswer,
     middle,
     senior,

@@ -532,6 +532,8 @@ var tt = (r) => new V(r || {});
 var VIEW_TYPE = "interview-cards-max-view";
 var DEFAULT_CARDS_PATH = "Golang-Middle-Interview/Cards";
 var HISTORY_LIMIT = 240;
+var FEED_IMPRESSION_LIMIT = 6e3;
+var DEFAULT_FEED_CYCLE_SIZE = 20;
 var DECK_ORDER = [
   "Go",
   "Docker",
@@ -565,7 +567,9 @@ var DEFAULT_SETTINGS = {
   countAnswerAfterRevealAsAgain: true,
   autoNext: true,
   groupByDeck: true,
-  showStreakInStatusBar: true
+  showStreakInStatusBar: true,
+  feedCycleSize: DEFAULT_FEED_CYCLE_SIZE,
+  feedShuffle: true
 };
 function emptyProgress(now) {
   return {
@@ -589,16 +593,20 @@ function emptyProgress(now) {
     dontKnowCount: 0
   };
 }
+function defaultFeed() {
+  return { cycle: 1, index: 0, order: [], deck: null, impressions: {} };
+}
 function defaultData() {
   return {
-    version: 1,
+    version: 2,
     settings: { ...DEFAULT_SETTINGS },
     cards: {},
     streak: { current: 0, best: 0, lastDate: null },
     daily: {},
     history: [],
     selectedDeck: null,
-    selectedFilter: "due"
+    selectedFilter: "due",
+    feed: defaultFeed()
   };
 }
 function clampNumber(value, fallback, min, max) {
@@ -635,14 +643,102 @@ function normalizeProgress(raw, now) {
   };
 }
 function normalizeDaily(raw) {
-  const base = { reviews: 0, newCards: 0, dontKnow: 0, afterReveal: 0 };
+  const base = {
+    reviews: 0,
+    newCards: 0,
+    dontKnow: 0,
+    afterReveal: 0,
+    feedLikes: 0,
+    feedComments: 0,
+    feedSkips: 0
+  };
   if (!raw || typeof raw !== "object") return base;
   const d = raw;
   return {
     reviews: clampNumber(d.reviews, 0, 0, 1e6),
     newCards: clampNumber(d.newCards, 0, 0, 1e6),
     dontKnow: clampNumber(d.dontKnow, 0, 0, 1e6),
-    afterReveal: clampNumber(d.afterReveal, 0, 0, 1e6)
+    afterReveal: clampNumber(d.afterReveal, 0, 0, 1e6),
+    feedLikes: clampNumber(d.feedLikes, 0, 0, 1e6),
+    feedComments: clampNumber(d.feedComments, 0, 0, 1e6),
+    feedSkips: clampNumber(d.feedSkips, 0, 0, 1e6)
+  };
+}
+function normalizeFeedHintKind(raw) {
+  return raw === "answer" || raw === "dont-know" ? raw : null;
+}
+function normalizeFeedOutcome(raw) {
+  return raw === "skipped" || raw === "hint-only" || raw === "answered-after-reveal" || raw === "solved" ? raw : "pending";
+}
+function normalizeFeedComment(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const c = raw;
+  const text = typeof c.text === "string" ? c.text.trim() : "";
+  if (!text) return null;
+  return {
+    text,
+    at: clampNumber(c.at, Date.now(), 0, Number.MAX_SAFE_INTEGER),
+    cycle: clampNumber(c.cycle, 1, 1, 1e6),
+    outcome: normalizeFeedOutcome(c.outcome),
+    answered: Boolean(c.answered),
+    answeredBeforeReveal: Boolean(c.answeredBeforeReveal),
+    usedHint: Boolean(c.usedHint),
+    hintKind: normalizeFeedHintKind(c.hintKind),
+    rating: typeof c.rating === "number" ? c.rating : null,
+    effectiveRating: typeof c.effectiveRating === "number" ? c.effectiveRating : null,
+    answeredAfterReveal: Boolean(c.answeredAfterReveal),
+    skipped: Boolean(c.skipped)
+  };
+}
+function normalizeFeedImpression(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const p2 = raw;
+  const cardId = typeof p2.cardId === "string" ? p2.cardId : "";
+  if (!cardId) return null;
+  const cycle = clampNumber(p2.cycle, 1, 1, 1e6);
+  const key = `${cycle}:${cardId}`;
+  return {
+    key,
+    cardId,
+    deck: typeof p2.deck === "string" ? p2.deck : "",
+    title: typeof p2.title === "string" ? p2.title : cardId,
+    cycle,
+    at: clampNumber(p2.at, Date.now(), 0, Number.MAX_SAFE_INTEGER),
+    liked: Boolean(p2.liked),
+    comment: normalizeFeedComment(p2.comment),
+    outcome: normalizeFeedOutcome(p2.outcome),
+    answered: Boolean(p2.answered),
+    answeredBeforeReveal: Boolean(p2.answeredBeforeReveal),
+    usedHint: Boolean(p2.usedHint),
+    hintKind: normalizeFeedHintKind(p2.hintKind),
+    rating: typeof p2.rating === "number" ? p2.rating : null,
+    effectiveRating: typeof p2.effectiveRating === "number" ? p2.effectiveRating : null,
+    answeredAfterReveal: Boolean(p2.answeredAfterReveal),
+    skipped: Boolean(p2.skipped)
+  };
+}
+function normalizeFeed(raw) {
+  const base = defaultFeed();
+  if (!raw || typeof raw !== "object") return base;
+  const f = raw;
+  const order = Array.isArray(f.order) ? f.order.filter((x) => typeof x === "string") : [];
+  const impressions = {};
+  if (f.impressions && typeof f.impressions === "object") {
+    for (const value of Object.values(f.impressions)) {
+      const normalized = normalizeFeedImpression(value);
+      if (normalized) impressions[normalized.key] = normalized;
+    }
+    const keys = Object.keys(impressions);
+    if (keys.length > FEED_IMPRESSION_LIMIT) {
+      keys.sort((a, b) => impressions[b].at - impressions[a].at).slice(FEED_IMPRESSION_LIMIT).forEach((key) => delete impressions[key]);
+    }
+  }
+  return {
+    cycle: clampNumber(f.cycle, 1, 1, 1e6),
+    index: clampNumber(f.index, 0, 0, Math.max(0, order.length - 1)),
+    order,
+    deck: typeof f.deck === "string" ? f.deck : null,
+    impressions
   };
 }
 function normalizeData(raw) {
@@ -664,7 +760,9 @@ function normalizeData(raw) {
     countAnswerAfterRevealAsAgain: typeof s.countAnswerAfterRevealAsAgain === "boolean" ? s.countAnswerAfterRevealAsAgain : base.settings.countAnswerAfterRevealAsAgain,
     autoNext: typeof s.autoNext === "boolean" ? s.autoNext : base.settings.autoNext,
     groupByDeck: typeof s.groupByDeck === "boolean" ? s.groupByDeck : base.settings.groupByDeck,
-    showStreakInStatusBar: typeof s.showStreakInStatusBar === "boolean" ? s.showStreakInStatusBar : base.settings.showStreakInStatusBar
+    showStreakInStatusBar: typeof s.showStreakInStatusBar === "boolean" ? s.showStreakInStatusBar : base.settings.showStreakInStatusBar,
+    feedCycleSize: clampNumber(s.feedCycleSize, base.settings.feedCycleSize, 0, 1e3),
+    feedShuffle: typeof s.feedShuffle === "boolean" ? s.feedShuffle : base.settings.feedShuffle
   };
   const cards = {};
   if (r.cards && typeof r.cards === "object") {
@@ -685,14 +783,15 @@ function normalizeData(raw) {
   const history = Array.isArray(r.history) ? r.history.filter((x) => Boolean(x) && typeof x === "object").slice(0, HISTORY_LIMIT) : [];
   const selectedFilter = r.selectedFilter === "due" || r.selectedFilter === "new" || r.selectedFilter === "passed" || r.selectedFilter === "mastered" || r.selectedFilter === "all" ? r.selectedFilter : "due";
   return {
-    version: 1,
+    version: 2,
     settings,
     cards,
     streak,
     daily,
     history,
-    selectedDeck: typeof r.selectedDeck === "string" ? r.selectedDeck : null,
-    selectedFilter
+    selectedDeck: typeof r.selectedDeck === "string" && DECK_ORDER.includes(r.selectedDeck) ? r.selectedDeck : null,
+    selectedFilter,
+    feed: normalizeFeed(r.feed)
   };
 }
 function deckRank(deck) {
@@ -708,6 +807,9 @@ function normalizeTags(raw) {
   if (Array.isArray(raw)) return raw.map((x) => String(x).trim()).filter(Boolean);
   if (typeof raw === "string") return raw.split(/[,\s]+/).map((x) => x.trim()).filter(Boolean);
   return [];
+}
+function questionKeyOf(question) {
+  return question.replace(/\s+/g, " ").trim().toLocaleLowerCase("ru");
 }
 function deckFromPath(file, rootPath) {
   const prefix = `${rootPath.replace(/^\/+|\/+$/g, "")}/`;
@@ -798,6 +900,7 @@ async function parseCard(app, file, rootPath) {
     file,
     title,
     question,
+    questionKey: questionKeyOf(question),
     shortAnswer,
     middle,
     senior,
@@ -911,6 +1014,41 @@ function truncate(text, max = 90) {
   if (clean.length <= max) return clean;
   return `${clean.slice(0, max - 1)}\u2026`;
 }
+function feedHintLabel(kind) {
+  if (kind === "dont-know") return "\u041D\u0435 \u0437\u043D\u0430\u044E \u043E\u0442\u0432\u0435\u0442";
+  if (kind === "answer") return "\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u043E\u0442\u0432\u0435\u0442";
+  return "\u0411\u0435\u0437 \u043F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u0438";
+}
+function feedOutcomeLabel(outcome) {
+  switch (outcome) {
+    case "skipped":
+      return "\u0421\u0432\u0430\u0439\u043F\u043D\u0443\u0442";
+    case "hint-only":
+      return "\u0422\u043E\u043B\u044C\u043A\u043E \u043F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u0430";
+    case "answered-after-reveal":
+      return "\u041E\u0442\u0432\u0435\u0442 \u043F\u043E\u0441\u043B\u0435 \u043F\u043E\u043A\u0430\u0437\u0430";
+    case "solved":
+      return "\u0420\u0435\u0448\u0435\u043D\u0430";
+    case "pending":
+    default:
+      return "\u0415\u0449\u0451 \u043D\u0435 \u0440\u0435\u0448\u0430\u043B";
+  }
+}
+function feedAttemptBadges(comment) {
+  const badges = [`\u041F\u0440\u043E\u0445\u043E\u0434 ${comment.cycle}`, feedOutcomeLabel(comment.outcome)];
+  if (comment.answeredBeforeReveal) badges.push("\u041E\u0442\u0432\u0435\u0442\u0438\u043B \u0441\u0430\u043C");
+  else if (comment.answered) badges.push("\u041E\u0442\u0432\u0435\u0442 \u0432\u0432\u0435\u0434\u0451\u043D \u043F\u043E\u0441\u043B\u0435 \u043F\u043E\u043A\u0430\u0437\u0430");
+  else badges.push("\u0411\u0435\u0437 \u043E\u0442\u0432\u0435\u0442\u0430");
+  if (comment.usedHint) badges.push("\u0422\u043E\u043B\u044C\u043A\u043E \u043F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u0430");
+  if (comment.hintKind) badges.push(`\u041F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u0430: ${feedHintLabel(comment.hintKind)}`);
+  if (comment.rating !== null) badges.push(`\u041E\u0446\u0435\u043D\u043A\u0430: ${ratingLabel(comment.rating)}`);
+  if (comment.effectiveRating !== null && comment.effectiveRating !== comment.rating) {
+    badges.push(`FSRS: ${ratingLabel(comment.effectiveRating)}`);
+  }
+  if (comment.answeredAfterReveal) badges.push("\u041E\u0442\u0432\u0435\u0442 \u0438\u0437\u043C\u0435\u043D\u0451\u043D \u043F\u043E\u0441\u043B\u0435 \u043F\u043E\u043A\u0430\u0437\u0430");
+  if (comment.skipped) badges.push("\u041D\u0435 \u0440\u0435\u0448\u0430\u043B / \u0441\u0432\u0430\u0439\u043F");
+  return badges;
+}
 
 // src/status.ts
 function isPassed(progress) {
@@ -965,6 +1103,11 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     this.answerBadge = null;
     this.schedulerWarning = null;
     this.answerTextarea = null;
+    this.feedReturn = false;
+    this.feedSolveCycle = 1;
+    this.feedCommentsOpen = false;
+    this.feedCommentDraft = "";
+    this.pointerStart = null;
     this.plugin = plugin;
   }
   getViewType() {
@@ -981,6 +1124,7 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     this.contentEl.classList.add("icm-root");
     this.contentEl.style.padding = "14px";
     this.addAction("refresh-cw", "\u041E\u0431\u043D\u043E\u0432\u0438\u0442\u044C \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0438", () => void this.plugin.refreshCards());
+    this.addAction("smartphone", "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043B\u0435\u043D\u0442\u0443 \u0422\u0422", () => this.openFeed());
     this.addAction("settings", "\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 \u043F\u043B\u0430\u0433\u0438\u043D\u0430", () => this.plugin.openSettings());
     this.addAction("more-horizontal", "\u041C\u0435\u043D\u044E \u043F\u0430\u043D\u0435\u043B\u0438", (evt) => this.showMenu(evt));
     this.registerDomEvent(this.contentEl, "keydown", (evt) => this.onKeyDown(evt));
@@ -994,6 +1138,10 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     this.answerBadge = null;
     this.schedulerWarning = null;
     this.answerTextarea = null;
+    if (this.mode === "feed") {
+      this.renderFeed();
+      return;
+    }
     if (this.mode === "review" && this.review && this.plugin.getCardById(this.review.cardId)) {
       this.renderReview();
     } else {
@@ -1001,6 +1149,14 @@ var CardsMaxView = class extends import_obsidian.ItemView {
       this.review = null;
       this.renderDashboard();
     }
+  }
+  openFeed() {
+    this.mode = "feed";
+    this.review = null;
+    this.feedReturn = false;
+    this.feedCommentsOpen = false;
+    this.feedCommentDraft = "";
+    this.render();
   }
   startReview(cardId) {
     const deck = this.plugin.getSelectedDeck();
@@ -1012,10 +1168,20 @@ var CardsMaxView = class extends import_obsidian.ItemView {
       return;
     }
     this.review = this.makeState(card.id);
+    this.feedReturn = false;
     this.mode = "review";
     this.render();
   }
-  makeState(cardId) {
+  startFeedSolve(cardId) {
+    const card = this.plugin.getCardById(cardId);
+    if (!card) return;
+    this.feedSolveCycle = this.plugin.getFeedState().cycle;
+    this.review = this.makeState(card.id, this.feedSolveCycle);
+    this.feedReturn = true;
+    this.mode = "review";
+    this.render();
+  }
+  makeState(cardId, feedCycle) {
     return {
       cardId,
       answer: "",
@@ -1023,7 +1189,8 @@ var CardsMaxView = class extends import_obsidian.ItemView {
       revealKind: null,
       answerAtReveal: "",
       typedAfterReveal: false,
-      fullNoteOpen: false
+      fullNoteOpen: false,
+      feedCycle
     };
   }
   reveal(kind) {
@@ -1034,19 +1201,33 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     if (kind === "dont-know" && this.plugin.settings.showFullNoteOnDontKnow) {
       this.review.fullNoteOpen = true;
     }
+    if (this.feedReturn) {
+      this.plugin.recordFeedHint(this.feedSolveCycle, this.review.cardId, kind, this.review.answerAtReveal);
+    }
     this.render();
   }
   async grade(rating) {
     const rs = this.review;
     if (!rs || !rs.revealed) return;
-    const next = await this.plugin.grade({
+    const request = {
       cardId: rs.cardId,
       answer: rs.answer,
       rating,
       revealKind: rs.revealKind,
       answerAtReveal: rs.answerAtReveal,
       typedAfterReveal: rs.typedAfterReveal
-    });
+    };
+    if (this.feedReturn) request.feed = { cycle: this.feedSolveCycle };
+    const next = await this.plugin.grade(request);
+    if (this.feedReturn) {
+      this.feedReturn = false;
+      if (this.plugin.settings.autoNext) this.plugin.nextFeed();
+      this.mode = "feed";
+      this.review = null;
+      this.render();
+      new import_obsidian.Notice("\u041E\u0446\u0435\u043D\u043A\u0430 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0430 \xB7 \u043B\u0435\u043D\u0442\u0430 \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0435\u043D\u0430 \u{1F525}");
+      return;
+    }
     if (next && this.plugin.settings.autoNext) {
       this.review = this.makeState(next.id);
       this.render();
@@ -1058,10 +1239,40 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     }
   }
   onKeyDown(evt) {
-    const rs = this.review;
-    if (!rs) return;
     const target = evt.target;
     const inTextarea = target?.tagName === "TEXTAREA";
+    if (this.mode === "feed") {
+      if (evt.key === "Escape" && this.feedCommentsOpen) {
+        evt.preventDefault();
+        this.feedCommentsOpen = false;
+        this.render();
+        return;
+      }
+      if (inTextarea || this.feedCommentsOpen) return;
+      const key = evt.key.toLowerCase();
+      if (evt.key === "ArrowDown" || evt.key === " ") {
+        evt.preventDefault();
+        this.plugin.skipFeed();
+      } else if (evt.key === "ArrowUp") {
+        evt.preventDefault();
+        this.plugin.prevFeed();
+      } else if (key === "l") {
+        evt.preventDefault();
+        const liked = this.plugin.toggleFeedLike();
+        new import_obsidian.Notice(liked ? "\u2764\uFE0F \u041B\u0430\u0439\u043A \u0432 \u044D\u0442\u043E\u043C \u043F\u0440\u043E\u0445\u043E\u0434\u0435" : "\u041B\u0430\u0439\u043A \u044D\u0442\u043E\u0433\u043E \u043F\u0440\u043E\u0445\u043E\u0434\u0430 \u0443\u0431\u0440\u0430\u043D");
+      } else if (key === "c") {
+        evt.preventDefault();
+        this.feedCommentsOpen = true;
+        this.render();
+      } else if (evt.key === "Enter") {
+        evt.preventDefault();
+        const card = this.plugin.getCurrentFeedCard();
+        if (card) this.startFeedSolve(card.id);
+      }
+      return;
+    }
+    const rs = this.review;
+    if (!rs) return;
     if (evt.key === "Enter" && (evt.ctrlKey || evt.metaKey)) {
       evt.preventDefault();
       if (!rs.revealed) this.reveal("answer");
@@ -1075,6 +1286,9 @@ var CardsMaxView = class extends import_obsidian.ItemView {
   }
   showMenu(evt) {
     const menu = new import_obsidian.Menu();
+    menu.addItem(
+      (item) => item.setTitle("\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043B\u0435\u043D\u0442\u0443 \u0422\u0422").setIcon("smartphone").onClick(() => this.openFeed())
+    );
     menu.addItem(
       (item) => item.setTitle("\u041D\u0430\u0447\u0430\u0442\u044C \u043F\u043E\u0432\u0442\u043E\u0440\u0435\u043D\u0438\u0435").setIcon("play").onClick(() => this.startReview())
     );
@@ -1094,7 +1308,7 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     menu.addSeparator();
     menu.addItem(
       (item) => item.setTitle("\u041E \u043F\u043B\u0430\u0433\u0438\u043D\u0435").setIcon("info").onClick(
-        () => new import_obsidian.Notice(`\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX \xB7 ${cardsWord(this.plugin.cards.length)} \xB7 9 \u043A\u043E\u043B\u043E\u0434 \xB7 FSRS \xB7 \u0440\u0443\u0441\u0441\u043A\u0438\u0439 \u0438\u043D\u0442\u0435\u0440\u0444\u0435\u0439\u0441`)
+        () => new import_obsidian.Notice(`\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX \xB7 ${cardsWord(this.plugin.cards.length)} \xB7 9 \u043A\u043E\u043B\u043E\u0434 \xB7 FSRS \xB7 \u043B\u0435\u043D\u0442\u0430 \u0422\u0422`)
       )
     );
     menu.showAtMouseEvent(evt);
@@ -1137,6 +1351,7 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     this.renderHero(root, overall, streak, studiedToday, daily, now, today);
     this.renderStats(root, overall);
     this.renderProgress(root, overall);
+    this.renderFeedTeaser(root, overall);
     this.renderDecks(root);
     this.renderFiltersAndCards(root);
     this.renderRecent(root);
@@ -1145,7 +1360,7 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     const hero = parent.createDiv({ cls: "icm-hero" });
     const top = hero.createDiv({ cls: "icm-hero-top" });
     const text = top.createDiv({ cls: "icm-hero-text" });
-    text.createDiv({ cls: "icm-eyebrow", text: "OBSIDIAN \xB7 FSRS \xB7 RU" });
+    text.createDiv({ cls: "icm-eyebrow", text: "OBSIDIAN \xB7 FSRS \xB7 \u041B\u0415\u041D\u0422\u0410 \xB7 RU" });
     text.createEl("h1", { cls: "icm-hero-title", text: "\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX" });
     text.createDiv({
       cls: "icm-hero-subtitle",
@@ -1201,6 +1416,22 @@ var CardsMaxView = class extends import_obsidian.ItemView {
       cls: "icm-progress-caption",
       text: `\u041F\u0440\u043E\u0439\u0434\u0435\u043D\u043E ${percent(overall.passed, overall.total)}% \xB7 \xAB\u041D\u0435 \u0437\u043D\u0430\u044E\xBB ${overall.dontKnow} \xB7 \u043F\u043E\u0441\u043B\u0435 \u043F\u043E\u043A\u0430\u0437\u0430 ${overall.afterReveal}`
     });
+  }
+  renderFeedTeaser(parent, overall) {
+    const section = parent.createDiv({ cls: "icm-section icm-feed-teaser" });
+    const head = section.createDiv({ cls: "icm-section-head" });
+    head.createSpan({ cls: "icm-section-title", text: "\u{1F4F1} \u041B\u0435\u043D\u0442\u0430 \u0422\u0422" });
+    head.createSpan({ cls: "icm-section-meta", text: `\u041F\u0440\u043E\u0445\u043E\u0434 ${overall.feedCycle}` });
+    section.createDiv({
+      cls: "icm-feed-teaser-text",
+      text: `\u2764\uFE0F ${overall.feedLikes} \xB7 \u{1F4AC} ${overall.feedComments} \xB7 \u0441\u0432\u0430\u0439\u043F\u043E\u0432 ${overall.feedSkips}. \u041C\u043E\u0436\u043D\u043E \u0441\u0432\u0430\u0439\u043F\u043D\u0443\u0442\u044C, \u043D\u0435 \u0440\u0435\u0448\u0430\u044F; \u043B\u0430\u0439\u043A\u0438 \u0438 \u043A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0438 \u0441\u0447\u0438\u0442\u0430\u044E\u0442\u0441\u044F \u043F\u043E \u043F\u0440\u043E\u0445\u043E\u0434\u0430\u043C.`
+    });
+    const btn = section.createEl("button", {
+      cls: "icm-primary-btn",
+      text: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043B\u0435\u043D\u0442\u0443",
+      attr: { type: "button" }
+    });
+    btn.addEventListener("click", () => this.openFeed());
   }
   renderDecks(parent) {
     const section = parent.createDiv({ cls: "icm-section" });
@@ -1308,6 +1539,10 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     meta.createSpan({ cls: `icm-status-badge ${status.cls}`, text: status.label });
     meta.createSpan({ cls: "icm-due", text: status.dueLabel });
     if (card.tags.includes("go")) meta.createSpan({ cls: "icm-tag", text: "#go" });
+    const likes = this.plugin.getFeedLikes(card.id);
+    const comments = this.plugin.getFeedComments(card.id).length;
+    if (likes > 0) meta.createSpan({ cls: "icm-tag is-like", text: `\u2764\uFE0F ${likes}` });
+    if (comments > 0) meta.createSpan({ cls: "icm-tag", text: `\u{1F4AC} ${comments}` });
     if (status.flags.length) {
       const flags = row.createDiv({ cls: "icm-card-row-flags" });
       for (const flag of status.flags.slice(0, 2)) {
@@ -1336,6 +1571,233 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     if (log.answeredAfterReveal) right.createSpan({ cls: "icm-flag is-warn", text: "\u041F\u043E\u0441\u043B\u0435 \u043F\u043E\u043A\u0430\u0437\u0430" });
     if (log.dontKnow) right.createSpan({ cls: "icm-flag", text: "\u041D\u0435 \u0437\u043D\u0430\u044E" });
   }
+  /* ---------------------------------- Лента ---------------------------------- */
+  renderFeed() {
+    const root = this.contentEl.createDiv({ cls: "icm-feed" });
+    const feed = this.plugin.getFeedState();
+    const card = this.plugin.getCurrentFeedCard();
+    const impression = this.plugin.getCurrentFeedImpression();
+    const top = root.createDiv({ cls: "icm-feed-top" });
+    const back = top.createEl("button", {
+      cls: "icm-ghost-btn",
+      text: "\u2190 \u041A \u043A\u043E\u043B\u043E\u0434\u0430\u043C",
+      attr: { type: "button" }
+    });
+    back.addEventListener("click", () => {
+      this.mode = "dashboard";
+      this.feedCommentsOpen = false;
+      this.render();
+    });
+    top.createSpan({ cls: "icm-feed-top-title", text: "\u{1F4F1} \u041B\u0435\u043D\u0442\u0430" });
+    top.createSpan({
+      cls: "icm-feed-counter",
+      text: feed.order.length ? `${feed.index + 1} / ${feed.order.length}` : "\u043F\u0443\u0441\u0442\u043E"
+    });
+    const shuffle = top.createEl("button", {
+      cls: "icm-ghost-btn",
+      text: "\u041D\u043E\u0432\u044B\u0439 \u043F\u0440\u043E\u0445\u043E\u0434",
+      attr: { type: "button" }
+    });
+    shuffle.addEventListener("click", () => this.plugin.regenerateFeed(true));
+    if (!card || !impression) {
+      root.createDiv({
+        cls: "icm-empty",
+        text: "\u041B\u0435\u043D\u0442\u0430 \u043F\u0443\u0441\u0442\u0430. \u041F\u0440\u043E\u0432\u0435\u0440\u044C \u043F\u0443\u0442\u044C \u043A \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0430\u043C \u0438\u043B\u0438 \u0432\u044B\u0431\u0435\u0440\u0438 \u0434\u0440\u0443\u0433\u0443\u044E \u043A\u043E\u043B\u043E\u0434\u0443."
+      });
+      return;
+    }
+    const likes = this.plugin.getFeedLikes(card.id);
+    const comments = this.plugin.getFeedComments(card.id);
+    const stage = root.createDiv({ cls: "icm-feed-stage" });
+    const cardEl = stage.createDiv({ cls: "icm-feed-card" });
+    this.attachSwipe(cardEl);
+    cardEl.createDiv({
+      cls: "icm-feed-eyebrow",
+      text: `\u041F\u0420\u041E\u0425\u041E\u0414 ${feed.cycle} \xB7 ${card.deck.toUpperCase()} \xB7 ${feed.deck ?? "\u0412\u0421\u0415 \u041A\u041E\u041B\u041E\u0414\u042B"}`
+    });
+    cardEl.createEl("h2", { cls: "icm-feed-title", text: card.title });
+    if (card.topic) cardEl.createDiv({ cls: "icm-feed-topic", text: card.topic });
+    const question = cardEl.createDiv({ cls: "icm-markdown icm-feed-question" });
+    this.renderMarkdownInto(question, card.question, card.path);
+    const status = cardEl.createDiv({ cls: "icm-feed-status" });
+    status.createSpan({ cls: "icm-feed-status-item", text: `\u2764\uFE0F ${likes} \u0437\u0430 \u0432\u0441\u0435 \u043F\u0440\u043E\u0445\u043E\u0434\u044B` });
+    status.createSpan({ cls: "icm-feed-status-item", text: `\u{1F4AC} ${comments.length}` });
+    status.createSpan({
+      cls: `icm-feed-status-item ${impression.outcome === "solved" ? "is-ok" : ""}`,
+      text: feedOutcomeLabel(impression.outcome)
+    });
+    if (impression.liked) {
+      status.createSpan({ cls: "icm-feed-status-item is-liked", text: "\u041B\u0430\u0439\u043A \u0432 \u044D\u0442\u043E\u043C \u043F\u0440\u043E\u0445\u043E\u0434\u0435 \u2713" });
+    }
+    if (impression.hintKind) {
+      status.createSpan({
+        cls: "icm-feed-status-item is-warn",
+        text: impression.usedHint ? "\u0422\u043E\u043B\u044C\u043A\u043E \u043F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u0430" : "\u0411\u044B\u043B\u0430 \u043F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u0430"
+      });
+    }
+    const rail = stage.createDiv({ cls: "icm-feed-rail" });
+    this.renderFeedLikeButton(rail, impression, likes);
+    this.renderFeedCommentButton(rail, comments.length);
+    this.renderFeedActionButton(rail, "skip-forward", "\u23ED", "\u0421\u0432\u0430\u0439\u043F", "\u041F\u0440\u043E\u043F\u0443\u0441\u0442\u0438\u0442\u044C \u0431\u0435\u0437 \u0440\u0435\u0448\u0435\u043D\u0438\u044F", () => this.plugin.skipFeed());
+    this.renderFeedActionButton(rail, "pencil", "\u270D\uFE0F", "\u0420\u0435\u0448\u0438\u0442\u044C", "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043E\u0442\u0432\u0435\u0442 \u0438 \u043E\u0446\u0435\u043D\u043A\u0438", () => this.startFeedSolve(card.id));
+    this.renderFeedActionButton(rail, "chevron-up", "\u2B06", "\u0414\u0430\u043B\u0435\u0435", "\u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0430\u044F \u0431\u0435\u0437 \u0440\u0435\u0448\u0435\u043D\u0438\u044F (\u0441\u0432\u0430\u0439\u043F \u0432\u0432\u0435\u0440\u0445)", () => this.plugin.skipFeed());
+    this.renderFeedActionButton(rail, "chevron-down", "\u2B07", "\u041D\u0430\u0437\u0430\u0434", "\u041F\u0440\u0435\u0434\u044B\u0434\u0443\u0449\u0430\u044F \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0430 (\u0441\u0432\u0430\u0439\u043F \u0432\u043D\u0438\u0437)", () => this.plugin.prevFeed());
+    root.createDiv({
+      cls: "icm-feed-hint",
+      text: "\u0421\u0432\u0430\u0439\u043F \u0432\u0432\u0435\u0440\u0445/\u0432\u043B\u0435\u0432\u043E \u2014 \u043F\u0440\u043E\u043F\u0443\u0441\u0442\u0438\u0442\u044C \xB7 \u0432\u043D\u0438\u0437 \u2014 \u043D\u0430\u0437\u0430\u0434 \xB7 \u0432\u043F\u0440\u0430\u0432\u043E \u2014 \u043B\u0430\u0439\u043A. \u041A\u043B\u0430\u0432\u0438\u0448\u0438: \u2193/\u2191, L, C, Enter, Esc."
+    });
+    if (this.feedCommentsOpen) {
+      this.renderFeedComments(root, card, impression, comments);
+    }
+  }
+  renderFeedLikeButton(parent, impression, total) {
+    const btn = parent.createEl("button", {
+      cls: `icm-feed-action is-like${impression.liked ? " is-active" : ""}`,
+      attr: { type: "button", title: "\u041B\u0430\u0439\u043A \u0437\u0430 \u044D\u0442\u043E\u0442 \u043F\u0440\u043E\u0445\u043E\u0434. \u041F\u043E\u0432\u0442\u043E\u0440\u043D\u043E\u0435 \u043D\u0430\u0436\u0430\u0442\u0438\u0435 \u0443\u0431\u0438\u0440\u0430\u0435\u0442 \u0438\u043C\u0435\u043D\u043D\u043E \u044D\u0442\u043E\u0442 \u043B\u0430\u0439\u043A." }
+    });
+    const icon = btn.createDiv({ cls: "icm-feed-action-icon" });
+    setIconWithFallback(icon, "heart", impression.liked ? "\u2764\uFE0F" : "\u{1F90D}");
+    btn.createDiv({ cls: "icm-feed-action-count", text: String(total) });
+    btn.createDiv({ cls: "icm-feed-action-label", text: impression.liked ? "\u0423\u0431\u0440\u0430\u0442\u044C" : "\u041B\u0430\u0439\u043A" });
+    btn.addEventListener("click", () => {
+      const liked = this.plugin.toggleFeedLike();
+      new import_obsidian.Notice(liked ? `\u2764\uFE0F \u041B\u0430\u0439\u043A \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D \xB7 \u0432\u0441\u0435\u0433\u043E ${total + 1}` : `\u041B\u0430\u0439\u043A \u044D\u0442\u043E\u0433\u043E \u043F\u0440\u043E\u0445\u043E\u0434\u0430 \u0443\u0431\u0440\u0430\u043D \xB7 \u0432\u0441\u0435\u0433\u043E ${Math.max(0, total - 1)}`);
+    });
+  }
+  renderFeedCommentButton(parent, total) {
+    const btn = parent.createEl("button", {
+      cls: `icm-feed-action${this.feedCommentsOpen ? " is-active" : ""}`,
+      attr: { type: "button", title: "\u041A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0438: \u043E\u0434\u0438\u043D \u043D\u0430 \u043F\u0440\u043E\u0445\u043E\u0434, \u0441 \u043C\u0435\u0442\u0430\u0434\u0430\u043D\u043D\u044B\u043C\u0438 \u043F\u043E\u043F\u044B\u0442\u043A\u0438" }
+    });
+    const icon = btn.createDiv({ cls: "icm-feed-action-icon" });
+    setIconWithFallback(icon, "message-circle", "\u{1F4AC}");
+    btn.createDiv({ cls: "icm-feed-action-count", text: String(total) });
+    btn.createDiv({ cls: "icm-feed-action-label", text: "\u041A\u043E\u043C\u043C\u0435\u043D\u0442" });
+    btn.addEventListener("click", () => {
+      this.feedCommentsOpen = !this.feedCommentsOpen;
+      if (!this.feedCommentsOpen) this.feedCommentDraft = "";
+      this.render();
+    });
+  }
+  renderFeedActionButton(parent, iconName, emoji, label, title, onClick) {
+    const btn = parent.createEl("button", {
+      cls: "icm-feed-action",
+      attr: { type: "button", title }
+    });
+    const icon = btn.createDiv({ cls: "icm-feed-action-icon" });
+    setIconWithFallback(icon, iconName, emoji);
+    btn.createDiv({ cls: "icm-feed-action-label", text: label });
+    btn.addEventListener("click", onClick);
+  }
+  attachSwipe(cardEl) {
+    cardEl.addEventListener("pointerdown", (evt) => {
+      const target = evt.target;
+      if (target.closest("button, textarea, input, a, .icm-feed-comments")) return;
+      this.pointerStart = { x: evt.clientX, y: evt.clientY };
+    });
+    cardEl.addEventListener("pointerup", (evt) => {
+      const start = this.pointerStart;
+      this.pointerStart = null;
+      if (!start) return;
+      const dx = evt.clientX - start.x;
+      const dy = evt.clientY - start.y;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 55) return;
+      if (Math.abs(dy) > Math.abs(dx)) {
+        if (dy < 0) this.plugin.skipFeed();
+        else this.plugin.prevFeed();
+      } else {
+        if (dx < 0) this.plugin.skipFeed();
+        else {
+          const liked = this.plugin.toggleFeedLike();
+          new import_obsidian.Notice(liked ? "\u2764\uFE0F \u041B\u0430\u0439\u043A \u0432 \u044D\u0442\u043E\u043C \u043F\u0440\u043E\u0445\u043E\u0434\u0435" : "\u041B\u0430\u0439\u043A \u044D\u0442\u043E\u0433\u043E \u043F\u0440\u043E\u0445\u043E\u0434\u0430 \u0443\u0431\u0440\u0430\u043D");
+        }
+      }
+    });
+    cardEl.addEventListener("pointercancel", () => {
+      this.pointerStart = null;
+    });
+  }
+  renderFeedComments(parent, card, impression, comments) {
+    const section = parent.createDiv({ cls: "icm-feed-comments" });
+    const head = section.createDiv({ cls: "icm-section-head" });
+    head.createSpan({ cls: "icm-section-title", text: `\u041A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0438 \xB7 ${comments.length}` });
+    head.createSpan({ cls: "icm-section-meta", text: `\u041F\u0440\u043E\u0445\u043E\u0434 ${impression.cycle} \xB7 \u043E\u0434\u0438\u043D \u043A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0439 \u043D\u0430 \u043F\u043E\u043A\u0430\u0437` });
+    const composer = section.createDiv({ cls: "icm-comment-composer" });
+    const textarea = composer.createEl("textarea", {
+      cls: "icm-textarea icm-comment-textarea",
+      attr: {
+        rows: "3",
+        placeholder: "\u0427\u0442\u043E \u0434\u0443\u043C\u0430\u0435\u0448\u044C \u043E\u0431 \u044D\u0442\u043E\u043C \u0432\u043E\u043F\u0440\u043E\u0441\u0435? \u0412\u0438\u0434\u043D\u043E, \u043E\u0442\u0432\u0435\u0447\u0430\u043B \u043B\u0438 \u0442\u044B \u0438 \u043A\u0430\u043A\u0443\u044E \u043E\u0446\u0435\u043D\u043A\u0443 \u043F\u043E\u0441\u0442\u0430\u0432\u0438\u043B\u2026",
+        spellcheck: "false"
+      }
+    });
+    textarea.value = this.feedCommentDraft || impression.comment?.text || "";
+    textarea.addEventListener("input", () => {
+      this.feedCommentDraft = textarea.value;
+    });
+    const actions = composer.createDiv({ cls: "icm-comment-actions" });
+    const save = actions.createEl("button", {
+      cls: "icm-primary-btn",
+      text: impression.comment ? "\u041E\u0431\u043D\u043E\u0432\u0438\u0442\u044C \u043A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0439" : "\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0439",
+      attr: { type: "button" }
+    });
+    save.addEventListener("click", () => {
+      if (this.plugin.saveFeedComment(textarea.value)) {
+        this.feedCommentDraft = "";
+        this.render();
+      } else {
+        new import_obsidian.Notice("\u041A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0439 \u043F\u0443\u0441\u0442\u043E\u0439");
+      }
+    });
+    if (impression.comment) {
+      const remove = actions.createEl("button", {
+        cls: "icm-ghost-btn",
+        text: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C",
+        attr: { type: "button" }
+      });
+      remove.addEventListener("click", () => {
+        this.plugin.deleteFeedComment();
+        this.feedCommentDraft = "";
+        this.render();
+      });
+    }
+    const close = actions.createEl("button", {
+      cls: "icm-ghost-btn",
+      text: "\u0421\u043A\u0440\u044B\u0442\u044C",
+      attr: { type: "button" }
+    });
+    close.addEventListener("click", () => {
+      this.feedCommentsOpen = false;
+      this.feedCommentDraft = "";
+      this.render();
+    });
+    composer.createDiv({
+      cls: "icm-comment-help",
+      text: "\u0412 \u043A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0438 \u0441\u043E\u0445\u0440\u0430\u043D\u044F\u044E\u0442\u0441\u044F: \u043E\u0442\u0432\u0435\u0442\u0438\u043B \u0441\u0430\u043C / \u0441 \u043F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u043E\u0439 / \u043D\u0435 \u043E\u0442\u0432\u0435\u0447\u0430\u043B, \u0432\u0438\u0434 \u043F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u0438 \u0438 \u043E\u0446\u0435\u043D\u043A\u0430 Hard/Good/Easy/Again."
+    });
+    const list = section.createDiv({ cls: "icm-comment-list" });
+    if (!comments.length) {
+      list.createDiv({
+        cls: "icm-empty",
+        text: "\u041A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0435\u0432 \u043F\u043E\u043A\u0430 \u043D\u0435\u0442. \u041D\u0430\u043F\u0438\u0448\u0438 \u043F\u0435\u0440\u0432\u044B\u0439 \u2014 \u043E\u043D \u043F\u0440\u0438\u0432\u044F\u0436\u0435\u0442\u0441\u044F \u043A \u044D\u0442\u043E\u043C\u0443 \u043F\u0440\u043E\u0445\u043E\u0434\u0443 \u043B\u0435\u043D\u0442\u044B."
+      });
+      return;
+    }
+    for (const comment of comments) this.renderFeedCommentItem(list, comment, card);
+  }
+  renderFeedCommentItem(parent, comment, card) {
+    const item = parent.createDiv({ cls: "icm-comment-item" });
+    const top = item.createDiv({ cls: "icm-comment-item-top" });
+    top.createSpan({ cls: "icm-comment-cycle", text: `\u041F\u0440\u043E\u0445\u043E\u0434 ${comment.cycle}` });
+    top.createSpan({ cls: "icm-comment-date", text: formatDateTime(comment.at) });
+    item.createDiv({ cls: "icm-comment-card-title", text: truncate(card.title, 80) });
+    item.createDiv({ cls: "icm-comment-text", text: comment.text });
+    const badges = item.createDiv({ cls: "icm-comment-badges" });
+    for (const badge of feedAttemptBadges(comment)) {
+      badges.createSpan({ cls: "icm-comment-badge", text: badge });
+    }
+  }
+  /* -------------------------------- Повторение ------------------------------- */
   renderReview() {
     const rs = this.review;
     const card = rs ? this.plugin.getCardById(rs.cardId) : void 0;
@@ -1346,18 +1808,23 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     const top = root.createDiv({ cls: "icm-review-top" });
     const back = top.createEl("button", {
       cls: "icm-ghost-btn",
-      text: "\u2190 \u041A \u043A\u043E\u043B\u043E\u0434\u0430\u043C",
+      text: this.feedReturn ? "\u2190 \u0412 \u043B\u0435\u043D\u0442\u0443" : "\u2190 \u041A \u043A\u043E\u043B\u043E\u0434\u0430\u043C",
       attr: { type: "button" }
     });
     back.addEventListener("click", () => {
-      this.mode = "dashboard";
       this.review = null;
+      if (this.feedReturn) {
+        this.feedReturn = false;
+        this.mode = "feed";
+      } else {
+        this.mode = "dashboard";
+      }
       this.render();
     });
     top.createSpan({ cls: "icm-deck-pill", text: card.deck });
     top.createSpan({
       cls: "icm-counter",
-      text: index >= 0 ? `${index + 1} / ${queue.length}` : "\u0412\u043D\u0435 \u043E\u0447\u0435\u0440\u0435\u0434\u0438"
+      text: this.feedReturn ? `\u041B\u0435\u043D\u0442\u0430 \xB7 \u043F\u0440\u043E\u0445\u043E\u0434 ${this.feedSolveCycle}` : index >= 0 ? `${index + 1} / ${queue.length}` : "\u0412\u043D\u0435 \u043E\u0447\u0435\u0440\u0435\u0434\u0438"
     });
     const qCard = root.createDiv({ cls: "icm-question-card" });
     qCard.createDiv({ cls: "icm-eyebrow", text: `\u041A\u041E\u041B\u041E\u0414\u0410 \xB7 ${card.deck.toUpperCase()}` });
@@ -1382,7 +1849,13 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     textarea.addEventListener("input", () => {
       rs.answer = textarea.value;
       if (rs.revealed) rs.typedAfterReveal = true;
+      if (this.feedReturn) {
+        this.plugin.recordFeedAnswer(this.feedSolveCycle, rs.cardId, rs.answer, rs.typedAfterReveal);
+      }
       this.updateReviewBadges();
+    });
+    textarea.addEventListener("blur", () => {
+      if (this.feedReturn) void this.plugin.save();
     });
     if (!rs.revealed) window.setTimeout(() => textarea.focus(), 0);
     this.schedulerWarning = root.createDiv({ cls: "icm-scheduler-warning is-hidden" });
@@ -1462,7 +1935,7 @@ var CardsMaxView = class extends import_obsidian.ItemView {
     rating.createDiv({ cls: "icm-label", text: "\u041D\u0430\u0441\u043A\u043E\u043B\u044C\u043A\u043E \u043B\u0435\u0433\u043A\u043E \u0432\u0441\u043F\u043E\u043C\u043D\u0438\u043B?" });
     rating.createDiv({
       cls: "icm-rating-hint",
-      text: "\u041A\u043B\u0430\u0432\u0438\u0448\u0438 1\u20134 \xB7 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u0430\u044F \u043E\u0446\u0435\u043D\u043A\u0430 \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u0441\u044F \u0432 \u0436\u0443\u0440\u043D\u0430\u043B\u0435"
+      text: "\u041A\u043B\u0430\u0432\u0438\u0448\u0438 1\u20134 \xB7 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u0430\u044F \u043E\u0446\u0435\u043D\u043A\u0430 \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u0441\u044F \u0432 \u0436\u0443\u0440\u043D\u0430\u043B\u0435 \u0438 \u043A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0438 \u043B\u0435\u043D\u0442\u044B"
     });
     const row = rating.createDiv({ cls: "icm-rating-row" });
     for (const item of RATINGS) {
@@ -1571,6 +2044,14 @@ function setIconWithFallback2(el, icon, fallback) {
   (0, import_obsidian2.setIcon)(el, icon);
   if (!el.querySelector("svg")) el.textContent = fallback;
 }
+function shuffled(items) {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
 var ConfirmModal = class extends import_obsidian2.Modal {
   constructor(app, heading, message, onConfirm) {
     super(app);
@@ -1610,13 +2091,21 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     this.data = normalizeData(raw);
     this.settings = this.data.settings;
     await this.refreshCards(false);
+    this.ensureFeed(false);
     this.registerView(VIEW_TYPE, (leaf) => new CardsMaxView(leaf, this));
     const ribbon = this.addRibbonIcon("flame", "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \xAB\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX\xBB", () => void this.activateView());
     ribbon.classList.add("icm-ribbon");
+    const feedRibbon = this.addRibbonIcon("smartphone", "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043B\u0435\u043D\u0442\u0443 \xAB\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX\xBB", () => void this.openFeed());
+    feedRibbon.classList.add("icm-ribbon-feed");
     this.addCommand({
       id: "open-cards-max-panel",
       name: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043F\u0430\u043D\u0435\u043B\u044C \xAB\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX\xBB",
       callback: () => void this.activateView()
+    });
+    this.addCommand({
+      id: "open-cards-max-feed",
+      name: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043B\u0435\u043D\u0442\u0443 \xAB\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX\xBB",
+      callback: () => void this.openFeed()
     });
     this.addCommand({
       id: "start-cards-max-review",
@@ -1642,6 +2131,9 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     this.settings[key] = value;
     await this.save();
     if (key === "cardsPath") await this.refreshCards(false);
+    if (key === "cardsPath" || key === "feedCycleSize" || key === "feedShuffle") {
+      this.regenerateFeed(true);
+    }
     if (key === "showStreakInStatusBar") this.updateStatusBar();
     this.refreshAllViews();
   }
@@ -1652,6 +2144,7 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     } else if (showNotice) {
       new import_obsidian2.Notice(`\xAB\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 MAX\xBB: \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D\u043E ${cardsWord(this.cards.length)}`);
     }
+    this.ensureFeed(false);
     this.refreshAllViews();
   }
   registerVaultEvents() {
@@ -1721,6 +2214,12 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     }
     this.app.workspace.revealLeaf(leaf);
   }
+  async openFeed() {
+    await this.activateView();
+    const view = this.getView();
+    if (view) view.openFeed();
+    else window.setTimeout(() => this.getView()?.openFeed(), 50);
+  }
   getView() {
     for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE)) {
       if (leaf.view instanceof CardsMaxView) return leaf.view;
@@ -1751,7 +2250,7 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     new ConfirmModal(
       this.app,
       "\u0421\u0431\u0440\u043E\u0441\u0438\u0442\u044C \u0432\u0435\u0441\u044C \u043F\u0440\u043E\u0433\u0440\u0435\u0441\u0441?",
-      "\u0423\u0434\u0430\u043B\u044F\u0442\u0441\u044F \u0440\u0430\u0441\u043F\u0438\u0441\u0430\u043D\u0438\u0435 FSRS, \u0441\u0435\u0440\u0438\u044F \u{1F525}, \u0438\u0441\u0442\u043E\u0440\u0438\u044F \u0438 \u043F\u043E\u043C\u0435\u0442\u043A\u0438 \xAB\u041D\u0435 \u0437\u043D\u0430\u044E\xBB. Markdown-\u0437\u0430\u043C\u0435\u0442\u043A\u0438 \u043E\u0441\u0442\u0430\u043D\u0443\u0442\u0441\u044F \u0431\u0435\u0437 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0439.",
+      "\u0423\u0434\u0430\u043B\u044F\u0442\u0441\u044F \u0440\u0430\u0441\u043F\u0438\u0441\u0430\u043D\u0438\u0435 FSRS, \u0441\u0435\u0440\u0438\u044F \u{1F525}, \u0438\u0441\u0442\u043E\u0440\u0438\u044F, \u043B\u0430\u0439\u043A\u0438, \u043A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0438 \u0438 \u0441\u0432\u0430\u0439\u043F\u044B \u043B\u0435\u043D\u0442\u044B. Markdown-\u0437\u0430\u043C\u0435\u0442\u043A\u0438 \u043E\u0441\u0442\u0430\u043D\u0443\u0442\u0441\u044F \u0431\u0435\u0437 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0439.",
       () => void this.resetProgress()
     ).open();
   }
@@ -1760,9 +2259,11 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     this.data.streak = { current: 0, best: 0, lastDate: null };
     this.data.daily = {};
     this.data.history = [];
+    this.data.feed = defaultFeed();
+    this.ensureFeed(false);
     await this.save();
     this.refreshAllViews();
-    new import_obsidian2.Notice("\u041F\u0440\u043E\u0433\u0440\u0435\u0441\u0441 \xAB\u041A\u0430\u0440\u0442\u043E\u0447\u0435\u043A MAX\xBB \u0441\u0431\u0440\u043E\u0448\u0435\u043D");
+    new import_obsidian2.Notice("\u041F\u0440\u043E\u0433\u0440\u0435\u0441\u0441 \xAB\u041A\u0430\u0440\u0442\u043E\u0447\u0435\u043A MAX\xBB \u0438 \u043B\u0435\u043D\u0442\u044B \u0441\u0431\u0440\u043E\u0448\u0435\u043D");
   }
   getSettings() {
     return this.settings;
@@ -1776,6 +2277,7 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
   async setSelectedDeck(deck) {
     this.data.selectedDeck = deck && DECK_ORDER.includes(deck) ? deck : null;
     await this.save();
+    this.regenerateFeed(true);
     this.refreshAllViews();
   }
   async setSelectedFilter(filter) {
@@ -1866,12 +2368,298 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
   getDeckStats() {
     return DECK_ORDER.map((name) => this.statsFor(this.cards.filter((card) => card.deck === name), name));
   }
+  getFeedStats() {
+    const impressions = Object.values(this.data.feed.impressions);
+    return {
+      likes: impressions.filter((item) => item.liked).length,
+      comments: impressions.filter((item) => item.comment).length,
+      skips: impressions.filter((item) => item.skipped).length,
+      cycle: this.data.feed.cycle
+    };
+  }
   getOverallStats() {
     const base = this.statsFor(this.cards, "\u0412\u0441\u0435 \u043A\u043E\u043B\u043E\u0434\u044B");
     const dontKnow = Object.values(this.data.cards).filter((p2) => p2.dontKnow).length;
     const afterReveal = Object.values(this.data.cards).filter((p2) => p2.answeredAfterReveal).length;
-    return { ...base, name: "\u0412\u0441\u0435 \u043A\u043E\u043B\u043E\u0434\u044B", dontKnow, afterReveal };
+    const feed = this.getFeedStats();
+    return {
+      ...base,
+      name: "\u0412\u0441\u0435 \u043A\u043E\u043B\u043E\u0434\u044B",
+      dontKnow,
+      afterReveal,
+      feedLikes: feed.likes,
+      feedComments: feed.comments,
+      feedSkips: feed.skips,
+      feedCycle: feed.cycle
+    };
   }
+  /* ---------------------------------- Лента ---------------------------------- */
+  getFeedState() {
+    return this.data.feed;
+  }
+  getCurrentFeedCard() {
+    const feed = this.data.feed;
+    const id = feed.order[feed.index];
+    return id ? this.getCardById(id) : void 0;
+  }
+  getCurrentFeedImpression() {
+    const card = this.getCurrentFeedCard();
+    if (!card) return null;
+    return this.getFeedImpression(card.id, this.data.feed.cycle, true);
+  }
+  getFeedLikes(cardId) {
+    return Object.values(this.data.feed.impressions).filter((item) => item.cardId === cardId && item.liked).length;
+  }
+  getFeedComments(cardId) {
+    return Object.values(this.data.feed.impressions).filter((item) => item.cardId === cardId && item.comment).map((item) => item.comment).sort((a, b) => b.at - a.at);
+  }
+  buildFeedOrder(deck) {
+    const pool = deck ? this.cards.filter((card) => card.deck === deck) : [...this.cards];
+    const byQuestion = /* @__PURE__ */ new Map();
+    for (const card of pool) {
+      if (!byQuestion.has(card.questionKey)) byQuestion.set(card.questionKey, card);
+    }
+    let items = [...byQuestion.values()];
+    if (this.settings.feedShuffle) {
+      items = shuffled(items);
+    } else {
+      items.sort((a, b) => deckRank(a.deck) - deckRank(b.deck) || a.order - b.order || a.path.localeCompare(b.path, "ru"));
+    }
+    const size = this.settings.feedCycleSize > 0 ? Math.min(this.settings.feedCycleSize, items.length) : items.length;
+    return items.slice(0, size).map((card) => card.id);
+  }
+  dedupeFeedOrder(order) {
+    const seen = /* @__PURE__ */ new Set();
+    const result = [];
+    for (const id of order) {
+      const card = this.getCardById(id);
+      if (!card || seen.has(card.questionKey)) continue;
+      seen.add(card.questionKey);
+      result.push(id);
+    }
+    return result;
+  }
+  ensureFeed(incrementCycle) {
+    const feed = this.data.feed;
+    const deck = this.data.selectedDeck;
+    const valid = new Set(this.cards.map((card) => card.id));
+    let order = this.dedupeFeedOrder(feed.order.filter((id) => valid.has(id)));
+    const deckChanged = feed.deck !== deck;
+    if (order.length === 0 || deckChanged || incrementCycle) {
+      if (incrementCycle || deckChanged) feed.cycle += 1;
+      order = this.buildFeedOrder(deck);
+      feed.index = 0;
+      feed.deck = deck;
+    }
+    feed.order = this.dedupeFeedOrder(order);
+    if (feed.index >= feed.order.length) feed.index = Math.max(0, feed.order.length - 1);
+    if (feed.order.length) {
+      this.getFeedImpression(feed.order[feed.index], feed.cycle, true);
+    }
+  }
+  regenerateFeed(incrementCycle = true) {
+    this.ensureFeed(incrementCycle);
+    void this.save();
+    this.refreshAllViews();
+  }
+  nextFeed(saveAndRefresh = true) {
+    const feed = this.data.feed;
+    if (!feed.order.length) {
+      this.ensureFeed(false);
+      if (saveAndRefresh) {
+        void this.save();
+        this.refreshAllViews();
+      }
+      return;
+    }
+    feed.index += 1;
+    if (feed.index >= feed.order.length) {
+      feed.cycle += 1;
+      feed.order = this.buildFeedOrder(feed.deck);
+      feed.index = 0;
+    }
+    if (feed.order.length) this.getFeedImpression(feed.order[feed.index], feed.cycle, true);
+    if (saveAndRefresh) {
+      void this.save();
+      this.refreshAllViews();
+    }
+  }
+  prevFeed() {
+    const feed = this.data.feed;
+    if (feed.index > 0) feed.index -= 1;
+    if (feed.order.length) this.getFeedImpression(feed.order[feed.index], feed.cycle, true);
+    void this.save();
+    this.refreshAllViews();
+  }
+  toggleFeedLike() {
+    const card = this.getCurrentFeedCard();
+    if (!card) return false;
+    const impression = this.getCurrentFeedImpression();
+    if (!impression) return false;
+    const wasLiked = impression.liked;
+    impression.liked = !wasLiked;
+    impression.at = Date.now();
+    this.syncFeedComment(impression);
+    this.adjustDaily("feedLikes", wasLiked ? -1 : 1);
+    void this.save();
+    this.refreshAllViews();
+    return !wasLiked;
+  }
+  saveFeedComment(text) {
+    const trimmed = text.trim();
+    if (!trimmed) return false;
+    const impression = this.getCurrentFeedImpression();
+    if (!impression) return false;
+    const isNew = !impression.comment;
+    impression.comment = this.makeFeedComment(impression, trimmed);
+    impression.at = Date.now();
+    if (isNew) this.adjustDaily("feedComments", 1);
+    void this.save();
+    this.refreshAllViews();
+    return true;
+  }
+  deleteFeedComment() {
+    const impression = this.getCurrentFeedImpression();
+    if (!impression?.comment) return false;
+    impression.comment = null;
+    impression.at = Date.now();
+    this.adjustDaily("feedComments", -1);
+    void this.save();
+    this.refreshAllViews();
+    return true;
+  }
+  skipFeed() {
+    const impression = this.getCurrentFeedImpression();
+    if (impression && impression.rating === null) {
+      const firstSkip = !impression.skipped;
+      impression.skipped = true;
+      if (impression.outcome === "pending" && !impression.answeredBeforeReveal) {
+        impression.outcome = impression.usedHint ? "hint-only" : "skipped";
+      }
+      impression.at = Date.now();
+      this.syncFeedComment(impression);
+      if (firstSkip) this.adjustDaily("feedSkips", 1);
+    }
+    this.nextFeed(false);
+    void this.save();
+    this.refreshAllViews();
+  }
+  getFeedImpression(cardId, cycle, create) {
+    const key = `${cycle}:${cardId}`;
+    const existing = this.data.feed.impressions[key];
+    if (existing) return existing;
+    if (!create) return null;
+    const card = this.getCardById(cardId);
+    if (!card) return null;
+    const impression = {
+      key,
+      cardId,
+      deck: card.deck,
+      title: card.title,
+      cycle,
+      at: Date.now(),
+      liked: false,
+      comment: null,
+      outcome: "pending",
+      answered: false,
+      answeredBeforeReveal: false,
+      usedHint: false,
+      hintKind: null,
+      rating: null,
+      effectiveRating: null,
+      answeredAfterReveal: false,
+      skipped: false
+    };
+    this.data.feed.impressions[key] = impression;
+    this.pruneFeedImpressions();
+    return impression;
+  }
+  makeFeedComment(impression, text) {
+    return {
+      text,
+      at: Date.now(),
+      cycle: impression.cycle,
+      outcome: impression.outcome,
+      answered: impression.answered,
+      answeredBeforeReveal: impression.answeredBeforeReveal,
+      usedHint: impression.usedHint,
+      hintKind: impression.hintKind,
+      rating: impression.rating,
+      effectiveRating: impression.effectiveRating,
+      answeredAfterReveal: impression.answeredAfterReveal,
+      skipped: impression.skipped
+    };
+  }
+  syncFeedComment(impression) {
+    if (!impression.comment) return;
+    impression.comment.outcome = impression.outcome;
+    impression.comment.answered = impression.answered;
+    impression.comment.answeredBeforeReveal = impression.answeredBeforeReveal;
+    impression.comment.usedHint = impression.usedHint;
+    impression.comment.hintKind = impression.hintKind;
+    impression.comment.rating = impression.rating;
+    impression.comment.effectiveRating = impression.effectiveRating;
+    impression.comment.answeredAfterReveal = impression.answeredAfterReveal;
+    impression.comment.skipped = impression.skipped;
+    impression.comment.cycle = impression.cycle;
+  }
+  pruneFeedImpressions() {
+    const impressions = this.data.feed.impressions;
+    const keys = Object.keys(impressions);
+    if (keys.length <= FEED_IMPRESSION_LIMIT) return;
+    keys.sort((a, b) => impressions[b].at - impressions[a].at).slice(FEED_IMPRESSION_LIMIT).forEach((key) => delete impressions[key]);
+  }
+  /** Обновить «ответил / не ответил» прямо во время ввода в режиме ленты. */
+  recordFeedAnswer(cycle, cardId, answer, typedAfterReveal) {
+    const impression = this.getFeedImpression(cardId, cycle, true);
+    if (!impression || impression.rating !== null) return;
+    impression.answered = answer.trim().length > 0;
+    impression.answeredAfterReveal = typedAfterReveal;
+    if (impression.answered && !impression.answeredBeforeReveal) {
+      impression.outcome = "answered-after-reveal";
+    } else if (!impression.answered && impression.usedHint) {
+      impression.outcome = "hint-only";
+    }
+    impression.at = Date.now();
+    this.syncFeedComment(impression);
+  }
+  /** Пользователь раскрыл подсказку в ленте, но ещё не поставил оценку. */
+  recordFeedHint(cycle, cardId, hintKind, answerAtReveal) {
+    const impression = this.getFeedImpression(cardId, cycle, true);
+    if (!impression || impression.rating !== null) return;
+    const before = answerAtReveal.trim().length > 0;
+    impression.hintKind = hintKind;
+    impression.answeredBeforeReveal = before;
+    impression.answered = before;
+    impression.usedHint = !before;
+    impression.outcome = before ? "pending" : "hint-only";
+    impression.skipped = false;
+    impression.at = Date.now();
+    this.syncFeedComment(impression);
+    void this.save();
+  }
+  recordFeedSolve(request, effectiveRating) {
+    if (!request.feed) return;
+    const card = this.getCardById(request.cardId);
+    if (!card) return;
+    const impression = this.getFeedImpression(card.id, request.feed.cycle, true);
+    if (!impression) return;
+    const hintKind = request.revealKind;
+    const answeredBeforeReveal = request.answerAtReveal.trim().length > 0;
+    const hasAnswer = request.answer.trim().length > 0;
+    impression.outcome = answeredBeforeReveal ? "solved" : hasAnswer ? "answered-after-reveal" : "hint-only";
+    impression.skipped = false;
+    impression.answered = hasAnswer;
+    impression.answeredBeforeReveal = answeredBeforeReveal;
+    impression.usedHint = !answeredBeforeReveal;
+    impression.hintKind = hintKind;
+    impression.rating = request.rating;
+    impression.effectiveRating = effectiveRating;
+    impression.answeredAfterReveal = request.typedAfterReveal;
+    impression.at = Date.now();
+    this.syncFeedComment(impression);
+  }
+  /* ------------------------------- Повторение -------------------------------- */
   async grade(request) {
     const card = this.getCardById(request.cardId);
     if (!card) return null;
@@ -1898,6 +2686,7 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     this.data.cards[card.id] = next;
     this.recordDaily(now, wasNew, request);
     this.updateStreak(now);
+    this.recordFeedSolve(request, effectiveRating);
     const entry = {
       cardId: card.id,
       deck: card.deck,
@@ -1921,14 +2710,26 @@ var CardsMaxPlugin = class extends import_obsidian2.Plugin {
     const queue = this.getQueue(this.data.selectedDeck, this.data.selectedFilter);
     return queue.find((candidate) => candidate.id !== card.id) ?? null;
   }
-  recordDaily(now, wasNew, request) {
-    const key = dateKey(new Date(now));
-    const stat = this.data.daily[key] ?? {
+  dailyStat(key) {
+    return this.data.daily[key] ?? {
       reviews: 0,
       newCards: 0,
       dontKnow: 0,
-      afterReveal: 0
+      afterReveal: 0,
+      feedLikes: 0,
+      feedComments: 0,
+      feedSkips: 0
     };
+  }
+  adjustDaily(field, delta) {
+    const key = dateKey(/* @__PURE__ */ new Date());
+    const stat = this.dailyStat(key);
+    stat[field] = Math.max(0, stat[field] + delta);
+    this.data.daily[key] = stat;
+  }
+  recordDaily(now, wasNew, request) {
+    const key = dateKey(new Date(now));
+    const stat = this.dailyStat(key);
     stat.reviews += 1;
     if (wasNew) stat.newCards += 1;
     if (request.revealKind === "dont-know" || request.answerAtReveal.trim().length === 0) {
@@ -1958,7 +2759,7 @@ var CardsMaxSettingTab = class extends import_obsidian2.PluginSettingTab {
     containerEl.createEl("h2", { text: "\u041A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 \u0441\u043E\u0431\u0435\u0441\u0435\u0434\u043E\u0432\u0430\u043D\u0438\u044F MAX" });
     containerEl.createEl("p", {
       cls: "setting-item-description",
-      text: "\u0420\u0443\u0441\u0441\u043A\u043E\u044F\u0437\u044B\u0447\u043D\u044B\u0435 \u043A\u043E\u043B\u043E\u0434\u044B, FSRS, \u0441\u0435\u0440\u0438\u044F \u0438 \u0447\u0435\u0441\u0442\u043D\u0430\u044F \u043F\u043E\u043C\u0435\u0442\u043A\u0430 \u043E\u0442\u0432\u0435\u0442\u043E\u0432 \u043F\u043E\u0441\u043B\u0435 \u043F\u043E\u043A\u0430\u0437\u0430."
+      text: "\u0420\u0443\u0441\u0441\u043A\u043E\u044F\u0437\u044B\u0447\u043D\u044B\u0435 \u043A\u043E\u043B\u043E\u0434\u044B, FSRS, \u0441\u0435\u0440\u0438\u044F, \u043B\u0435\u043D\u0442\u0430 \u0422\u0422 \u0438 \u0447\u0435\u0441\u0442\u043D\u0430\u044F \u043F\u043E\u043C\u0435\u0442\u043A\u0430 \u043E\u0442\u0432\u0435\u0442\u043E\u0432 \u043F\u043E\u0441\u043B\u0435 \u043F\u043E\u043A\u0430\u0437\u0430."
     });
     new import_obsidian2.Setting(containerEl).setName("\u041F\u0443\u0442\u044C \u043A \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0430\u043C").setDesc("\u041F\u0430\u043F\u043A\u0430 \u0441 Markdown-\u0437\u0430\u043C\u0435\u0442\u043A\u0430\u043C\u0438 \u0432\u043D\u0443\u0442\u0440\u0438 vault.").addText(
       (text) => text.setPlaceholder(DEFAULT_CARDS_PATH).setValue(this.plugin.settings.cardsPath).onChange((value) => {
@@ -2006,7 +2807,7 @@ var CardsMaxSettingTab = class extends import_obsidian2.PluginSettingTab {
         void this.plugin.setSetting("countAnswerAfterRevealAsAgain", value);
       })
     );
-    new import_obsidian2.Setting(containerEl).setName("\u0410\u0432\u0442\u043E\u043F\u0435\u0440\u0435\u0445\u043E\u0434 \u043A \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0435\u0439 \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0435").setDesc("\u041F\u043E\u0441\u043B\u0435 \u043E\u0446\u0435\u043D\u043A\u0438 \u0441\u0440\u0430\u0437\u0443 \u043E\u0442\u043A\u0440\u044B\u0432\u0430\u0442\u044C \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0443\u044E \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0443 \u0442\u0435\u043A\u0443\u0449\u0435\u0439 \u043E\u0447\u0435\u0440\u0435\u0434\u0438.").addToggle(
+    new import_obsidian2.Setting(containerEl).setName("\u0410\u0432\u0442\u043E\u043F\u0435\u0440\u0435\u0445\u043E\u0434 \u043A \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0435\u0439 \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0435").setDesc("\u041F\u043E\u0441\u043B\u0435 \u043E\u0446\u0435\u043D\u043A\u0438 \u0441\u0440\u0430\u0437\u0443 \u043E\u0442\u043A\u0440\u044B\u0432\u0430\u0442\u044C \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0443\u044E \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0443 \u043E\u0447\u0435\u0440\u0435\u0434\u0438 \u0438\u043B\u0438 \u043B\u0435\u043D\u0442\u044B.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.autoNext).onChange((value) => {
         void this.plugin.setSetting("autoNext", value);
       })
@@ -2021,10 +2822,29 @@ var CardsMaxSettingTab = class extends import_obsidian2.PluginSettingTab {
         void this.plugin.setSetting("showStreakInStatusBar", value);
       })
     );
+    containerEl.createEl("h3", { text: "\u041B\u0435\u043D\u0442\u0430 \u0422\u0422" });
+    new import_obsidian2.Setting(containerEl).setName("\u041A\u0430\u0440\u0442\u043E\u0447\u0435\u043A \u0432 \u043E\u0434\u043D\u043E\u043C \u043F\u0440\u043E\u0445\u043E\u0434\u0435 \u043B\u0435\u043D\u0442\u044B").setDesc(
+      `0 \u2014 \u0432\u0441\u0435 \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439 \u043A\u043E\u043B\u043E\u0434\u044B. \u041F\u043E \u0443\u043C\u043E\u043B\u0447\u0430\u043D\u0438\u044E ${DEFAULT_FEED_CYCLE_SIZE}. \u0412 \u043E\u0434\u043D\u043E\u043C \u043F\u0440\u043E\u0445\u043E\u0434\u0435 \u0432\u043E\u043F\u0440\u043E\u0441\u044B \u043D\u0435 \u043F\u043E\u0432\u0442\u043E\u0440\u044F\u044E\u0442\u0441\u044F.`
+    ).addText((text) => {
+      text.setPlaceholder(String(DEFAULT_FEED_CYCLE_SIZE)).setValue(String(this.plugin.settings.feedCycleSize)).onChange((value) => {
+        const n = Number.parseInt(value, 10);
+        if (Number.isFinite(n) && n >= 0) void this.plugin.setSetting("feedCycleSize", n);
+      });
+      text.inputEl.type = "number";
+      text.inputEl.min = "0";
+    });
+    new import_obsidian2.Setting(containerEl).setName("\u041F\u0435\u0440\u0435\u043C\u0435\u0448\u0438\u0432\u0430\u0442\u044C \u043B\u0435\u043D\u0442\u0443").setDesc("\u0412\u044B\u043A\u043B. \u2014 \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0438 \u0438\u0434\u0443\u0442 \u0432 \u043F\u043E\u0440\u044F\u0434\u043A\u0435 \u043A\u043E\u043B\u043E\u0434 \u0438 \u043D\u043E\u043C\u0435\u0440\u043E\u0432. \u0412\u043A\u043B. \u2014 \u0441\u043B\u0443\u0447\u0430\u0439\u043D\u044B\u0439 \u043F\u043E\u0440\u044F\u0434\u043E\u043A \u0431\u0435\u0437 \u043F\u043E\u0432\u0442\u043E\u0440\u043E\u0432 \u0432\u043D\u0443\u0442\u0440\u0438 \u043F\u0440\u043E\u0445\u043E\u0434\u0430.").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.feedShuffle).onChange((value) => {
+        void this.plugin.setSetting("feedShuffle", value);
+      })
+    );
+    new import_obsidian2.Setting(containerEl).setName("\u041B\u0435\u043D\u0442\u0430").setDesc("\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043B\u0435\u043D\u0442\u0443, \u043B\u0430\u0439\u043A\u0438, \u043A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0438 \u0438 \u0441\u0432\u0430\u0439\u043F\u044B.").addButton(
+      (button) => button.setButtonText("\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043B\u0435\u043D\u0442\u0443").onClick(() => void this.plugin.openFeed())
+    );
     new import_obsidian2.Setting(containerEl).setName("\u041F\u0430\u043D\u0435\u043B\u044C").setDesc("\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0431\u043E\u043A\u043E\u0432\u0443\u044E \u043F\u0430\u043D\u0435\u043B\u044C \u0441 \u043A\u043E\u043B\u043E\u0434\u0430\u043C\u0438 \u0438 \u043F\u043E\u0432\u0442\u043E\u0440\u0435\u043D\u0438\u0435\u043C.").addButton(
       (button) => button.setButtonText("\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043F\u0430\u043D\u0435\u043B\u044C").onClick(() => void this.plugin.activateView())
     );
-    new import_obsidian2.Setting(containerEl).setName("\u041F\u0440\u043E\u0433\u0440\u0435\u0441\u0441").setDesc("\u0420\u0430\u0441\u043F\u0438\u0441\u0430\u043D\u0438\u0435, \u0441\u0435\u0440\u0438\u044F, \u0438\u0441\u0442\u043E\u0440\u0438\u044F \u0438 \u043F\u043E\u043C\u0435\u0442\u043A\u0438 \u0445\u0440\u0430\u043D\u044F\u0442\u0441\u044F \u0432 data.json \u043F\u043B\u0430\u0433\u0438\u043D\u0430. \u0417\u0430\u043C\u0435\u0442\u043A\u0438 \u043D\u0435 \u0438\u0437\u043C\u0435\u043D\u044F\u044E\u0442\u0441\u044F.").addButton(
+    new import_obsidian2.Setting(containerEl).setName("\u041F\u0440\u043E\u0433\u0440\u0435\u0441\u0441").setDesc("\u0420\u0430\u0441\u043F\u0438\u0441\u0430\u043D\u0438\u0435, \u0441\u0435\u0440\u0438\u044F, \u0438\u0441\u0442\u043E\u0440\u0438\u044F, \u043B\u0430\u0439\u043A\u0438 \u0438 \u043A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0438 \u0445\u0440\u0430\u043D\u044F\u0442\u0441\u044F \u0432 data.json \u043F\u043B\u0430\u0433\u0438\u043D\u0430. \u0417\u0430\u043C\u0435\u0442\u043A\u0438 \u043D\u0435 \u0438\u0437\u043C\u0435\u043D\u044F\u044E\u0442\u0441\u044F.").addButton(
       (button) => button.setButtonText("\u0421\u0431\u0440\u043E\u0441\u0438\u0442\u044C \u043F\u0440\u043E\u0433\u0440\u0435\u0441\u0441\u2026").setWarning().onClick(() => this.plugin.confirmReset())
     );
     containerEl.createEl("hr");

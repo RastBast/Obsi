@@ -12,24 +12,28 @@ import {
 import type { Grade } from 'ts-fsrs';
 import { CardsMaxView } from './view';
 import { loadCards, type CardNote } from './cards';
-import {
-  createEmptyProgress,
-  gradeCard,
-  RATING_AGAIN,
-} from './scheduler';
+import { createEmptyProgress, gradeCard, RATING_AGAIN } from './scheduler';
 import { isDue, isMastered, isPassed } from './status';
 import {
   DEFAULT_CARDS_PATH,
+  DEFAULT_FEED_CYCLE_SIZE,
   DECK_ORDER,
+  FEED_IMPRESSION_LIMIT,
   HISTORY_LIMIT,
   PLUGIN_ID,
   VIEW_TYPE,
   deckRank,
+  defaultFeed,
   emptyProgress,
   normalizeData,
   type CardProgress,
   type DailyStat,
   type DeckStats,
+  type FeedComment,
+  type FeedData,
+  type FeedHintKind,
+  type FeedImpression,
+  type FeedOutcome,
   type FilterKey,
   type GradeRequest,
   type OverallStats,
@@ -45,6 +49,15 @@ void PLUGIN_ID;
 function setIconWithFallback(el: HTMLElement, icon: string, fallback: string): void {
   setIcon(el, icon);
   if (!el.querySelector('svg')) el.textContent = fallback;
+}
+
+function shuffled<T>(items: T[]): T[] {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
 }
 
 interface ObsidianSettingsHost {
@@ -97,16 +110,24 @@ export class CardsMaxPlugin extends Plugin {
     this.settings = this.data.settings;
 
     await this.refreshCards(false);
+    this.ensureFeed(false);
 
     this.registerView(VIEW_TYPE, (leaf: WorkspaceLeaf) => new CardsMaxView(leaf, this));
 
     const ribbon = this.addRibbonIcon('flame', 'Открыть «Карточки MAX»', () => void this.activateView());
     ribbon.classList.add('icm-ribbon');
+    const feedRibbon = this.addRibbonIcon('smartphone', 'Открыть ленту «Карточки MAX»', () => void this.openFeed());
+    feedRibbon.classList.add('icm-ribbon-feed');
 
     this.addCommand({
       id: 'open-cards-max-panel',
       name: 'Открыть панель «Карточки MAX»',
       callback: () => void this.activateView(),
+    });
+    this.addCommand({
+      id: 'open-cards-max-feed',
+      name: 'Открыть ленту «Карточки MAX»',
+      callback: () => void this.openFeed(),
     });
     this.addCommand({
       id: 'start-cards-max-review',
@@ -136,6 +157,9 @@ export class CardsMaxPlugin extends Plugin {
     (this.settings as unknown as Record<string, unknown>)[key] = value;
     await this.save();
     if (key === 'cardsPath') await this.refreshCards(false);
+    if (key === 'cardsPath' || key === 'feedCycleSize' || key === 'feedShuffle') {
+      this.regenerateFeed(true);
+    }
     if (key === 'showStreakInStatusBar') this.updateStatusBar();
     this.refreshAllViews();
   }
@@ -147,6 +171,7 @@ export class CardsMaxPlugin extends Plugin {
     } else if (showNotice) {
       new Notice(`«Карточки MAX»: загружено ${cardsWord(this.cards.length)}`);
     }
+    this.ensureFeed(false);
     this.refreshAllViews();
   }
 
@@ -224,6 +249,13 @@ export class CardsMaxPlugin extends Plugin {
     this.app.workspace.revealLeaf(leaf);
   }
 
+  async openFeed(): Promise<void> {
+    await this.activateView();
+    const view = this.getView();
+    if (view) view.openFeed();
+    else window.setTimeout(() => this.getView()?.openFeed(), 50);
+  }
+
   private getView(): CardsMaxView | null {
     for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE)) {
       if (leaf.view instanceof CardsMaxView) return leaf.view;
@@ -258,7 +290,7 @@ export class CardsMaxPlugin extends Plugin {
     new ConfirmModal(
       this.app,
       'Сбросить весь прогресс?',
-      'Удалятся расписание FSRS, серия 🔥, история и пометки «Не знаю». Markdown-заметки останутся без изменений.',
+      'Удалятся расписание FSRS, серия 🔥, история, лайки, комментарии и свайпы ленты. Markdown-заметки останутся без изменений.',
       () => void this.resetProgress(),
     ).open();
   }
@@ -268,9 +300,11 @@ export class CardsMaxPlugin extends Plugin {
     this.data.streak = { current: 0, best: 0, lastDate: null };
     this.data.daily = {};
     this.data.history = [];
+    this.data.feed = defaultFeed();
+    this.ensureFeed(false);
     await this.save();
     this.refreshAllViews();
-    new Notice('Прогресс «Карточек MAX» сброшен');
+    new Notice('Прогресс «Карточек MAX» и ленты сброшен');
   }
 
   getSettings(): PluginSettings {
@@ -288,6 +322,7 @@ export class CardsMaxPlugin extends Plugin {
   async setSelectedDeck(deck: string | null): Promise<void> {
     this.data.selectedDeck = deck && DECK_ORDER.includes(deck as (typeof DECK_ORDER)[number]) ? deck : null;
     await this.save();
+    this.regenerateFeed(true);
     this.refreshAllViews();
   }
 
@@ -395,12 +430,338 @@ export class CardsMaxPlugin extends Plugin {
     return DECK_ORDER.map((name) => this.statsFor(this.cards.filter((card) => card.deck === name), name));
   }
 
+  getFeedStats(): { likes: number; comments: number; skips: number; cycle: number } {
+    const impressions = Object.values(this.data.feed.impressions);
+    return {
+      likes: impressions.filter((item) => item.liked).length,
+      comments: impressions.filter((item) => item.comment).length,
+      skips: impressions.filter((item) => item.skipped).length,
+      cycle: this.data.feed.cycle,
+    };
+  }
+
   getOverallStats(): OverallStats {
     const base = this.statsFor(this.cards, 'Все колоды');
     const dontKnow = Object.values(this.data.cards).filter((p) => p.dontKnow).length;
     const afterReveal = Object.values(this.data.cards).filter((p) => p.answeredAfterReveal).length;
-    return { ...base, name: 'Все колоды', dontKnow, afterReveal };
+    const feed = this.getFeedStats();
+    return {
+      ...base,
+      name: 'Все колоды',
+      dontKnow,
+      afterReveal,
+      feedLikes: feed.likes,
+      feedComments: feed.comments,
+      feedSkips: feed.skips,
+      feedCycle: feed.cycle,
+    };
   }
+
+  /* ---------------------------------- Лента ---------------------------------- */
+
+  getFeedState(): FeedData {
+    return this.data.feed;
+  }
+
+  getCurrentFeedCard(): CardNote | undefined {
+    const feed = this.data.feed;
+    const id = feed.order[feed.index];
+    return id ? this.getCardById(id) : undefined;
+  }
+
+  getCurrentFeedImpression(): FeedImpression | null {
+    const card = this.getCurrentFeedCard();
+    if (!card) return null;
+    return this.getFeedImpression(card.id, this.data.feed.cycle, true);
+  }
+
+  getFeedLikes(cardId: string): number {
+    return Object.values(this.data.feed.impressions).filter((item) => item.cardId === cardId && item.liked).length;
+  }
+
+  getFeedComments(cardId: string): FeedComment[] {
+    return Object.values(this.data.feed.impressions)
+      .filter((item) => item.cardId === cardId && item.comment)
+      .map((item) => item.comment as FeedComment)
+      .sort((a, b) => b.at - a.at);
+  }
+
+  private buildFeedOrder(deck: string | null): string[] {
+    const pool = deck ? this.cards.filter((card) => card.deck === deck) : [...this.cards];
+    const byQuestion = new Map<string, CardNote>();
+    for (const card of pool) {
+      if (!byQuestion.has(card.questionKey)) byQuestion.set(card.questionKey, card);
+    }
+    let items = [...byQuestion.values()];
+    if (this.settings.feedShuffle) {
+      items = shuffled(items);
+    } else {
+      items.sort((a, b) => deckRank(a.deck) - deckRank(b.deck) || a.order - b.order || a.path.localeCompare(b.path, 'ru'));
+    }
+    const size =
+      this.settings.feedCycleSize > 0
+        ? Math.min(this.settings.feedCycleSize, items.length)
+        : items.length;
+    return items.slice(0, size).map((card) => card.id);
+  }
+
+  private dedupeFeedOrder(order: string[]): string[] {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const id of order) {
+      const card = this.getCardById(id);
+      if (!card || seen.has(card.questionKey)) continue;
+      seen.add(card.questionKey);
+      result.push(id);
+    }
+    return result;
+  }
+
+  private ensureFeed(incrementCycle: boolean): void {
+    const feed = this.data.feed;
+    const deck = this.data.selectedDeck;
+    const valid = new Set(this.cards.map((card) => card.id));
+    let order = this.dedupeFeedOrder(feed.order.filter((id) => valid.has(id)));
+    const deckChanged = feed.deck !== deck;
+
+    if (order.length === 0 || deckChanged || incrementCycle) {
+      if (incrementCycle || deckChanged) feed.cycle += 1;
+      order = this.buildFeedOrder(deck);
+      feed.index = 0;
+      feed.deck = deck;
+    }
+
+    feed.order = this.dedupeFeedOrder(order);
+    if (feed.index >= feed.order.length) feed.index = Math.max(0, feed.order.length - 1);
+    if (feed.order.length) {
+      this.getFeedImpression(feed.order[feed.index], feed.cycle, true);
+    }
+  }
+
+  regenerateFeed(incrementCycle = true): void {
+    this.ensureFeed(incrementCycle);
+    void this.save();
+    this.refreshAllViews();
+  }
+
+  nextFeed(saveAndRefresh = true): void {
+    const feed = this.data.feed;
+    if (!feed.order.length) {
+      this.ensureFeed(false);
+      if (saveAndRefresh) {
+        void this.save();
+        this.refreshAllViews();
+      }
+      return;
+    }
+    feed.index += 1;
+    if (feed.index >= feed.order.length) {
+      feed.cycle += 1;
+      feed.order = this.buildFeedOrder(feed.deck);
+      feed.index = 0;
+    }
+    if (feed.order.length) this.getFeedImpression(feed.order[feed.index], feed.cycle, true);
+    if (saveAndRefresh) {
+      void this.save();
+      this.refreshAllViews();
+    }
+  }
+
+  prevFeed(): void {
+    const feed = this.data.feed;
+    if (feed.index > 0) feed.index -= 1;
+    if (feed.order.length) this.getFeedImpression(feed.order[feed.index], feed.cycle, true);
+    void this.save();
+    this.refreshAllViews();
+  }
+
+  toggleFeedLike(): boolean {
+    const card = this.getCurrentFeedCard();
+    if (!card) return false;
+    const impression = this.getCurrentFeedImpression();
+    if (!impression) return false;
+    const wasLiked = impression.liked;
+    impression.liked = !wasLiked;
+    impression.at = Date.now();
+    this.syncFeedComment(impression);
+    this.adjustDaily('feedLikes', wasLiked ? -1 : 1);
+    void this.save();
+    this.refreshAllViews();
+    return !wasLiked;
+  }
+
+  saveFeedComment(text: string): boolean {
+    const trimmed = text.trim();
+    if (!trimmed) return false;
+    const impression = this.getCurrentFeedImpression();
+    if (!impression) return false;
+    const isNew = !impression.comment;
+    impression.comment = this.makeFeedComment(impression, trimmed);
+    impression.at = Date.now();
+    if (isNew) this.adjustDaily('feedComments', 1);
+    void this.save();
+    this.refreshAllViews();
+    return true;
+  }
+
+  deleteFeedComment(): boolean {
+    const impression = this.getCurrentFeedImpression();
+    if (!impression?.comment) return false;
+    impression.comment = null;
+    impression.at = Date.now();
+    this.adjustDaily('feedComments', -1);
+    void this.save();
+    this.refreshAllViews();
+    return true;
+  }
+
+  skipFeed(): void {
+    const impression = this.getCurrentFeedImpression();
+    if (impression && impression.rating === null) {
+      const firstSkip = !impression.skipped;
+      impression.skipped = true;
+      if (impression.outcome === 'pending' && !impression.answeredBeforeReveal) {
+        impression.outcome = impression.usedHint ? 'hint-only' : 'skipped';
+      }
+      impression.at = Date.now();
+      this.syncFeedComment(impression);
+      if (firstSkip) this.adjustDaily('feedSkips', 1);
+    }
+    this.nextFeed(false);
+    void this.save();
+    this.refreshAllViews();
+  }
+
+  private getFeedImpression(cardId: string, cycle: number, create: boolean): FeedImpression | null {
+    const key = `${cycle}:${cardId}`;
+    const existing = this.data.feed.impressions[key];
+    if (existing) return existing;
+    if (!create) return null;
+    const card = this.getCardById(cardId);
+    if (!card) return null;
+    const impression: FeedImpression = {
+      key,
+      cardId,
+      deck: card.deck,
+      title: card.title,
+      cycle,
+      at: Date.now(),
+      liked: false,
+      comment: null,
+      outcome: 'pending',
+      answered: false,
+      answeredBeforeReveal: false,
+      usedHint: false,
+      hintKind: null,
+      rating: null,
+      effectiveRating: null,
+      answeredAfterReveal: false,
+      skipped: false,
+    };
+    this.data.feed.impressions[key] = impression;
+    this.pruneFeedImpressions();
+    return impression;
+  }
+
+  private makeFeedComment(impression: FeedImpression, text: string): FeedComment {
+    return {
+      text,
+      at: Date.now(),
+      cycle: impression.cycle,
+      outcome: impression.outcome,
+      answered: impression.answered,
+      answeredBeforeReveal: impression.answeredBeforeReveal,
+      usedHint: impression.usedHint,
+      hintKind: impression.hintKind,
+      rating: impression.rating,
+      effectiveRating: impression.effectiveRating,
+      answeredAfterReveal: impression.answeredAfterReveal,
+      skipped: impression.skipped,
+    };
+  }
+
+  private syncFeedComment(impression: FeedImpression): void {
+    if (!impression.comment) return;
+    impression.comment.outcome = impression.outcome;
+    impression.comment.answered = impression.answered;
+    impression.comment.answeredBeforeReveal = impression.answeredBeforeReveal;
+    impression.comment.usedHint = impression.usedHint;
+    impression.comment.hintKind = impression.hintKind;
+    impression.comment.rating = impression.rating;
+    impression.comment.effectiveRating = impression.effectiveRating;
+    impression.comment.answeredAfterReveal = impression.answeredAfterReveal;
+    impression.comment.skipped = impression.skipped;
+    impression.comment.cycle = impression.cycle;
+  }
+
+  private pruneFeedImpressions(): void {
+    const impressions = this.data.feed.impressions;
+    const keys = Object.keys(impressions);
+    if (keys.length <= FEED_IMPRESSION_LIMIT) return;
+    keys
+      .sort((a, b) => impressions[b].at - impressions[a].at)
+      .slice(FEED_IMPRESSION_LIMIT)
+      .forEach((key) => delete impressions[key]);
+  }
+
+  /** Обновить «ответил / не ответил» прямо во время ввода в режиме ленты. */
+  recordFeedAnswer(cycle: number, cardId: string, answer: string, typedAfterReveal: boolean): void {
+    const impression = this.getFeedImpression(cardId, cycle, true);
+    if (!impression || impression.rating !== null) return;
+    impression.answered = answer.trim().length > 0;
+    impression.answeredAfterReveal = typedAfterReveal;
+    if (impression.answered && !impression.answeredBeforeReveal) {
+      impression.outcome = 'answered-after-reveal';
+    } else if (!impression.answered && impression.usedHint) {
+      impression.outcome = 'hint-only';
+    }
+    impression.at = Date.now();
+    this.syncFeedComment(impression);
+  }
+
+  /** Пользователь раскрыл подсказку в ленте, но ещё не поставил оценку. */
+  recordFeedHint(cycle: number, cardId: string, hintKind: FeedHintKind, answerAtReveal: string): void {
+    const impression = this.getFeedImpression(cardId, cycle, true);
+    if (!impression || impression.rating !== null) return;
+    const before = answerAtReveal.trim().length > 0;
+    impression.hintKind = hintKind;
+    impression.answeredBeforeReveal = before;
+    impression.answered = before;
+    impression.usedHint = !before;
+    impression.outcome = before ? 'pending' : 'hint-only';
+    impression.skipped = false;
+    impression.at = Date.now();
+    this.syncFeedComment(impression);
+    void this.save();
+  }
+
+  private recordFeedSolve(request: GradeRequest, effectiveRating: number): void {
+    if (!request.feed) return;
+    const card = this.getCardById(request.cardId);
+    if (!card) return;
+    const impression = this.getFeedImpression(card.id, request.feed.cycle, true);
+    if (!impression) return;
+    const hintKind: FeedHintKind = request.revealKind;
+    const answeredBeforeReveal = request.answerAtReveal.trim().length > 0;
+    const hasAnswer = request.answer.trim().length > 0;
+    impression.outcome = answeredBeforeReveal
+      ? 'solved'
+      : hasAnswer
+        ? 'answered-after-reveal'
+        : 'hint-only';
+    impression.skipped = false;
+    impression.answered = hasAnswer;
+    impression.answeredBeforeReveal = answeredBeforeReveal;
+    impression.usedHint = !answeredBeforeReveal;
+    impression.hintKind = hintKind;
+    impression.rating = request.rating;
+    impression.effectiveRating = effectiveRating;
+    impression.answeredAfterReveal = request.typedAfterReveal;
+    impression.at = Date.now();
+    this.syncFeedComment(impression);
+  }
+
+  /* ------------------------------- Повторение -------------------------------- */
 
   async grade(request: GradeRequest): Promise<CardNote | null> {
     const card = this.getCardById(request.cardId);
@@ -436,6 +797,7 @@ export class CardsMaxPlugin extends Plugin {
     this.data.cards[card.id] = next;
     this.recordDaily(now, wasNew, request);
     this.updateStreak(now);
+    this.recordFeedSolve(request, effectiveRating);
 
     const entry: ReviewHistoryEntry = {
       cardId: card.id,
@@ -464,14 +826,30 @@ export class CardsMaxPlugin extends Plugin {
     return queue.find((candidate) => candidate.id !== card.id) ?? null;
   }
 
+  private dailyStat(key: string): DailyStat {
+    return (
+      this.data.daily[key] ?? {
+        reviews: 0,
+        newCards: 0,
+        dontKnow: 0,
+        afterReveal: 0,
+        feedLikes: 0,
+        feedComments: 0,
+        feedSkips: 0,
+      }
+    );
+  }
+
+  private adjustDaily(field: keyof DailyStat, delta: number): void {
+    const key = dateKey(new Date());
+    const stat = this.dailyStat(key);
+    stat[field] = Math.max(0, stat[field] + delta);
+    this.data.daily[key] = stat;
+  }
+
   private recordDaily(now: number, wasNew: boolean, request: GradeRequest): void {
     const key = dateKey(new Date(now));
-    const stat: DailyStat = this.data.daily[key] ?? {
-      reviews: 0,
-      newCards: 0,
-      dontKnow: 0,
-      afterReveal: 0,
-    };
+    const stat = this.dailyStat(key);
     stat.reviews += 1;
     if (wasNew) stat.newCards += 1;
     if (request.revealKind === 'dont-know' || request.answerAtReveal.trim().length === 0) {
@@ -503,7 +881,7 @@ class CardsMaxSettingTab extends PluginSettingTab {
     containerEl.createEl('h2', { text: 'Карточки собеседования MAX' });
     containerEl.createEl('p', {
       cls: 'setting-item-description',
-      text: 'Русскоязычные колоды, FSRS, серия и честная пометка ответов после показа.',
+      text: 'Русскоязычные колоды, FSRS, серия, лента ТТ и честная пометка ответов после показа.',
     });
 
     new Setting(containerEl)
@@ -599,7 +977,7 @@ class CardsMaxSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Автопереход к следующей карточке')
-      .setDesc('После оценки сразу открывать следующую карточку текущей очереди.')
+      .setDesc('После оценки сразу открывать следующую карточку очереди или ленты.')
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.autoNext).onChange((value) => {
           void this.plugin.setSetting('autoNext', value);
@@ -624,6 +1002,41 @@ class CardsMaxSettingTab extends PluginSettingTab {
         }),
       );
 
+    containerEl.createEl('h3', { text: 'Лента ТТ' });
+
+    new Setting(containerEl)
+      .setName('Карточек в одном проходе ленты')
+      .setDesc(
+        `0 — все карточки выбранной колоды. По умолчанию ${DEFAULT_FEED_CYCLE_SIZE}. В одном проходе вопросы не повторяются.`,
+      )
+      .addText((text) => {
+        text
+          .setPlaceholder(String(DEFAULT_FEED_CYCLE_SIZE))
+          .setValue(String(this.plugin.settings.feedCycleSize))
+          .onChange((value) => {
+            const n = Number.parseInt(value, 10);
+            if (Number.isFinite(n) && n >= 0) void this.plugin.setSetting('feedCycleSize', n);
+          });
+        text.inputEl.type = 'number';
+        text.inputEl.min = '0';
+      });
+
+    new Setting(containerEl)
+      .setName('Перемешивать ленту')
+      .setDesc('Выкл. — карточки идут в порядке колод и номеров. Вкл. — случайный порядок без повторов внутри прохода.')
+      .addToggle((toggle) =>
+        toggle.setValue(this.plugin.settings.feedShuffle).onChange((value) => {
+          void this.plugin.setSetting('feedShuffle', value);
+        }),
+      );
+
+    new Setting(containerEl)
+      .setName('Лента')
+      .setDesc('Открыть ленту, лайки, комментарии и свайпы.')
+      .addButton((button) =>
+        button.setButtonText('Открыть ленту').onClick(() => void this.plugin.openFeed()),
+      );
+
     new Setting(containerEl)
       .setName('Панель')
       .setDesc('Открыть боковую панель с колодами и повторением.')
@@ -633,7 +1046,7 @@ class CardsMaxSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Прогресс')
-      .setDesc('Расписание, серия, история и пометки хранятся в data.json плагина. Заметки не изменяются.')
+      .setDesc('Расписание, серия, история, лайки и комментарии хранятся в data.json плагина. Заметки не изменяются.')
       .addButton((button) =>
         button
           .setButtonText('Сбросить прогресс…')
